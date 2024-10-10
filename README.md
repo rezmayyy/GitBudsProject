@@ -6,8 +6,9 @@ Priya Pillay
 
 Arthur Erlandson
 
-Kat Shpak
+Kat Shpak .
 
 Emiley Mynhier
 
 Austin Mann
+
