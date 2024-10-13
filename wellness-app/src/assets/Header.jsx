@@ -8,11 +8,13 @@ function Header() {
 
     return (
         <header>
+            {/* Div for Logo and "TribeWell" */}
             <div className="brand-container">
                 <img src={logo} alt="TribeWell Logo" className="logo" />
                 <h1>TribeWell</h1>
             </div>
             <nav>
+                {/* Div for Search bar and navlinks */}
                 <div className="nav-center">
                     <input type="text" placeholder="Search..." className="search-bar" />
                     <ul className="nav-links">

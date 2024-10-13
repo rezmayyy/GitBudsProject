@@ -9,7 +9,11 @@
 */
 
 header {
-    background-color: #4CAF50; /* Background */
+    background: linear-gradient(
+        to right, 
+        rgba(76, 175, 80, 0.8), /* Starting color with transparency */
+        rgba(61, 58, 114, 0.8) /* Ending color with transparency */
+    );
     color: white; /* Text Color */
     padding: 1rem; /* Space around header */
     display: flex;  
@@ -56,7 +60,7 @@ nav {
     border-radius: 5px;
     border: none;
     margin-bottom: 0rem; /* Space between search bar and nav links */
-    width: 80%; 
+    width: 50%; 
 }
 
 .nav-links {
