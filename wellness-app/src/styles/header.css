@@ -9,27 +9,35 @@
     Default:        #333
 */
 
-/*"TribeWell" css */
 header {
     background-color: #3D3A72; /* Background */
     color: white; /* Text Color */
     padding: 1rem; /* Space around header */
-    font-family: 'Poppins', sans-serif; /* Font*/
 }
 
+/* "TribeWell" */
 h1 {
-    margin: 0; /* Remove default margin */
-    font-size: 2rem; /* Adjust font size */
+    margin: 0; 
+    font-size: 2rem; /* Font size */
+    font-family: 'Poppins', sans-serif; /* Font*/
 }
 
 nav {
     margin-top: 0.5rem; /* Space between title and nav */
 }
 
-ul {
-    list-style: none; /* Remove bullet points */
-    padding: 0; /* Remove default padding */
+.nav-links {
+    list-style: none; 
+    padding: 0; 
     display: flex; /* Display items in a row */
+    justify-content: center;
+}
+
+.auth-links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: right;
 }
 
 li {
@@ -38,13 +46,27 @@ li {
 
 a {
     color: white; /* Link color */
-    text-decoration: none; /* Remove underline */
+    text-decoration: none; 
 }
 
 a:hover {
-    text-decoration: underline; /* Underline on hover for feedback */
+    text-decoration: underline; /* Underline effect on hover*/
+}
+
+.auth-links a {
+    background-color: #F4A623; /* Button color */
+    color: #3D3A72; /* Text color*/
+    padding: 0.5rem 1rem; 
+    border-radius: 5px; 
+    text-decoration: none; 
+    font-weight: 600; 
+    transition: background-color 0.3s ease; 
+}
+
+.auth-links a:hover {
+    background-color: #FFD45C; /* Hover effect for button */
 }
 
 hr {
-    border: 1px solid #F4A623; /* White line for separation */
+    border: 1px solid #F4A623; /* Random line idk */
 }
