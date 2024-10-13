@@ -17,7 +17,7 @@ function Signup(){
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Here you would typically handle the signup logic
+       // Insert firebase signup logic here, with routing to home page on success
         console.log('Signup attempted with:', email, password);
     };
     return(
