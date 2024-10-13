@@ -1,5 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
+import "./styles/login.css"
 import Header from './assets/Header';
 import Footer from './assets/Footer';
 import Home from './assets/Home';
@@ -32,4 +33,4 @@ function App() {
 export default App;
 
 
-{/* additional installations:  npm install react-scripts, npm install react-router-dom */}
+{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */}
