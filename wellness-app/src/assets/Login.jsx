@@ -16,7 +16,7 @@ function Login(){
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Here you would typically handle the login logic
+        // Insert firebase login logic here, with routing to home page on success
         console.log('Login attempted with:', email, password);
     };
 
