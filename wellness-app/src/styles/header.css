@@ -1,5 +1,6 @@
 /* src/styles/header.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
 
 /* Color Palette from brand kit
     Deep Indigo:    #3D3A72
@@ -26,18 +27,18 @@ nav {
     margin-top: 0.5rem; /* Space between title and nav */
 }
 
-.nav-links {
-    list-style: none; 
-    padding: 0; 
-    display: flex; /* Display items in a row */
-    justify-content: center;
-}
-
 .auth-links {
     list-style: none;
     padding: 0;
     display: flex;
     justify-content: right;
+}
+
+.nav-links {
+    list-style: none; 
+    padding: 0; 
+    display: flex; /* Display items in a row */
+    justify-content: center;
 }
 
 li {
@@ -59,12 +60,22 @@ a:hover {
     padding: 0.5rem 1rem; 
     border-radius: 5px; 
     text-decoration: none; 
-    font-weight: 600; 
     transition: background-color 0.3s ease; 
+    font-family: 'Montserrat';
+}
+
+.nav-links a {
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    text-decoration: none;
 }
 
 .auth-links a:hover {
     background-color: #FFD45C; /* Hover effect for button */
+}
+
+.nav-links a:hover {
+    text-decoration: underline; /* Underline effect on hover for nav links */
 }
 
 hr {
