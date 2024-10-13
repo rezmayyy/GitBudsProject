@@ -1,0 +1,50 @@
+/* src/styles/header.css */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Color Palette from brand kit
+    Deep Indigo:    #3D3A72
+    Warm Gold:      #F4A623
+    Earthy Green:   #4CAF50
+    Light Beige:    #F5E5C4 
+    Default:        #333
+*/
+
+/*"TribeWell" css */
+header {
+    background-color: #3D3A72; /* Background */
+    color: white; /* Text Color */
+    padding: 1rem; /* Space around header */
+    font-family: 'Poppins', sans-serif; /* Font*/
+}
+
+h1 {
+    margin: 0; /* Remove default margin */
+    font-size: 2rem; /* Adjust font size */
+}
+
+nav {
+    margin-top: 0.5rem; /* Space between title and nav */
+}
+
+ul {
+    list-style: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
+    display: flex; /* Display items in a row */
+}
+
+li {
+    margin-right: 2rem; /* Space between links */
+}
+
+a {
+    color: white; /* Link color */
+    text-decoration: none; /* Remove underline */
+}
+
+a:hover {
+    text-decoration: underline; /* Underline on hover for feedback */
+}
+
+hr {
+    border: 1px solid #F4A623; /* White line for separation */
+}
