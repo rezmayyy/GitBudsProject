@@ -1,4 +1,3 @@
-/* src/styles/header.css */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
 
@@ -7,13 +6,20 @@
     Warm Gold:      #F4A623
     Earthy Green:   #4CAF50
     Light Beige:    #F5E5C4 
-    Default:        #333
 */
 
 header {
-    background-color: #3D3A72; /* Background */
+    background-color: #4CAF50; /* Background */
     color: white; /* Text Color */
     padding: 1rem; /* Space around header */
+    display: flex;  
+    align-items: center; 
+    justify-content: space-between;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center; /* Center-aligns the text and logo together */
 }
 
 /* "TribeWell" */
@@ -23,22 +29,51 @@ h1 {
     font-family: 'Poppins', sans-serif; /* Font*/
 }
 
+.logo {
+    margin-top: 0.5rem; /* Adds space between TribeWell and the logo */
+    max-width: 75px; /* Adjust logo size */
+    height: auto;
+    padding-right: 0.5rem;
+}
+
 nav {
-    margin-top: 0.5rem; /* Space between title and nav */
+    display: flex;
+    align-items: center; 
+    justify-content: space-between;
+    width: 100%;
+}
+
+.nav-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    flex-grow: 1;
+    margin-top: 1rem;
+}
+
+.search-bar {
+    padding: 0.5rem;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 0rem; /* Space between search bar and nav links */
+    width: 80%; 
+}
+
+.nav-links {
+    list-style: none; 
+    padding: 0; 
+    display: flex; 
+    justify-content: center;
+    flex-grow: 1;
 }
 
 .auth-links {
     list-style: none;
     padding: 0;
     display: flex;
-    justify-content: right;
-}
-
-.nav-links {
-    list-style: none; 
-    padding: 0; 
-    display: flex; /* Display items in a row */
-    justify-content: center;
+    justify-content: flex-end;
+    margin-left: 2rem;
+    white-space: nowrap; 
 }
 
 li {
@@ -54,9 +89,15 @@ a:hover {
     text-decoration: underline; /* Underline effect on hover*/
 }
 
+.nav-links a {
+    font-family: 'Montserrat', sans-serif;
+    color: white;
+    text-decoration: none;
+}
+
 .auth-links a {
-    background-color: #F4A623; /* Button color */
-    color: #3D3A72; /* Text color*/
+    background-color: #F5E5C4; /* Button color */
+    color: black; /* Text color */
     padding: 0.5rem 1rem; 
     border-radius: 5px; 
     text-decoration: none; 
@@ -64,18 +105,12 @@ a:hover {
     font-family: 'Montserrat';
 }
 
-.nav-links a {
-    font-family: 'Montserrat', sans-serif;
-    color: white;
-    text-decoration: none;
+.nav-links a:hover {
+    text-decoration: underline; /* Underline effect on hover for nav links */
 }
 
 .auth-links a:hover {
     background-color: #FFD45C; /* Hover effect for button */
-}
-
-.nav-links a:hover {
-    text-decoration: underline; /* Underline effect on hover for nav links */
 }
 
 hr {
