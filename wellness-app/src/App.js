@@ -1,32 +1,29 @@
 import logo from './logo.svg';
 import './App.css';
 import "./styles/login.css"
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// Update these import statements
 import Header from './assets/Header';
-import Footer from './assets/Footer';
 import Home from './assets/Home';
 import Login from './assets/Login';
 import Signup from './assets/Signup';
-
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'; //for page routes
-
+import Footer from './assets/Footer';
+import Profile from './assets/Profile';
 function App() {
   return (
-    <Router>
     <div className="App">
-
-      <Header/>
-
-      <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-
-      </Routes>
-
-      <Footer/>
-
+      <Router>
+        <Header />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+        <Footer />
+      </Router>
     </div>
-    </Router>
   );
 }
 

@@ -53,8 +53,55 @@ function Signup() {
             </div>
 
         </div>
+import React from "react";
+import { Link } from "react-router-dom";
 
 
+
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+    };
+
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+       // Insert firebase signup logic here, with routing to home page on success
+        console.log('Signup attempted with:', email, password);
+    };
+    return(
+        <div>
+            <h2>Sign Up Page</h2>
+            <form onSubmit={handleSubmit}>
+            <div>
+                <label htmlFor="email">Email:</label>
+                <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="password">Password:</label>
+                <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    required
+                />
+            </div>
+            <button type="submit">Sign Up</button>
+            </form>
+            <p>Already have an account? <Link to="/login">Log in here</Link></p>
+        </div>
     );
 }
 
