@@ -8,6 +8,7 @@
     Light Beige:    #F5E5C4 
 */
 
+/* NavBar */
 header {
     background: linear-gradient(
         to right, 
@@ -21,6 +22,7 @@ header {
     justify-content: space-between;
 }
 
+/* Div for Logo and "TribeWell" */
 .brand-container {
     display: flex;
     align-items: center; /* Center-aligns the text and logo together */
@@ -47,6 +49,7 @@ nav {
     width: 100%;
 }
 
+/* Div for SearchBar and NavLinks */
 .nav-center {
     display: flex;
     flex-direction: column;
@@ -71,6 +74,7 @@ nav {
     flex-grow: 1;
 }
 
+/* Login and Signup Buttons are authLinks */
 .auth-links {
     list-style: none;
     padding: 0;
