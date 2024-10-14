@@ -6,7 +6,7 @@ import Home from './assets/Home';
 import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
-
+import Profile from './assets/Profile';
 function App() {
   return (
     <div className="App">
@@ -15,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/" element={<Home />} />
         </Routes>
         <Footer />
