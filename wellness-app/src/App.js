@@ -1,3 +1,6 @@
+import logo from './logo.svg';
+import './App.css';
+import "./styles/login.css"
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Update these import statements
@@ -25,3 +28,6 @@ function App() {
 }
 
 export default App;
+
+
+{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */}
