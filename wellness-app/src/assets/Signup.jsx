@@ -1,13 +1,20 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import "../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
+import { auth} from "../assets/Firebase";
+import {createUserWithEmailAndPassword} from 'firebase/auth'
+import UserContext from "./UserContext";
 
 function Signup() {
+    const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [fullName, setFullName] = React.useState('');
+    const [displayName, setDisplayName] = React.useState(''); 
+    const [error, setError] = React.useState('');
+    const {setUser, setUserDisplayName} = useContext(UserContext);
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -17,14 +24,25 @@ function Signup() {
         setPassword(e.target.value);
     };
 
-    const handleFullNameChange = (e) => {
-        setFullName(e.target.value);
+    const handleDisplayNameChange = (e) => {
+        setDisplayName(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Insert firebase signup logic here, with routing to home page on success
-        console.log('Signup attempted with:', fullName, email, password);
+        await createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            setUser(user);
+            navigate("/")
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode, errorMessage);
+            setError(errorMessage);
+        });
     };
 
     return (
@@ -36,10 +54,10 @@ function Signup() {
                         <div className="input-box">
                             <input
                                 type="text"
-                                placeholder="Full name"
+                                placeholder="Display Name"
                                 required
-                                value={fullName}
-                                onChange={handleFullNameChange}
+                                value={displayName}
+                                onChange={handleDisplayNameChange}
                             />
                             <FaUser className="icon" />
                         </div>

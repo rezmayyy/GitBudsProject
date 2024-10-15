@@ -1,8 +1,9 @@
-import logo from './logo.svg';
+
 import './App.css';
 import "./styles/login.css"
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { UserProvider } from './assets/UserContext';
 // Update these import statements
 import Header from './assets/Header';
 import Home from './assets/Home';
@@ -10,9 +11,11 @@ import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
+
 function App() {
   return (
     <div className="App">
+      <UserProvider>
       <Router>
         <Header />
         <Routes>
@@ -23,6 +26,7 @@ function App() {
         </Routes>
         <Footer />
       </Router>
+      </UserProvider>
     </div>
   );
 }

@@ -1,12 +1,19 @@
-import React from "react";
-import { Link } from "react-router-dom"; // Keep only one import statement for Link
+import React, { useContext } from "react";
+import { Link, useNavigate } from "react-router-dom"; // Keep only one import statement for Link
 import "../styles/login.css";
 import "../styles/guide.css";
 import { FaUser, FaLock } from "react-icons/fa";
+import {auth} from "../assets/Firebase";
+import {signInWithEmailAndPassword} from 'firebase/auth'
+import UserContext from "./UserContext";
+
 
 function Login() {
+    const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
+    const [error, setError] = React.useState(null);
+    const {setUser, setUserDisplayName} = useContext(UserContext);
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -16,10 +23,23 @@ function Login() {
         setPassword(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        // Insert firebase login logic here, with routing to home page on success
-        console.log('Login attempted with:', email, password);
+        setError(null);
+
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+          console.log(user);
+          setUser(user);
+          //setDisplayName
+          navigate('/')
+        } catch (error) {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          console.error(errorCode, errorMessage);
+          setError(errorMessage);
+        }
     };
 
     return (
