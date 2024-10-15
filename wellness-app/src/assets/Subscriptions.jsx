@@ -10,26 +10,24 @@ function Subscriptions(){
 
     ];
 
-    const location = useLocation();
-    if(location.pathname != '/')
-        return null;
+  // Dummy remove function for now
+  const removeSubscription = (id) => {
+    console.log(`Removing subscription with id: ${id}`);
+  };
 
-    return(
-
-        <section className="subscriptions">
-            <h3>Your Subscriptions</h3>
-            <ul>
-                {subscriptions.map(subscription =>(
-                    <li key={subscription.id} className="subscription-item">
-                        <img src={subscription.avatar} alt={subscription.name} className="avatar" />
-                    </li>
-                ))}
-            </ul>
-            <hr></hr>
-        </section>
-        
-
-    );
-}
+  return (
+    <div className="subscriptions-list">
+      <h4>Your Subscriptions</h4>
+      <ul>
+        {subscriptions.map((sub) => (
+          <li key={sub.id}>
+            <span>{sub.name}</span>
+            <a href="#" className="remove-link" onClick={() => removeSubscription(sub.id)}>Remove</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
 export default Subscriptions
