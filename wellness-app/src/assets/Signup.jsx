@@ -1,20 +1,20 @@
 import React from "react";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import "../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { auth} from "../assets/Firebase";
-import {createUserWithEmailAndPassword} from 'firebase/auth'
+import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
 import UserContext from "./UserContext";
 
 function Signup() {
     const navigate = useNavigate();
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const [displayName, setDisplayName] = React.useState(''); 
-    const [error, setError] = React.useState('');
-    const {setUser, setUserDisplayName} = useContext(UserContext);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState(''); 
+    const [error, setError] = useState('');
+    const {setUser} = useContext(UserContext);
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -37,6 +37,8 @@ function Signup() {
             setUser(user);
             navigate("/")
         })
+        await updateProfile(auth.currentUser, {displayName: displayName})
+   
         .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;

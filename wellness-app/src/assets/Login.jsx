@@ -13,7 +13,7 @@ function Login() {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState(null);
-    const {setUser, setUserDisplayName} = useContext(UserContext);
+    const {setUser} = useContext(UserContext);
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);

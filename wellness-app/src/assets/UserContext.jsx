@@ -5,7 +5,6 @@ const UserContext = createContext();
 
 export function UserProvider ({ children })  {
     const [user, setUser] = useState(null);
-    const [displayName, setDisplayName] = useState(null); 
     useEffect(() => {
         const auth = getAuth();
         const whenAuthChanged = onAuthStateChanged(auth, (user) => {
@@ -27,7 +26,7 @@ export function UserProvider ({ children })  {
     }, [user]);
     
     return (
-        <UserContext.Provider value={{ user, setUser, displayName, setDisplayName }}>
+        <UserContext.Provider value={{ user, setUser }}>
             {children}
         </UserContext.Provider>
     );

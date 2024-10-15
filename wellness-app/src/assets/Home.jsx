@@ -1,9 +1,10 @@
 import { useContext } from 'react';
 import Subscriptions from './Subscriptions';
 import UserContext from './UserContext';
+import Signout from './Signout';
 
 function Home() {
-    const {user, displayName} = useContext(UserContext)
+    const {user} = useContext(UserContext)
     return (
       <div className="Home">
   
@@ -17,7 +18,7 @@ function Home() {
             </div>
   
             <div className="right-side">
-            {user && <p>Signed in as: {user.email}</p>}
+            {user && <p>Signed in as: {user.displayName} <div><Signout/></div></p>}
             </div>
   
           </main>
