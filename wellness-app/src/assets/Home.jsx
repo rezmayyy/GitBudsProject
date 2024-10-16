@@ -1,32 +1,23 @@
-import { useContext } from 'react';
 import Subscriptions from './Subscriptions';
-import UserContext from './UserContext';
-import Signout from './Signout';
 
 function Home() {
-    const {user} = useContext(UserContext)
     return (
-      <div className="Home">
-  
-          
-  
-          <main className="main-section">
-  
-            <div className="left-side">
-              
-              <Subscriptions/>
-            </div>
-  
-            <div className="right-side">
-            {user && <p>Signed in as: {user.displayName} <div><Signout/></div></p>}
-            </div>
-  
-          </main>
-  
-          
-  
-      </div>
+      <main>
+        <div id="subscriptions">
+          <Subscriptions />
+        </div>
+        <div id="latest-content">
+          <div className="card">Content 1</div>
+          <div className="card">Content 2</div>
+          <div className="card">Content 3</div>
+          <div className="card">Content 4</div>
+          <div className="card">Content 5</div>
+          <div className="card">Content 6</div>
+        </div>
+      </main>
     );
   }
   
   export default Home;
+
+

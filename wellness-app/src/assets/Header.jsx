@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import React from 'react';
+import React, {useContext} from 'react';
 import '../styles/header.css';
 import logo from '../assets/Logo.png';
-
+import UserContext from './UserContext';
+import Signout from './Signout';
 
 function Header() {
-
+    const {user} = useContext(UserContext);
     return (
         <header>
             {/* Div for Logo and "TribeWell" */}
@@ -26,8 +27,21 @@ function Header() {
                     </ul>
                 </div>
                 <ul className="auth-links">
-                    <li><Link to="/login">Log In</Link></li>
-                    <li><Link to="/signup">Sign Up</Link></li>
+                    <>
+                        {user ? (
+                            <>
+                        <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
+                        <li><Signout></Signout></li>
+                            </>
+                        ):(
+                            <>
+                            <li><Link to="/login">Log In</Link></li>
+                            <li><Link to="/signup">Sign Up</Link></li>
+                            </>
+                        )}
+                    </>
+                        
+                    
                 </ul>
             </nav>
         </header>
