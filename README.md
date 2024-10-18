@@ -1,15 +1,18 @@
+Alternative healing app platform "TribeWell" created by Team GitBuds.<br>
+
+## Members
 Parsa Bayat
+
+Arthur Erlandson
+
+Austin Mann
+
+Matthew Morello
+
+Emiley Mynhier
 
 Jason Neal
 
 Priya Pillay
 
-Arthur Erlandson
-
-Kat Shpak .
-
-Emiley Mynhier
-
-Austin Mann
-
-Matthew Morello
+Kat Shpak
