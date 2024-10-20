@@ -94,8 +94,8 @@ function Signup() {
 
                         <div className="remember-forgot">
                             <label>
-                                <input type="checkbox" />
-                                I agree to the terms & conditions
+                            <input type="checkbox" required/>
+                                I agree to the <Link to= "/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms & conditions</Link>
                             </label>
                         </div>
 

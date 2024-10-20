@@ -1,20 +1,21 @@
 .wrapper {
     position: relative;
     width: 420px;
-    height: 450px;
+    height: auto;
     border-radius: 10px;
     color: var(--light-beige);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: auto;
+    padding: 20px 0;
+    flex-grow: 1;
 }
 
 .wrapper .form-box {
     width: 100%;
     padding: 40px;
-}
-
-.wrapper .form-box.register {
-    position: absolute; 
-    left: 50%; 
-    transform: translateX(-50%); 
 }
 
 form h1 {
@@ -37,7 +38,7 @@ form .input-box {
     outline: none;
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 40px;
-    font-size: 10px;
+    font-size: 16px;
     color: var(--light-beige);
     padding: 20px 45px 20px 20px; 
 }
