@@ -6,7 +6,7 @@ function Footer(){
     <footer>
       <div className="footer-section">
         <h4>Links</h4>
-        <a href="">Home</a>
+        <a href="/">Home</a>
         <a href="#">About</a>
         <a href="#">Contact</a>
       </div>
