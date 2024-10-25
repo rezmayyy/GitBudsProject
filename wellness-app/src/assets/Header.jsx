@@ -19,10 +19,12 @@ function Header() {
                 <div className="nav-center">
                     <input type="text" placeholder="Search..." className="search-bar" />
                     <ul className="nav-links">
+                        <li><Link to="/">Home</Link></li>
                         <li><Link to="/explore">Explore</Link></li>
                         <li><Link to="/learn">Learn</Link></li>
                         <li><Link to="/blogs">Blogs</Link></li>
                         <li><Link to="/profile">Profile</Link></li>
+                        <li><Link to="/discussion">Discussion Board</Link></li>
 
                     </ul>
                 </div>
