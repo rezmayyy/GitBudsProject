@@ -1,4 +1,4 @@
-
+/* Layout for the main page */
 *{
   margin: 0;
   padding: 0;
@@ -13,7 +13,16 @@ body{
   min-height: 100vh; /**/
 }
 
-/* Subscription Section*/ 
+.home-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  height: calc(80vh - 100px); 
+}
+
+/* ----------Subscription Section---------- */
 .subscriptions-list li {
   display: flex;
   justify-content: space-between;
@@ -37,35 +46,181 @@ body{
 }
 
 
-/* Main Content Area */
-main {
+/* Content Posts */
+
+
+/* ----------Home Page Discussion Board Container (Preview)---------- */
+#discussion-board {
+  width: 100%;
+  max-width: 400px; 
+  max-height: 320px;  
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+  overflow-y: auto; 
+  margin-bottom: 20px; 
+}
+
+#discussion-board h2 {
+  font-size: 1.5em;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+#discussion-board button {
+  width: 100%;
+  margin-top: 10px;
+  background-color: #4facfe;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+#discussion-board button:hover {
+  background-color: #00c6ff;
+  transform: translateY(-2px);
+}
+
+
+/* ----------Full Discussion Board Page---------- */
+.discussion-board-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-direction: column;
+  width: 100%;
+  padding: 30px;
+  min-height: calc(100vh - 100px);
+}
+
+.discussion-board {
+  width: 90%;
+  max-width: 900px;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+.discussion-board h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 2em;
+  font-family: 'Poppins', sans-serif;
+}
+
+.discussion-board textarea {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1em;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.discussion-board button {
+  width: 100%;
+  padding: 12px 20px;
+  background-color: #4facfe;
+  color: white;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.discussion-board button:hover {
+  background-color: #00c6ff;
+  transform: translateY(-2px);
+}
+
+/* ----------Reply Posts---------- */
+/* Post Container */
+.post-item {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.post-header {
   display: flex;
   justify-content: space-between;
-  padding: 20px;
-  flex: 1;
-  width: 100%;
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 10px;
 }
 
-#latest-content {
-  width: 75%;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+.post-actions {
+  display: flex;
   gap: 20px;
-  justify-items: center;
+  align-items: center;
+  font-size: 0.85em;
+  color: #444;
+  margin-top: 10px;
 }
 
-.card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.heart-icon {
+  cursor: pointer;
+  color: #ccc;
+  transition: color 0.3s ease;
+}
+
+.heart-icon.liked {
+  color: #ff4500; 
+}
+
+.replies-list {
+  margin-top: 15px;
+  padding-left: 20px;
+  border-left: 2px solid #eee; 
+}
+
+.reply-item {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.reply-header span,
+.post-header span {
+  color: #999;
+  font-size: 0.85em;
+  margin-left: auto;
+}
+
+.reply-form {
+  margin-top: 10px;
+}
+
+.reply-form textarea {
   width: 100%;
-  height: 150px;
-  text-align: center;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.reply-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: space-between;
+  font-size: 0.8em;
+  color: #666;
 }
 
 
-/* Footer Section */
+/* ----------Footer Section---------- */
 footer {
   background-color: #222;
   color: white;

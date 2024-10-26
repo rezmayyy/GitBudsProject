@@ -1,7 +1,6 @@
-
 import './App.css';
 import "./styles/login.css"
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
 // Update these import statements
@@ -11,8 +10,12 @@ import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
+import DiscussionBoardPage from './assets/DiscussionBoardPage';
 
 function App() {
+  // Manages posts and replies
+  const [posts, setPosts] = useState([]);
+  
   return (
     <div className="App">
       <UserProvider>
@@ -22,7 +25,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
+          <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
         </Routes>
         <Footer />
       </Router>
