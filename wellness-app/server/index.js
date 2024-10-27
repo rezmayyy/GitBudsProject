@@ -1,5 +1,5 @@
 // server/index.js
-// requires npm install express cors body-parser firebase-admin firebase-functions firebase-tools
+// from wellness-app\server> npm install express cors body-parser firebase-admin firebase-functions firebase-tools
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
