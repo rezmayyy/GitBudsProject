@@ -1,0 +1,71 @@
+
+.tabs{
+    display: flex;
+    gap: 10px;
+    margin-bottom: -1px; /* overlap */
+    justify-content: center;
+    
+}
+
+.tab-button
+{ /* selecting tabs buttons style */
+    padding: 10px 20px;
+    border: none;
+    background-color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    border-radius: 10px 10px 0 0;
+    /*box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* shadow at the bottom of the tabs */
+    position: relative;
+    top: 5px; /* raised */
+    transition: background-color 0.3s ease, top 0.3s ease; /* transition from tab to tab */
+}
+
+.tab-button.active{ /* set properties of selected tab */
+    background-color: white;
+    color: black;
+    
+}
+
+.tab-content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    
+}
+
+
+.tab-content form { /* display one form item per row */
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.content-input, .content-textarea{ /* internal form fields styles */
+    padding: 8px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.tab-button[type="submit"]{ /* submit styles button  */
+    background-color: #1d4e89;
+    color: white;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+

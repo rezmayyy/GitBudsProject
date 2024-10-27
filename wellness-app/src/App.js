@@ -11,6 +11,10 @@ import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
+import CreatePost from './assets/CreatePost';
+import ContentPostPage from './assets/ContentPostPage';
+
+
 
 function App() {
   // Manages posts and replies
@@ -27,6 +31,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
           <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/content/:postId" element={<ContentPostPage/> }/>
         </Routes>
         <Footer />
       </Router>

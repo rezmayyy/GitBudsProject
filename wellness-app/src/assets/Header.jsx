@@ -33,6 +33,7 @@ function Header() {
                         <li><Link to="/blogs">Blogs</Link></li>
                         <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
                         <li><Link to="/discussion">Discussion Board</Link></li>
+                        <li><Link to="/create-post">Create</Link></li>
 
                     </ul>
                 </div>
