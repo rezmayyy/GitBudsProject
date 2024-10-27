@@ -10,6 +10,7 @@ import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
+import Account from './assets/Account';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
@@ -33,6 +34,7 @@ function App() {
           <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/content/:postId" element={<ContentPostPage/> }/>
+          <Route path="/account" element={<Account />} />
         </Routes>
         <Footer />
       </Router>

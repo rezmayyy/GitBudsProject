@@ -43,6 +43,7 @@ function Header() {
                             <>
                         <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
                         <li><Signout></Signout></li>
+                        <li><Link to="/account">Account</Link></li>
                             </>
                         ):(
                             <>
