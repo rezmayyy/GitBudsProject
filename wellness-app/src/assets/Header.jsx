@@ -19,7 +19,7 @@ function Header() {
         <header>
             {/* Div for Logo and "TribeWell" */}
             <div className="brand-container">
-                <img src={logo} alt="TribeWell Logo" className="logo" />
+                <Link to="/"><img src={logo} alt="TribeWell Logo" className="logo" /></Link>                
                 <h1>TribeWell</h1>
             </div>
             <nav>
