@@ -11,6 +11,7 @@ import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
 import Account from './assets/Account';
+import TOS from './assets/TOS';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
@@ -35,6 +36,7 @@ function App() {
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/content/:postId" element={<ContentPostPage/> }/>
           <Route path="/account" element={<Account />} />
+          <Route path="/tos" element={<TOS />} />
         </Routes>
         <Footer />
       </Router>

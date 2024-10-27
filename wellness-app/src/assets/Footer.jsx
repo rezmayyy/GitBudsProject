@@ -14,6 +14,7 @@ function Footer(){
         <h4>Help</h4>
         <a href="#">Payment Options</a>
         <a href="#">Privacy Policies</a>
+        <a href="/tos">Terms of service</a>
       </div>
       <div className="footer-section">
         <h4>Other</h4>
