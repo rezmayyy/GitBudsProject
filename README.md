@@ -125,7 +125,9 @@ Here’s the ERD for TribeWell, outlining the core entities and relationships:
   - `Comment`: Text of the comment
   - `Post_Date`: Date when the comment was made
 
-![ERD Diagram](path/to/ERD-TribeWell.png)
+
+
+[ERD GitBuds.pdf](https://github.com/user-attachments/files/17556125/ERD.GitBuds.pdf)
 
 ---
 
@@ -137,28 +139,22 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## Contact
 
-For questions or feedback, please reach out to the **TribeWell** development team (Team GitBuds) at [gitbuds@gmail.com].
+For questions or feedback, please reach out to the **TribeWell** development team (Team GitBuds) at gitbuds@gmail.com.
 
 ---
 
 
 ## Previous Version (Below)
 
-Alternative healing app platform "TribeWell" created by Team GitBuds.<br>
+Alternative healing app platform "TribeWell" created by Team GitBuds.<be>
+
 
 ## Members
+Arthur Erlandson - Team Lead
 Parsa Bayat
-
-Arthur Erlandson
-
 Austin Mann
-
 Matthew Morello
-
 Emiley Mynhier
-
 Jason Neal
-
 Priya Pillay
-
 Kat Shpak
