@@ -1,15 +1,17 @@
 
-# TribeWell
+# TribeWell 🌿
+#### Your Community for Holistic Wellness and Ancient Healing Practices
 
 
-![TribeWell Logo](https://github.com/user-attachments/assets/bf54cf76-8ddf-4f7f-9aee-8e8857756935)
+![TribeWell Logo](https://github.com/user-attachments/assets/e792c436-2b26-4403-b970-952224c8fbb6)
+
 
 
 ---
 
 ## Synopsis
 
-**TribeWell** is a platform focused on creating a connected community of wellness enthusiasts who explore and engage with ancient healing wisdom. Our platform provides resources on Ayurveda, Reiki, and Sound Healing, allowing users to access educational content, personalized wellness plans, and interactive community features. With TribeWell, users can discover holistic practices, participate in discussions, and enhance their wellness journey.
+**TribeWell** is a platform designed for wellness enthusiasts to explore, learn, and connect through ancient healing wisdom. From Ayurveda to Reiki and Sound Healing, TribeWell provides educational resources, personalized wellness plans, and interactive community features, making it easy for users to enhance their wellness journey. Whether you’re a seasoned practitioner or just starting out, TribeWell brings together a wealth of knowledge and a vibrant community in one place.
 
 ---
 
@@ -99,7 +101,7 @@ The timeline below is based on the JIRA backlog and outlines key milestones for 
 
 ### Entity Relationship Diagram (ERD)
 
-Here’s the ERD for TribeWell, outlining the core entities and relationships:
+ERD for TribeWell, outlining the core entities and relationships:
 
 - **USER**
   - `UID` (Primary Key): Unique identifier for each user
@@ -139,22 +141,28 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## Contact
 
-For questions or feedback, please reach out to the **TribeWell** development team (Team GitBuds) at gitbuds@gmail.com.
+For questions or feedback, please reach out to the **TribeWell** GitBuds development team at gitbuds@gmail.com.
 
 ---
 
+## Team
 
-## Previous Version (Below)
+Meet the dedicated team behind **TribeWell**:
 
-Alternative healing app platform "TribeWell" created by Team GitBuds.<be>
+- Arthur Erlandson  
+  **Team Lead**
 
+- Parsa Bayat
 
-## Members
-Arthur Erlandson - Team Lead
-Parsa Bayat
-Austin Mann
-Matthew Morello
-Emiley Mynhier
-Jason Neal
-Priya Pillay
-Kat Shpak
+- Austin Mann
+
+- Matthew Morello
+
+- Emiley Mynhier
+
+- Jason Neal
+
+- Priya Pillay
+
+- Kat Shpak
+
