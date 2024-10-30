@@ -4,6 +4,8 @@ import '../styles/header.css';
 import logo from '../assets/Logo.png';
 import UserContext from './UserContext';
 import Signout from './Signout';
+import { auth, db } from './Firebase'; // Adjust the import path as necessary
+import { doc, setDoc } from 'firebase/firestore'; // Import Firestore methods
 
 function Header() {
     const {user} = useContext(UserContext);
@@ -13,6 +15,26 @@ function Header() {
         if (!user) {
             event.preventDefault(); // Prevent default navigation
             navigate('/login'); // Redirect to login page
+        }
+    };
+    // Function to create or update the user document
+    const handleUserDocument = async () => {
+        if (user) {
+            const userRef = doc(db, 'users', user.uid); // Reference to the user document
+            const userData = {
+                email: user.email,
+                displayName: user.displayName,
+                role: 'admin', // Set role as admin
+                status: 'active', // Set status as active
+            };
+
+            try {
+                // Create or update the user document
+                await setDoc(userRef, userData, { merge: true });
+                console.log('User document created/updated successfully!');
+            } catch (error) {
+                console.error('Error creating/updating user document:', error);
+            }
         }
     };
     return (
@@ -44,6 +66,10 @@ function Header() {
                         <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
                         <li><Signout></Signout></li>
                         <li><Link to="/account">Account</Link></li>
+                        {/* Add button to create/update user document */}
+                        <li>
+                                <button onClick={handleUserDocument}>Create/Update User Document</button>
+                        </li>
                             </>
                         ):(
                             <>
