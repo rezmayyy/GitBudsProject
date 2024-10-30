@@ -13,7 +13,7 @@ const ProtectedRoute = ({ element: Component }) => {
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userRef);
-        if (userDoc.exists() && userDoc.data().role === 'moderator') {
+        if (userDoc.exists() && userDoc.data().role === 'moderator' || userDoc.exists() && userDoc.data().role === 'admin') {
           setIsModerator(true);
         }
       }
