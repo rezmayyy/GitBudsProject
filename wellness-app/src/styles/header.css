@@ -2,18 +2,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
 
 /* Color Palette from brand kit
-    Deep Indigo:    #3D3A72
-    Warm Gold:      #F4A623
-    Earthy Green:   #4CAF50
-    Light Beige:    #F5E5C4 
+    Serene Ocean Blue (#1D4E89): rgba(29, 78, 137, 1)
+    Bright Sunrise Coral (#FF6F61): rgba(255, 111, 97, 1)
+    Soothing Sage Green (#A0C1B8): rgba(160, 193, 184, 1)
+    Golden Sunrise (#EAC784): rgba(234, 199, 132, 1)
+    Lavender Spirit (#B39BC8): rgba(179, 155, 200, 1)
 */
 
 /* NavBar */
 header {
     background: linear-gradient(
         to right, 
-        rgba(76, 175, 80, 0.8), /* Starting color with transparency */
-        rgba(61, 58, 114, 0.8) /* Ending color with transparency */
+        rgba(255, 111, 97, 1), /* Starting color with transparency */ 
+        /* rgba(234, 199, 132, 1), */
+        rgba(160, 193, 184, 1),
+        /* rgba(179, 155, 200, 1),  */
+        rgba(29, 78, 137, 1) /* Ending color with transparency */
     );
     color: white; /* Text Color */
     padding: 1rem; /* Space around header */
@@ -62,7 +66,7 @@ nav {
     padding: 0.5rem;
     border-radius: 5px;
     border: none;
-    margin-bottom: 0rem; /* Space between search bar and nav links */
+    margin-bottom: 1rem; /* Space between search bar and nav links */
     width: 50%; 
 }
 
@@ -104,7 +108,7 @@ a:hover {
 }
 
 .auth-links a {
-    background-color: #F5E5C4; /* Button color */
+    background-color: #EAC784; /* Button color */
     color: black; /* Text color */
     padding: 0.5rem 1rem; 
     border-radius: 5px; 
@@ -118,7 +122,7 @@ a:hover {
 }
 
 .auth-links a:hover {
-    background-color: #FFD45C; /* Hover effect for button */
+    background-color: white; /* Hover effect for button */
 }
 
 hr {
