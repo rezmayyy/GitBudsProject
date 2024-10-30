@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import '../styles/header.css';
 import logo from '../assets/Logo.png';
 import UserContext from './UserContext';
@@ -8,15 +8,17 @@ import { auth, db } from './Firebase'; // Adjust the import path as necessary
 import { doc, setDoc } from 'firebase/firestore'; // Import Firestore methods
 
 function Header() {
-    const {user} = useContext(UserContext);
+    const { user } = useContext(UserContext);
     const navigate = useNavigate();
-    //profile login check
+
+    // Profile login check
     const handleProfileClick = (event) => {
         if (!user) {
             event.preventDefault(); // Prevent default navigation
             navigate('/login'); // Redirect to login page
         }
     };
+
     // Function to create or update the user document
     const handleUserDocument = async () => {
         if (user) {
@@ -37,6 +39,20 @@ function Header() {
             }
         }
     };
+
+    // Function to set user role
+    const setUserRole = async (role) => {
+        if (user) {
+            try {
+                const userRef = doc(db, 'users', user.uid); // Reference to the user document
+                await setDoc(userRef, { role }, { merge: true }); // Update the user role
+                console.log(`User role updated to ${role}`);
+            } catch (error) {
+                console.error("Error updating user role: ", error);
+            }
+        }
+    };
+
     return (
         <header>
             {/* Div for Logo and "TribeWell" */}
@@ -56,34 +72,35 @@ function Header() {
                         <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
                         <li><Link to="/discussion">Discussion Board</Link></li>
                         <li><Link to="/create-post">Create</Link></li>
-
                     </ul>
                 </div>
                 <ul className="auth-links">
                     <>
                         {user ? (
                             <>
-                        <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
-                        <li><Signout></Signout></li>
-                        <li><Link to="/account">Account</Link></li>
-                        {/* Add button to create/update user document */}
-                        <li>
-                                <button onClick={handleUserDocument}>Create/Update User Document</button>
-                        </li>
+                                <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
+                                <li><Signout /></li>
+                                <li><Link to="/account">Account</Link></li>
+                                {/* Add button to create/update user document */}
+                                <li>
+                                    <button onClick={handleUserDocument}>Create/Update User Document</button>
+                                </li>
+                                <li>
+                                    <button onClick={() => setUserRole('admin')}>Set as Admin</button>
+                                    <button onClick={() => setUserRole('normal')}>Set as Normal</button>
+                                </li>
                             </>
-                        ):(
+                        ) : (
                             <>
-                            <li><Link to="/login">Log In</Link></li>
-                            <li><Link to="/signup">Sign Up</Link></li>
+                                <li><Link to="/login">Log In</Link></li>
+                                <li><Link to="/signup">Sign Up</Link></li>
                             </>
                         )}
                     </>
-                        
-                    
                 </ul>
             </nav>
         </header>
-    )
+    );
 }
 
-export default Header
+export default Header;
