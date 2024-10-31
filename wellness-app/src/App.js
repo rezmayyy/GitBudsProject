@@ -1,7 +1,6 @@
-
 import './App.css';
 import "./styles/login.css"
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
 // Update these import statements
@@ -11,8 +10,20 @@ import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
+import Account from './assets/Account';
+import TOS from './assets/TOS';
+import DiscussionBoardPage from './assets/DiscussionBoardPage';
+import CreatePost from './assets/CreatePost';
+import ContentPostPage from './assets/ContentPostPage';
+import ProtectedRoute from './assets/ProtectedRoute';
+import ModView from './assets/ModDashboard';
+import Support from './assets/Support';
+import Ticket from './assets/Ticket';
 
 function App() {
+  // Manages posts and replies
+  const [posts, setPosts] = useState([]);
+  
   return (
     <div className="App">
       <UserProvider>
@@ -22,7 +33,15 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
+          <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
+          <Route path="/create-post" element={<CreatePost />} />
+          <Route path="/content/:postId" element={<ContentPostPage/> }/>
+          <Route path="/account" element={<Account />} />
+          <Route path="/tos" element={<TOS />} />
+          <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/ticket" element={<Ticket />} />
         </Routes>
         <Footer />
       </Router>

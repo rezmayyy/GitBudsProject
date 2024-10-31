@@ -6,14 +6,16 @@ function Footer(){
     <footer>
       <div className="footer-section">
         <h4>Links</h4>
-        <a href="">Home</a>
+        <a href="/">Home</a>
         <a href="#">About</a>
         <a href="#">Contact</a>
       </div>
       <div className="footer-section">
         <h4>Help</h4>
+        <a href="/support">Support</a>
         <a href="#">Payment Options</a>
         <a href="#">Privacy Policies</a>
+        <a href="/tos">Terms of service</a>
       </div>
       <div className="footer-section">
         <h4>Other</h4>
