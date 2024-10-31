@@ -14,6 +14,7 @@ function Header() {
     const [searchTerm, setSearchTerm] = useState('');
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null); // Create a ref for the menu
+    const hamburgerRef = useRef(null); // Create a ref for the hamburger button
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev); // Toggle the menu open state
@@ -77,15 +78,22 @@ function Header() {
     // Handle click outside the menu
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
-                closeMenu();
+            // Check if the menu is open, if clicked target is not within the menu, and not the hamburger button
+            if (
+                menuOpen &&
+                menuRef.current &&
+                !menuRef.current.contains(event.target) &&
+                hamburgerRef.current &&
+                hamburgerRef.current !== event.target // Check if the clicked target is not the hamburger button
+            ) {
+                closeMenu(); // Close the menu if clicked outside and not the hamburger button
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('mouseup', handleClickOutside);
 
         return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('mouseup', handleClickOutside);
         };
     }, [menuOpen]);
 
@@ -117,7 +125,7 @@ function Header() {
                 </div>                
                 {user ? (
                     <div className={styles.hamburgerContainer}>
-                        <button onClick={toggleMenu} className={styles.hamburgerButton}>☰</button>
+                        <button red={hamburgerRef} onClick={toggleMenu} className={styles.hamburgerButton}>☰</button>
                         <div ref={menuRef} className={`${styles.menuContent} ${menuOpen ? styles.active : ''}`}>
                             <Link to="/account" className={styles.menuLink} onClick={closeMenu}>{user.displayName}</Link>
                             <Signout className={styles.menuLink} closeMenu={closeMenu} /> {/* Close menu after signout */}                            
