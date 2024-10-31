@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import UserContext from './UserContext'; 
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from './Firebase'; 
 import { FaHeart } from 'react-icons/fa';
 
@@ -9,48 +9,58 @@ const PostItem = ({ post, preview }) => {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [likes, setLikes] = useState(post.likes || 0);
-  const [likedByUser, setLikedByUser] = useState(post.likedByUser || false);
+  const [likedByUser, setLikedByUser] = useState(post.likers?.includes(user?.uid));
   const [replies, setReplies] = useState(post.replies || []); 
 
   // Toggle like for the main post
   const toggleLike = async () => {
-    const newLikes = likedByUser ? likes - 1 : likes + 1;
-    setLikes(newLikes);
-    setLikedByUser(!likedByUser);
+    if (!user) {
+      alert('You need to log in to like this post!');
+      return;
+    }
 
-    try {
-      const postRef = doc(db, 'posts', post.id);
+    const postRef = doc(db, 'posts', post.id);
+    let newLikes;
+
+    if (likedByUser) {
+      newLikes = likes - 1;
       await updateDoc(postRef, {
         likes: newLikes,
-        likedByUser: !likedByUser,
+        likers: arrayRemove(user.uid),
       });
-    } catch (error) {
-      console.error('Error liking post: ', error);
+    } else {
+      newLikes = likes + 1;
+      await updateDoc(postRef, {
+        likes: newLikes,
+        likers: arrayUnion(user.uid),
+      });
     }
+
+    setLikes(newLikes);
+    setLikedByUser(!likedByUser);
   };
 
-  // Reply submission
   const handleReplySubmit = async () => {
     if (replyText.trim()) {
       try {
         const newReply = {
-          id: Date.now(),  
+          id: Date.now(),
           message: replyText,
           timestamp: Date.now(),
           userName: user?.displayName || 'Anonymous',
-          likes: 0, 
-          likedByUser: false,
+          likes: 0,
+          likers: [],
         };
 
-        const updatedReplies = [...replies, newReply]; 
+        const updatedReplies = [...replies, newReply];
 
         const postRef = doc(db, 'posts', post.id);
         await updateDoc(postRef, {
-          replies: updatedReplies, 
+          replies: updatedReplies,
         });
 
-        setReplies(updatedReplies); 
-        setReplyText(''); 
+        setReplies(updatedReplies);
+        setReplyText('');
         setShowReplyForm(false);
       } catch (error) {
         console.error('Error submitting reply: ', error);
@@ -58,28 +68,32 @@ const PostItem = ({ post, preview }) => {
     }
   };
 
-  // Toggle like for a specific reply
+  // Toggle Like for a Specific Reply
   const toggleReplyLike = async (replyId) => {
+    if (!user) {
+      alert('You need to log in to like this reply!');
+      return;
+    }
+
     const updatedReplies = replies.map((reply) => {
       if (reply.id === replyId) {
-        const newLikes = reply.likedByUser ? reply.likes - 1 : reply.likes + 1;
+        const isLikedByUser = reply.likers?.includes(user.uid);
+        const newLikes = isLikedByUser ? reply.likes - 1 : reply.likes + 1;
+
         return {
           ...reply,
           likes: newLikes,
-          likedByUser: !reply.likedByUser,
+          likers: isLikedByUser
+            ? reply.likers.filter((uid) => uid !== user.uid)
+            : [...(reply.likers || []), user.uid],
         };
       }
       return reply;
     });
 
-    try {
-      const postRef = doc(db, 'posts', post.id);
-      await updateDoc(postRef, { replies: updatedReplies }); 
-
-      setReplies(updatedReplies); 
-    } catch (error) {
-      console.error('Error liking reply: ', error);
-    }
+    const postRef = doc(db, 'posts', post.id);
+    await updateDoc(postRef, { replies: updatedReplies });
+    setReplies(updatedReplies);
   };
 
   // Formatting the timestamp
@@ -106,7 +120,7 @@ const PostItem = ({ post, preview }) => {
       </div>
 
       {/* Displaying replies */}
-      {replies.length > 0 && (
+     {replies.length > 0 && (
         <div className="replies-list">
           {replies.map((reply) => (
             <div key={reply.id} className="reply-item">
@@ -116,11 +130,10 @@ const PostItem = ({ post, preview }) => {
               </div>
               <p>{reply.message}</p>
 
-              {/* Like button for each reply */}
               <div className="reply-actions">
                 <FaHeart
-                  className={`heart-icon ${reply.likedByUser ? 'liked' : ''}`}
-                  onClick={() => toggleReplyLike(reply.id)} 
+                  className={`heart-icon ${reply.likers?.includes(user?.uid) ? 'liked' : ''}`}
+                  onClick={() => toggleReplyLike(reply.id)}
                 />
                 <span>{reply.likes || 0} {reply.likes === 1 ? 'Like' : 'Likes'}</span>
               </div>
@@ -128,6 +141,7 @@ const PostItem = ({ post, preview }) => {
           ))}
         </div>
       )}
+
 
       {/* Reply form for the main post */}
       {!preview && (

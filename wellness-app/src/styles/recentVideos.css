@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+.recent-videos {
+    margin-top: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.videos-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* Adjust spacing between video items */
+    justify-content: center; 
+}
+
+.video-item {
+    border: 3px solid white;
+    padding: 0px;
+    border-radius: 5px;
+    width: calc(50% - 10px); 
+    box-sizing: border-box; 
+}
+
+.video-item h3 {
+    margin: 0 0 5px 0;
+}
