@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import '../styles/header.css';
 import logo from '../assets/Logo.png';
 import UserContext from './UserContext';
@@ -53,6 +53,14 @@ function Header() {
         }
     };
 
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+        }
+    };
+
     return (
         <header>
             {/* Div for Logo and "TribeWell" */}
@@ -63,7 +71,14 @@ function Header() {
             <nav>
                 {/* Div for Search bar and navlinks */}
                 <div className="nav-center">
-                    <input type="text" placeholder="Search..." className="search-bar" />
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="search-bar"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                />
                     <ul className="nav-links">
                         <li><Link to="/">Home</Link></li>
                         <li><Link to="/explore">Explore</Link></li>

@@ -73,7 +73,7 @@ function Login() {
                             <label>
                                 <input type="checkbox" /> Remember me
                             </label>
-                            <Link to="#">Forgot password?</Link>
+                            <Link to="/recover">Forgot password?</Link>
                         </div>
 
                         <button type="submit">Login</button>

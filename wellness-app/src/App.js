@@ -19,6 +19,8 @@ import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/ModDashboard';
 import Support from './assets/Support';
 import Ticket from './assets/Ticket';
+import SearchResults from './assets/SearchResults';
+import ForgotPassword from './assets/ForgotPassword';
 
 function App() {
   // Manages posts and replies
@@ -42,6 +44,8 @@ function App() {
           <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
           <Route path="/support" element={<Support />} />
           <Route path="/ticket" element={<Ticket />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/recover" element={<ForgotPassword />} />
         </Routes>
         <Footer />
       </Router>
