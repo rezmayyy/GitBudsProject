@@ -1,7 +1,7 @@
 import { getAuth, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-const Signout = () => {
+const Signout = ({ className }) => {
   const navigate = useNavigate(); // Initialize navigate for redirection
   const handleSignOut = () => {
     const auth = getAuth();
@@ -15,7 +15,11 @@ const Signout = () => {
       });
   };
 
-  return <button onClick={handleSignOut}>Sign Out</button>;
+  return (
+    <button onClick={handleSignOut} className={className}>
+      Sign Out
+    </button>
+  );
 };
 
 export default Signout;

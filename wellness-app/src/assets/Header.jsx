@@ -1,37 +1,53 @@
 import { Link, useNavigate } from 'react-router-dom';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import '../styles/header.css';
 import logo from '../assets/Logo.png';
 import UserContext from './UserContext';
 import Signout from './Signout';
-import { auth, db } from './Firebase'; // Adjust the import path as necessary
-import { doc, setDoc } from 'firebase/firestore'; // Import Firestore methods
+import { auth, db } from './Firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import styles from '../styles/HamburgerMenu.module.css';
 
 function Header() {
     const { user } = useContext(UserContext);
     const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null); // Create a ref for the menu
 
-    // Profile login check
+    const toggleMenu = () => {
+        setMenuOpen((prev) => !prev); // Toggle the menu open state
+    };
+
+    const closeMenu = () => {
+        setMenuOpen(false); // Close the menu
+    };
+
     const handleProfileClick = (event) => {
         if (!user) {
-            event.preventDefault(); // Prevent default navigation
-            navigate('/login'); // Redirect to login page
+            event.preventDefault();
+            navigate('/login');
         }
     };
 
-    // Function to create or update the user document
+    useEffect(() => {
+        // Close the menu when the user logs out
+        if (!user) {
+            closeMenu();
+        }
+    }, [user]);
+
     const handleUserDocument = async () => {
         if (user) {
-            const userRef = doc(db, 'users', user.uid); // Reference to the user document
+            const userRef = doc(db, 'users', user.uid);
             const userData = {
                 email: user.email,
                 displayName: user.displayName,
-                role: 'admin', // Set role as admin
-                status: 'active', // Set status as active
+                role: 'admin',
+                status: 'active',
             };
 
             try {
-                // Create or update the user document
                 await setDoc(userRef, userData, { merge: true });
                 console.log('User document created/updated successfully!');
             } catch (error) {
@@ -40,20 +56,17 @@ function Header() {
         }
     };
 
-    // Function to set user role
     const setUserRole = async (role) => {
         if (user) {
             try {
-                const userRef = doc(db, 'users', user.uid); // Reference to the user document
-                await setDoc(userRef, { role }, { merge: true }); // Update the user role
+                const userRef = doc(db, 'users', user.uid);
+                await setDoc(userRef, { role }, { merge: true });
                 console.log(`User role updated to ${role}`);
             } catch (error) {
-                console.error("Error updating user role: ", error);
+                console.error("Error updating user role:", error);
             }
         }
     };
-
-    const [searchTerm, setSearchTerm] = useState('');
 
     const handleKeyPress = (event) => {
         if (event.key === 'Enter') {
@@ -61,24 +74,37 @@ function Header() {
         }
     };
 
+    // Handle click outside the menu
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuOpen && menuRef.current && !menuRef.current.contains(event.target)) {
+                closeMenu();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [menuOpen]);
+
     return (
         <header>
-            {/* Div for Logo and "TribeWell" */}
             <div className="brand-container">
                 <Link to="/"><img src={logo} alt="TribeWell Logo" className="logo" /></Link>                
                 <h1>TribeWell</h1>
             </div>
             <nav>
-                {/* Div for Search bar and navlinks */}
                 <div className="nav-center">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="search-bar"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        className="search-bar"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                    />
                     <ul className="nav-links">
                         <li><Link to="/">Home</Link></li>
                         <li><Link to="/explore">Explore</Link></li>
@@ -88,31 +114,24 @@ function Header() {
                         <li><Link to="/discussion">Discussion Board</Link></li>
                         <li><Link to="/create-post">Create</Link></li>
                     </ul>
-                </div>
-                <ul className="auth-links">
-                    <>
-                        {user ? (
-                            <>
-                                <li>{user && <p>Signed in as: {user.displayName}</p>}</li>
-                                <li><Signout /></li>
-                                <li><Link to="/account">Account</Link></li>
-                                {/* Add button to create/update user document */}
-                                <li>
-                                    <button onClick={handleUserDocument}>Create/Update User Document</button>
-                                </li>
-                                <li>
-                                    <button onClick={() => setUserRole('admin')}>Set as Admin</button>{/*changing firebase rules to allow button to always work, will need to revert this*/}
-                                    <button onClick={() => setUserRole('normal')}>Set as Normal</button>
-                                </li>
-                            </>
-                        ) : (
-                            <>
-                                <li><Link to="/login">Log In</Link></li>
-                                <li><Link to="/signup">Sign Up</Link></li>
-                            </>
-                        )}
-                    </>
-                </ul>
+                </div>                
+                {user ? (
+                    <div className={styles.hamburgerContainer}>
+                        <button onClick={toggleMenu} className={styles.hamburgerButton}>☰</button>
+                        <div ref={menuRef} className={`${styles.menuContent} ${menuOpen ? styles.active : ''}`}>
+                            <Link to="/account" className={styles.menuLink} onClick={closeMenu}>{user.displayName}</Link>
+                            <Signout className={styles.menuLink} closeMenu={closeMenu} /> {/* Close menu after signout */}                            
+                            <button className={styles.menuLink} onClick={() => { handleUserDocument(); closeMenu(); }}>Create/Update User Document</button>
+                            <button className={styles.menuLink} onClick={() => { setUserRole('admin'); closeMenu(); }}>Set as Admin</button>
+                            <button className={styles.menuLink} onClick={() => { setUserRole('normal'); closeMenu(); }}>Set as Normal</button>
+                        </div>
+                    </div>
+                ) : (
+                    <ul className='auth-links'>
+                        <li><Link to="/login">Log In</Link></li>
+                        <li><Link to="/signup">Sign Up</Link></li>
+                    </ul>
+                )}
             </nav>
         </header>
     );

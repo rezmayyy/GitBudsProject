@@ -1,0 +1,45 @@
+.hamburgerContainer {
+    position: relative; /* Position relative to this container */
+    display: inline-block;
+}
+
+.hamburgerButton {
+    font-size: 24px;
+    padding: 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--menu-icon-color, #333);
+}
+
+.menuContent {
+    display: none; /* Hide by default */
+    position: absolute; /* Absolute positioning relative to the parent */
+    top: 40px; /* Adjust as needed to position below the button */
+    left: -160px; /* Position it to the left of the button */
+    background-color: var(--menu-bg-color, #fff);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.menuContent.active {
+    display: block; /* Show when active */
+}
+
+.menuLink {
+    display: block;
+    width:100%;
+    padding: 12px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--menu-text-color, #333);
+    background-color: var(--menu-item-bg, #f9f9f9);
+    border: 1px solid #333;
+    margin: 0;
+}
+
+.menuLink:hover {
+    background-color: var(--menu-item-hover-bg, #ececec);
+    cursor: pointer; /* Change cursor to pointer on hover */
+}
