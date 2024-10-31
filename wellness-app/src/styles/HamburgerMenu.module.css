@@ -10,10 +10,19 @@
     background: none;
     border: none;
     color: var(--menu-icon-color, #333);
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Smooth transition for hover effects */
+}
+
+.hamburgerButton:hover {
+    background-color: var(--hover-bg-color, #f0f0f0); /* Change background color on hover */
+    transform: scale(1.1); /* Slightly increase the size on hover */
+    border-radius: 4px; /* Optional: add border-radius for softer edges */
 }
 
 .menuContent {
-    display: none; /* Hide by default */
+    opacity: 0; /* Start with opacity 0 */
+    visibility: hidden; /* Initially hidden */
+    transition: opacity 0.3s ease, visibility 0.3s ease; /* Transition effect for opacity and visibility */
     position: absolute; /* Absolute positioning relative to the parent */
     top: 40px; /* Adjust as needed to position below the button */
     left: -160px; /* Position it to the left of the button */
@@ -24,12 +33,13 @@
 }
 
 .menuContent.active {
-    display: block; /* Show when active */
+    opacity: 1; /* Fade in */
+    visibility: visible; /* Make it visible when active */
 }
 
 .menuLink {
     display: block;
-    width:100%;
+    width: 100%;
     padding: 12px;
     text-align: center;
     text-decoration: none;
