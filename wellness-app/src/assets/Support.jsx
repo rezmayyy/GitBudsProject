@@ -10,7 +10,7 @@ function Support(){
                 <ul>
                     <li>
                         <h3>Frequently Asked Questions (FAQ)</h3>
-                        <p>If you have common questions, check out our <Link to="/faq">FAQ</Link> section for quick answers.</p>
+                        <p>populate with possible questions and asked questions later</p>
                     </li>
                     <li>
                         <h3>Create a Support Ticket</h3>

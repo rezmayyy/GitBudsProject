@@ -86,7 +86,7 @@ function Header() {
                                     <button onClick={handleUserDocument}>Create/Update User Document</button>
                                 </li>
                                 <li>
-                                    <button onClick={() => setUserRole('admin')}>Set as Admin</button>
+                                    <button onClick={() => setUserRole('admin')}>Set as Admin</button>{/*changing firebase rules to allow button to always work, will need to revert this*/}
                                     <button onClick={() => setUserRole('normal')}>Set as Normal</button>
                                 </li>
                             </>

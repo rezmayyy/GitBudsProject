@@ -1,6 +1,6 @@
 import React from 'react';
 import CreateTicket from './CreateTicket';
-import TicketList from './TicketList';
+import TicketList from './TicketComponents/TicketList';
 //import '../styles/ticket.css'; // Optional: import any relevant styles
 
 function Ticket() {

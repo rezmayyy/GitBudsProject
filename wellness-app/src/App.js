@@ -17,7 +17,6 @@ import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/ModDashboard';
-import Faq from './assets/Faq';
 import Support from './assets/Support';
 import Ticket from './assets/Ticket';
 
@@ -42,7 +41,6 @@ function App() {
           <Route path="/tos" element={<TOS />} />
           <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
           <Route path="/support" element={<Support />} />
-          <Route path="/faq" element={<Faq />} />
           <Route path="/ticket" element={<Ticket />} />
         </Routes>
         <Footer />
