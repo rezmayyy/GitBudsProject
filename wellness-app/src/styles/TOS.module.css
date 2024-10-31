@@ -1,0 +1,42 @@
+/* TOS.module.css */
+.tosContainer {
+    padding: 20px;
+    background-color: #f4f4f4; /* Light grey background for contrast */
+    color: #333; /* Dark text for readability */
+    font-family: Arial, sans-serif;
+    max-width: 800px; /* Limit the width for better readability */
+    margin: 0 auto; /* Center the content */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.tosTitle {
+    color: #0056b3; /* Dark blue color for the main heading */
+    margin-bottom: 10px; /* Space below the title */
+}
+
+.effectiveDate {
+    font-weight: bold; /* Bold for emphasis */
+}
+
+.introduction,
+.agreement,
+.sectionContent {
+    margin-bottom: 15px; /* Space below paragraphs */
+}
+
+.sectionTitle {
+    margin-top: 20px; /* Space above section titles */
+    margin-bottom: 10px; /* Space below section titles */
+    color: #007bff; /* Medium blue color for section headings */
+}
+
+.restrictionsList {
+    list-style-type: disc; /* Default list style */
+    margin-left: 20px; /* Indentation for list items */
+}
+
+.contentWarning {
+    margin-top: 10px; /* Space above content warning */
+    font-weight: bold; /* Bold for emphasis */
+}
