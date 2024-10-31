@@ -9,18 +9,37 @@
 .videos-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* Adjust spacing between video items */
-    justify-content: center; 
+    gap: 10px; 
+    justify-content: center;
+    background-color: rgb(240, 240, 240);
+    padding: 5px;
+    border-radius: 10px;
 }
 
 .video-item {
-    border: 3px solid white;
-    padding: 0px;
-    border-radius: 5px;
-    width: calc(50% - 10px); 
-    box-sizing: border-box; 
+    width: calc(50% - 10px);
+    background-color: white;
+    border-radius: 10px;
+    padding-left: 10px;
 }
 
 .video-item h3 {
-    margin: 0 0 5px 0;
+    margin: 5px 0;
+    font-size: 1em;
+    font-weight: 400; /* Thinner font */
+    word-wrap: break-word;
+    text-decoration: underline;
+}
+
+.video-item video {
+    width: 50%; 
+    height: 200px; 
+    max-height: 240px; 
+    border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+    .video-item {
+        width: calc(100% - 20px); /* Stack videos vertically on smaller screens */
+    }
 }

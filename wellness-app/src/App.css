@@ -17,7 +17,7 @@ main {
 
 body{
   font-family: Arial;
-  background-color: var(--soft-lavender);
+  background-color:rgb(240, 240, 240);
   display: flex;
   flex-direction: column;
   min-height: 100vh; /**/
@@ -232,15 +232,16 @@ body{
 
 /* ----------Footer Section---------- */
 footer {
-  background-color: #222;
+  background: linear-gradient(to bottom, #B39BC8, #1D4E89);
   color: white;
-  padding: 60px 20px; 
+  padding: 30px 20px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); 
-  gap: 30px; 
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
   width: 100%;
   margin-top: auto;
 }
+
 
 .footer-section {
   display: flex;
@@ -250,24 +251,24 @@ footer {
 
 .footer-section h4 {
   font-size: 1.2em;
-  margin-bottom: 10px;
-  color: #ffdd57; 
+  margin-bottom: 5px;
+  color: black; 
 }
 
 footer a {
   color: white;
   text-decoration: none;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 footer a:hover {
-  color: #ffdd57;
+  color: #B39BC8;
 }
 
 footer p {
-  margin-top: 20px;
+  margin-top: 10px;
   font-size: 0.9em;
-  color: #aaa; 
+  color: black; 
   text-align: center;
   grid-column: 1 / -1; 
 }
