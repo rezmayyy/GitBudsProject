@@ -15,8 +15,10 @@ import TOS from './assets/TOS';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
-
-
+import ProtectedRoute from './assets/ProtectedRoute';
+import ModView from './assets/ModDashboard';
+import Support from './assets/Support';
+import Ticket from './assets/Ticket';
 
 function App() {
   // Manages posts and replies
@@ -37,6 +39,9 @@ function App() {
           <Route path="/content/:postId" element={<ContentPostPage/> }/>
           <Route path="/account" element={<Account />} />
           <Route path="/tos" element={<TOS />} />
+          <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/ticket" element={<Ticket />} />
         </Routes>
         <Footer />
       </Router>

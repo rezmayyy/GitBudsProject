@@ -6,6 +6,7 @@ import "../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { auth} from "../assets/Firebase";
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
+import { getFirestore, setDoc, doc } from 'firebase/firestore'; // Import Firestore functions
 import UserContext from "./UserContext";
 
 function Signup() {
@@ -15,6 +16,9 @@ function Signup() {
     const [displayName, setDisplayName] = useState(''); 
     const [error, setError] = useState('');
     const {setUser} = useContext(UserContext);
+
+    // Initialize Firestore
+    const db = getFirestore();
 
     const handleEmailChange = (e) => {
         setEmail(e.target.value);
@@ -30,21 +34,31 @@ function Signup() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        await createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-            // Signed in
+        
+        try {
+            // Create user with email and password
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            
+            // Update user profile with display name
+            await updateProfile(auth.currentUser, { displayName: displayName });
+            
+            // Create user document in Firestore
+            await setDoc(doc(db, 'users', user.uid), {
+                email: email,
+                displayName: displayName,
+                status: 'active' // Set default status
+            });
+
+            // Update User Context and navigate
             setUser(user);
-            navigate("/")
-        })
-        await updateProfile(auth.currentUser, {displayName: displayName})
-   
-        .catch((error) => {
+            navigate("/");
+        } catch (error) {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.log(errorCode, errorMessage);
             setError(errorMessage);
-        });
+        }
     };
 
     return (
@@ -53,6 +67,7 @@ function Signup() {
                 <div className="form-box register">
                     <form onSubmit={handleSubmit}>
                         <h1>Sign Up</h1>
+                        {error && <p className="error">{error}</p>}
                         <div className="input-box">
                             <input
                                 type="text"
@@ -94,8 +109,8 @@ function Signup() {
 
                         <div className="remember-forgot">
                             <label>
-                            <input type="checkbox" required/>
-                                I agree to the <Link to= "/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms & conditions</Link>
+                                <input type="checkbox" required />
+                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms & conditions</Link>
                             </label>
                         </div>
 

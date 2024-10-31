@@ -12,6 +12,7 @@ function Footer(){
       </div>
       <div className="footer-section">
         <h4>Help</h4>
+        <a href="/support">Support</a>
         <a href="#">Payment Options</a>
         <a href="#">Privacy Policies</a>
         <a href="/tos">Terms of service</a>

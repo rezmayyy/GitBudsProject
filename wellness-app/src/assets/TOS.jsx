@@ -1,8 +1,4 @@
-import UserContext from "./UserContext";
-import { useContext } from "react";
-
 function TOS(){
-    const {user} = useContext(UserContext)
     return(
         <div>
         <h1>Terms of Service</h1>

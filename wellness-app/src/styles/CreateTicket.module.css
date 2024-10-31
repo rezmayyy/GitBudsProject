@@ -1,0 +1,32 @@
+/* CreateTicket.module.css */
+
+.formContainer {
+    padding: 20px;
+    background-color: #f9f9f9; /* Light background for the form */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    max-width: 600px; /* Max width for the form */
+    margin: 20px auto; /* Center the form */
+}
+
+.formContainer input,
+.formContainer textarea {
+    width: 100%; /* Full width for inputs */
+    padding: 10px; /* Padding inside inputs */
+    margin: 10px 0; /* Spacing between inputs */
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 4px; /* Slightly rounded corners */
+}
+
+.formContainer button {
+    background-color: #007bff; /* Primary button color */
+    color: white;
+    border: none;
+    padding: 10px 15px; /* Padding for button */
+    border-radius: 4px; /* Slightly rounded corners for button */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.formContainer button:hover {
+    background-color: #0056b3; /* Darker button color on hover */
+}
