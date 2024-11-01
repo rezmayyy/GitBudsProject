@@ -84,3 +84,35 @@
     border: 1px solid #ddd;
     border-radius: 5px;
 }
+
+/* Shop section */
+.shopSection {
+    padding: 20px;
+}
+
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.productCard {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.productImage {
+    width: 100%;
+    height: auto;
+}
+
+.productName {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.productPrice {
+    color: green;
+}
