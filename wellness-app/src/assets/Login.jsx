@@ -48,7 +48,7 @@ function Login() {
                         <div className="input-box">
                             <input
                                 type="text"
-                                placeholder="Username"
+                                placeholder="Email"
                                 required
                                 value={email}
                                 onChange={handleEmailChange}
