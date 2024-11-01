@@ -6,19 +6,16 @@ import styles from '../styles/ForgotPassword.module.css';
 function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
 
     const handlePasswordReset = async (e) => {
         e.preventDefault();
-        setMessage(''); // Clear previous messages
-        setError('');
+        setMessage(''); // Clear previous messagesnpm
 
         try {
             await sendPasswordResetEmail(auth, email);
             setMessage('Password reset link sent! Check your email.');
         } catch (error) {
             console.error("Error sending password reset email:", error);
-            setError('Failed to send password reset email. Please try again.');
         }
     };
 

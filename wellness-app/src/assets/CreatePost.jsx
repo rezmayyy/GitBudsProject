@@ -3,7 +3,7 @@ import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from './Firebase';
+import { db } from './Firebase';
 import UserContext from './UserContext';
 import '../styles/create-post.css';
 

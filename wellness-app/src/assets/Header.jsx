@@ -4,7 +4,7 @@ import '../styles/header.css';
 import logo from '../assets/Logo.png';
 import UserContext from './UserContext';
 import Signout from './Signout';
-import { auth, db } from './Firebase';
+import { db } from './Firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import styles from '../styles/HamburgerMenu.module.css';
 

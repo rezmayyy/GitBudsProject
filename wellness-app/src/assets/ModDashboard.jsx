@@ -1,8 +1,8 @@
-import UserContext from "./UserContext";
-import { useContext } from "react";
+//import UserContext from "./UserContext";
+//import { useContext } from "react";
 
 function ModDashboard(){
-    const {user} = useContext(UserContext)
+    //const {user} = useContext(UserContext)
     return(
         <div>
             <h2>Moderator Dashboard</h2>
