@@ -13,6 +13,8 @@ const DiscussionBoard = ({ preview }) => {
 
   useEffect(() => {
     const fetchPosts = async () => {
+      if (!user) return;
+      
       try {
         const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
         const postsSnapshot = await getDocs(postsQuery);
@@ -23,7 +25,7 @@ const DiscussionBoard = ({ preview }) => {
       }
     };
     fetchPosts();
-  }, []);
+  }, [user]);
 
   const handlePostSubmit = async () => {
     if (!user) {
@@ -37,6 +39,7 @@ const DiscussionBoard = ({ preview }) => {
         message: newPost,
         timestamp: Timestamp.now(),
         userName: user.displayName || user.email,
+        userId: user.uid,
         replies: [],
         likes: 0,
         likedByUser: false,
@@ -58,7 +61,7 @@ const DiscussionBoard = ({ preview }) => {
     <div className="discussion-board">
       <h2>{preview ? 'Latest Discussions' : 'Discussion Board'}</h2>
 
-      {!preview && (
+      {user && !preview && (
         <>
           <textarea
             value={newPost}
@@ -71,12 +74,16 @@ const DiscussionBoard = ({ preview }) => {
       )}
 
       <div className="posts-list">
-        {displayedPosts.length > 0 ? (
-          displayedPosts.map((post) => (
-            <PostItem key={post.id} post={post} preview={preview} /> 
-          ))
+        {user ? (
+          displayedPosts.length > 0 ? (
+            displayedPosts.map((post) => (
+              <PostItem key={post.id} post={post} preview={preview} />
+            ))
+          ) : (
+            <p>No posts yet. Be the first to share!</p>
+          )
         ) : (
-          <p>No posts yet. Be the first to share!</p>
+          <p>You need to log in first to see the discussion board.</p>
         )}
       </div>
 
