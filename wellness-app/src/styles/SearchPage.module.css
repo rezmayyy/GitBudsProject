@@ -1,0 +1,131 @@
+/* Layout */
+.pageContainer {
+    display: flex;
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+
+.userLink {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.userLink:hover {
+    text-decoration: underline;
+}
+/* Sidebar Styles */
+.sidebar {
+    width: 20%;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+}
+
+.filterSection {
+    margin-bottom: 20px;
+}
+
+.dropdownButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+}
+
+/* Make dropdown content visible when active */
+.dropdownContent {
+    display: block;
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.dropdownContent li a {
+    display: block;
+    padding: 8px;
+    background-color: #fff;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.dropdownContent li a:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Main Content Styles */
+.mainContent {
+    width: 80%;
+    padding: 20px;
+}
+
+.sortingModule {
+    margin-bottom: 20px;
+}
+
+.sortButton {
+    margin-right: 10px;
+    padding: 8px 15px;
+    background-color: #ddd;
+    color: #333;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.sortButton:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Posts Container */
+.postsContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.post {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    transition: box-shadow 0.3s;
+}
+
+.post h4 {
+    margin: 0 0 5px;
+    color: #007bff;
+}
+
+.post p {
+    margin: 0 0 10px;
+    color: #666;
+}
+
+.postDetails {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #888;
+}
+
+.reportButton {
+    background-color: transparent;
+    border: none;
+    color: #ff4d4f;
+    cursor: pointer;
+}
+
+.reportButton:hover {
+    text-decoration: underline;
+}
