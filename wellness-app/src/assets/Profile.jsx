@@ -5,6 +5,7 @@ import { db, storage } from './Firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../styles/profile.css';
+import dummyPic from "./dummyPic.jpeg";
 
 const Profile = () => {
   const { user } = useContext(UserContext);
@@ -85,7 +86,7 @@ const Profile = () => {
         {profileData.profilePicUrl ? (
           <img src={profileData.profilePicUrl} alt="Profile" className="profile-pic" />
         ) : (
-          <img src="https://via.placeholder.com/150" alt="Profile" className="profile-pic" />
+          <img src={dummyPic} alt="Profile" className="profile-pic" />
         )}
         <h2>{profileData.displayName || 'User Profile'}</h2>
         <p className="profile-email">{profileData.email || 'No email available'}</p>

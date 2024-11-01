@@ -7,6 +7,7 @@ import Signout from './Signout';
 import { db } from './Firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import styles from '../styles/HamburgerMenu.module.css';
+import dummyPic from "./dummyPic.jpeg";
 
 function Header() {
     const { user } = useContext(UserContext);
@@ -15,6 +16,20 @@ function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null); // Create a ref for the menu
     const hamburgerRef = useRef(null); // Create a ref for the hamburger button
+    const [profilePic, setProfilePic] = useState(dummyPic); // Initialize with dummyPic
+
+    // Check and set profile picture
+    useEffect(() => {
+        if (user?.profilePicUrl) {
+            const img = new Image();
+            img.src = user.profilePicUrl;
+
+            // On successful load, set profile picture to user's URL
+            img.onload = () => setProfilePic(user.profilePicUrl);
+            // On error, fall back to dummyPic
+            img.onerror = () => setProfilePic(dummyPic);
+        }
+    }, [user?.profilePicUrl]);
 
     const toggleMenu = () => {
         setMenuOpen((prev) => !prev); // Toggle the menu open state
@@ -78,15 +93,14 @@ function Header() {
     // Handle click outside the menu
     useEffect(() => {
         const handleClickOutside = (event) => {
-            // Check if the menu is open, if clicked target is not within the menu, and not the hamburger button
             if (
                 menuOpen &&
                 menuRef.current &&
                 !menuRef.current.contains(event.target) &&
                 hamburgerRef.current &&
-                hamburgerRef.current !== event.target // Check if the clicked target is not the hamburger button
+                !hamburgerRef.current.contains(event.target) // Corrected check for outside clicks
             ) {
-                closeMenu(); // Close the menu if clicked outside and not the hamburger button
+                closeMenu();
             }
         };
 
@@ -125,7 +139,7 @@ function Header() {
                 </div>                
                 {user ? (
                     <div className={styles.hamburgerContainer}>
-                        <button red={hamburgerRef} onClick={toggleMenu} className={styles.hamburgerButton}>☰</button>
+                        <button ref={hamburgerRef} onClick={toggleMenu} className={styles.hamburgerButton}><img src={profilePic}></img></button>
                         <div ref={menuRef} className={`${styles.menuContent} ${menuOpen ? styles.active : ''}`}>
                             <Link to="/account" className={styles.menuLink} onClick={closeMenu}>{user.displayName}</Link>
                             <Signout className={styles.menuLink} closeMenu={closeMenu} /> {/* Close menu after signout */}                            
