@@ -21,6 +21,7 @@ import Support from './assets/Support';
 import Ticket from './assets/Ticket';
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/ForgotPassword';
+import UserPage from './assets/UserPage';
 
 function App() {
   // Manages posts and replies
@@ -35,6 +36,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/:userId" element={<Profile />} />
           <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
           <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
           <Route path="/create-post" element={<CreatePost />} />
@@ -46,6 +48,7 @@ function App() {
           <Route path="/ticket" element={<Ticket />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/recover" element={<ForgotPassword />} />
+          <Route path="/user/:username" element={<UserPage />} />
         </Routes>
         <Footer />
       </Router>

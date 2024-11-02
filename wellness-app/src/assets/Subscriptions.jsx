@@ -1,5 +1,3 @@
-import { useLocation } from "react-router-dom";
-
 function Subscriptions(){
 
     const subscriptions = [

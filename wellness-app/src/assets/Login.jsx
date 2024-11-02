@@ -12,7 +12,6 @@ function Login() {
     const navigate = useNavigate();
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
-    const [error, setError] = React.useState(null);
     const {setUser} = useContext(UserContext);
 
     const handleEmailChange = (e) => {
@@ -25,7 +24,6 @@ function Login() {
 
     const handleSubmit = async(e) => {
         e.preventDefault();
-        setError(null);
 
         try {
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -38,7 +36,6 @@ function Login() {
           const errorCode = error.code;
           const errorMessage = error.message;
           console.error(errorCode, errorMessage);
-          setError(errorMessage);
         }
     };
 
@@ -51,7 +48,7 @@ function Login() {
                         <div className="input-box">
                             <input
                                 type="text"
-                                placeholder="Username"
+                                placeholder="Email"
                                 required
                                 value={email}
                                 onChange={handleEmailChange}

@@ -53,3 +53,10 @@
     background-color: var(--menu-item-hover-bg, #ececec);
     cursor: pointer; /* Change cursor to pointer on hover */
 }
+
+.hamburgerButton img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%; /* Makes the image circular */
+    object-fit: cover; /* Ensures the image scales without distortion */
+}

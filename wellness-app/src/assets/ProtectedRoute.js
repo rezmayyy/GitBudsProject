@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { auth, db } from './Firebase'; // Adjust the path as necessary
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -13,7 +13,7 @@ const ProtectedRoute = ({ element: Component }) => {
       if (user) {
         const userRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userRef);
-        if (userDoc.exists() && userDoc.data().role === 'moderator' || userDoc.exists() && userDoc.data().role === 'admin') {
+        if ((userDoc.exists() && userDoc.data().role === 'moderator') || (userDoc.exists() && userDoc.data().role === 'admin')) {
           setIsModerator(true);
         }
       }
