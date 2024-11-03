@@ -90,6 +90,7 @@ function CreatePost() {
         const newVideoPost = {
             title: videoTitle,
             description: videoDescription,
+            author: user.name || user.email,
             timestamp: Timestamp.now()
         };
 
@@ -135,6 +136,7 @@ function CreatePost() {
         const newAudioPost = {
             title: audioTitle,
             description: audioDescription,
+            author: user.name || user.email,
             timestamp: Timestamp.now()
         };
 
