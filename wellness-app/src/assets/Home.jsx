@@ -2,6 +2,7 @@ import React from 'react';
 import Subscriptions from './Subscriptions';
 import DiscussionBoard from './DiscussionBoard';
 import RecentVideos from './RecentVideos';
+import GigiVideos from './GigiVideos';
 
 function Home() {
     return (
@@ -12,6 +13,10 @@ function Home() {
 
       <div id="recent-videos">
         <RecentVideos />
+      </div>
+
+      <div id ="gigi-videos">
+        <GigiVideos />
       </div>
 
       <div id="discussion-board">
