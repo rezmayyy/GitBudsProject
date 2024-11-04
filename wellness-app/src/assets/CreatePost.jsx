@@ -91,6 +91,7 @@ function CreatePost() {
             title: videoTitle,
             description: videoDescription,
             author: user.name || user.email,
+            userID: user.uid,
             timestamp: Timestamp.now()
         };
 
@@ -137,6 +138,7 @@ function CreatePost() {
             title: audioTitle,
             description: audioDescription,
             author: user.name || user.email,
+            userID: user.uid,
             timestamp: Timestamp.now()
         };
 
@@ -189,6 +191,7 @@ function CreatePost() {
             title: articleTitle,
             body: articleBody,
             author: user.name || user.email,
+            userID: user.uid,
             timestamp: Timestamp.now()
         };
 

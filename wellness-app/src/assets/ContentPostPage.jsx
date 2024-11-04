@@ -24,7 +24,7 @@ const ContentPostPage = () => {
         };
 
         fetchPost();
-    }, [postId]);
+    }, [postId]); 
 
     if (loading) {
         return <div>Loading...</div>;
