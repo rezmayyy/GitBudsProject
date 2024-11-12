@@ -2,14 +2,16 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import UserContext from './UserContext';
 import { db, storage } from './Firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp, deleteDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../styles/profile.css';
+import styles from '../styles/UserPage.module.css';
 import dummyPic from "./dummyPic.jpeg";
 
 const Profile = () => {
   const { user } = useContext(UserContext);
-  const { userId } = useParams(); 
+  const { userId } = useParams();
+  const [activeTab, setActiveTab] = useState('about');
   const [profileData, setProfileData] = useState({
     email: '',
     displayName: '',
@@ -21,7 +23,13 @@ const Profile = () => {
   const [tempProfileData, setTempProfileData] = useState(profileData);
   const [profilePicFile, setProfilePicFile] = useState(null);
   const [message, setMessage] = useState('');
-
+  const [postFilter, setPostFilter] = useState('all');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+  };
+  const handleFilterChange = (filter) => setPostFilter(filter);
   const isCurrentUser = userId === user?.uid || !userId; 
 
   // Fetch profile data based on userId 
@@ -37,7 +45,15 @@ const Profile = () => {
         }
       }
     };
+    const checkSubscription = async () => {
+      if (user && userId) {
+        const subscriptionRef = doc(db, `users/${user.uid}/subscriptions`, userId);
+        const docSnap = await getDoc(subscriptionRef);
+        setIsSubscribed(docSnap.exists());
+      }
+    };
     fetchProfile();
+    checkSubscription();
   }, [userId, user]);
 
   const handleChange = (e) => {
@@ -79,6 +95,34 @@ const Profile = () => {
     setTempProfileData(profileData);
     setEditMode(false);
   };
+  const handleSubscribe = async () => {
+    try {
+      if (isSubscribed) {
+        // Unsubscribe logic
+        await deleteDoc(doc(db, `users/${user.uid}/subscriptions`, userId));
+        await deleteDoc(doc(db, `users/${userId}/subscribers`, user.uid));
+        setIsSubscribed(false);
+      } else {
+        // Your existing subscribe logic
+        await setDoc(doc(db, `users/${user.uid}/subscriptions`, userId),
+          {
+            userID: userId,
+            timestamp: Timestamp.now()
+          }
+        );
+        await setDoc(doc(db, `users/${userId}/subscribers`, user.uid),
+          {
+            userID: user.uid,
+            timestamp: Timestamp.now()
+          }
+        );
+        setIsSubscribed(true);
+      }
+    } catch (error) {
+      console.error('Error managing subscription:', error);
+    }
+  };
+  
 
   return (
     <div className="profile-page">
@@ -89,9 +133,49 @@ const Profile = () => {
           <img src={dummyPic} alt="Profile" className="profile-pic" />
         )}
         <h2>{profileData.displayName || 'User Profile'}</h2>
-        <p className="profile-email">{profileData.email || 'No email available'}</p>
+
+        {!isCurrentUser && user ? (
+           <button 
+           className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} 
+           onClick={handleSubscribe}
+         >
+           {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+         </button>
+        ) : !isCurrentUser && (
+          <p className="login-message">Please log in to subscribe</p>
+        )}
       </div>
-      <div className="profile-info">
+
+      <div className={styles.navLinks}>
+                <button onClick={() => handleTabClick('posts')} className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}>Posts</button>
+                <button onClick={() => handleTabClick('about')} className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}>About</button>
+                <button onClick={() => handleTabClick('contact')} className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}>Contact</button>
+            </div>
+            <div className={styles.contentArea}>
+                {activeTab === 'posts' && (
+                    <div>
+                        <div className={styles.dropdown}>
+                            <label>Filter by:</label>
+                            <select
+                                className={styles.dropdownSelect}
+                                value={postFilter}
+                                onChange={(e) => handleFilterChange(e.target.value)}
+                            >
+                                <option value="all">All</option>
+                                <option value="video">Video</option>
+                                <option value="audio">Audio</option>
+                                <option value="text">Text</option>
+                            </select>
+                        </div>
+                        <div className={styles.postsContainer}>
+                            <p>Displaying {postFilter} posts for {profileData.displayName}...</p>
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'about' && (
+                    <div className={styles.aboutSection}>
+                             <div className="profile-info">
         {editMode && isCurrentUser ? (
           <>
             <label>
@@ -140,6 +224,19 @@ const Profile = () => {
           </>
         )}
       </div>
+                    </div>
+                )}
+
+                {activeTab === 'contact' && (
+                    <div className={styles.contactSection}>
+                        <h3>Contact {profileData.displayName}</h3>
+                        <p className="profile-email">{profileData.email || 'No email available'}</p>
+                    </div>
+                )}
+
+                
+            </div>
+
       {message && <p className="message">{message}</p>}
     </div>
   );

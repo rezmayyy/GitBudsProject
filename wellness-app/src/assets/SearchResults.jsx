@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../styles/SearchPage.module.css';
+import UserContext from './UserContext';
 
 function SearchResults() {
     // State to manage dropdown visibility
     const [activeDropdown, setActiveDropdown] = useState(null);
+    const {user} = useContext(UserContext)
     const username = "user1"; // This is a placeholder and can be dynamically set later
 
     // Toggle dropdown based on clicked button
