@@ -15,7 +15,7 @@ function Home() {
         <RecentVideos />
       </div>
 
-      <div id ="gigi-videos">
+      <div id ="gigiVideos">
         <GigiVideos />
       </div>
 

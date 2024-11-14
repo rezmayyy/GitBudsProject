@@ -77,14 +77,6 @@
     margin-bottom: 20px;
 }
 
-/* About and Contact Sections */
-.aboutSection,
-.contactSection {
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
 /* Shop section */
 .shopSection {
     padding: 20px;
@@ -115,4 +107,20 @@
 
 .productPrice {
     color: green;
+}
+
+/* About, Contact, Report, and ModView Sections */
+.aboutSection,
+.contactSection,
+.reportSection,
+.modSection {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Links */
+.link {
+    color: #0056b3; /* Blue color for links */
+    text-decoration: none; /* Remove underline */
 }

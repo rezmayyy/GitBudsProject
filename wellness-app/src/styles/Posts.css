@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
 
-.recent-videos {
+.post {
     margin-top: 20px;
     font-family: 'Poppins', sans-serif;
 }
 
-.videos-list {
+.post-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px; 
@@ -16,14 +16,14 @@
     border-radius: 10px;
 }
 
-.video-item {
+.post-item {
     width: calc(50% - 10px);
     background-color: white;
     border-radius: 10px;
     padding-left: 10px;
 }
 
-.video-item h3 {
+.post-item h3 {
     margin: 5px 0;
     font-size: 1em;
     font-weight: 400; /* Thinner font */
@@ -31,7 +31,7 @@
     text-decoration: underline;
 }
 
-.video-item video {
+.post-item post {
     width: 50%; 
     height: 200px; 
     max-height: 240px; 
@@ -39,7 +39,7 @@
 }
 
 @media (max-width: 900px) {
-    .video-item {
-        width: calc(100% - 20px); /* Stack videos vertically on smaller screens */
+    .post-item {
+        width: calc(100% - 20px); /* Stack posts vertically on smaller screens */
     }
 }

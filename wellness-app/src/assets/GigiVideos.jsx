@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from './Firebase';
-import '../styles/GigiVideos.css';
+import '../styles/Videos.css';
 
 function GigiVideos() {
     const [GigiVideos, setGigiVideos] = useState([]);
@@ -11,9 +11,9 @@ function GigiVideos() {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'video'), 
-                where('author', '==', 'DrGigi@SerendipityInnovation.com'),
+                where('author', '==', 'Dr. Gigi'),
                 orderBy('timestamp', 'desc'),
-                limit(4)
+                limit(5)
             );
 
             const querySnapshot = await getDocs(q);
@@ -32,9 +32,9 @@ function GigiVideos() {
     }, []);
 
     return (
-        <div className="gigi-videos">
+        <div className="gigiVideos">
             <h2>Videos from our CEO</h2>
-            <div className="videos-list">
+            <div className="video-list">
                 {GigiVideos.length > 0 ? (
                     GigiVideos.map(video => (
                         <div key={video.id} className="video-item">
