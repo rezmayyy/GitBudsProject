@@ -6,8 +6,7 @@ import UserContext from './UserContext';
 import Signout from './Signout';
 import { db } from './Firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import styles from '../styles/HamburgerMenu.module.css';
-import dummyPic from "./dummyPic.jpeg";
+import dummyPic from './dummyPic.jpeg';
 
 function Header() {
     const { user } = useContext(UserContext);
@@ -98,7 +97,7 @@ function Header() {
                 menuRef.current &&
                 !menuRef.current.contains(event.target) &&
                 hamburgerRef.current &&
-                !hamburgerRef.current.contains(event.target) // Corrected check for outside clicks
+                !hamburgerRef.current.contains(event.target)
             ) {
                 closeMenu();
             }
@@ -114,7 +113,9 @@ function Header() {
     return (
         <header>
             <div className="brand-container">
-                <Link to="/"><img src={logo} alt="TribeWell Logo" className="logo" /></Link>                
+                <Link to="/">
+                    <img src={logo} alt="TribeWell Logo" className="logo" />
+                </Link>
                 <h1>TribeWell</h1>
             </div>
             <nav>
@@ -136,24 +137,49 @@ function Header() {
                         <li><Link to="/discussion">Discussion Board</Link></li>
                         <li><Link to="/create-post">Create</Link></li>
                     </ul>
-                </div>                
-                {user ? (
-                    <div className={styles.hamburgerContainer}>
-                        <button ref={hamburgerRef} onClick={toggleMenu} className={styles.hamburgerButton}><img src={profilePic}></img></button>
-                        <div ref={menuRef} className={`${styles.menuContent} ${menuOpen ? styles.active : ''}`}>
-                            <Link to="/account" className={styles.menuLink} onClick={closeMenu}>{user.displayName}</Link>
-                            <Signout className={styles.menuLink} closeMenu={closeMenu} /> {/* Close menu after signout */}                            
-                            <button className={styles.menuLink} onClick={() => { handleUserDocument(); closeMenu(); }}>Create/Update User Document</button>
-                            <button className={styles.menuLink} onClick={() => { setUserRole('admin'); closeMenu(); }}>Set as Admin</button>
-                            <button className={styles.menuLink} onClick={() => { setUserRole('normal'); closeMenu(); }}>Set as Normal</button>
+                </div>
+                <div className="auth-buttons">
+                    {!user ? (
+                        <>
+                            <Link to="/login" className="auth-button">Log In</Link>
+                            <Link to="/signup" className="auth-button">Sign Up</Link>
+                        </>
+                    ) : (
+                        <Signout />
+                    )}
+                </div>
+                <div className="hamburger-container">
+                    <button ref={hamburgerRef} onClick={toggleMenu} className="hamburger-button">
+                        {user ? <img src={profilePic} alt="Profile" /> : '☰'}
+                    </button>
+                    <div ref={menuRef} className={`menu-content ${menuOpen ? 'active' : ''}`}>
+                        <ul className="hamburger-nav-links">
+                            <li><Link to="/">Home</Link></li>
+                            <li><Link to="/explore">Explore</Link></li>
+                            <li><Link to="/learn">Learn</Link></li>
+                            <li><Link to="/blogs">Blogs</Link></li>
+                            <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
+                            <li><Link to="/discussion">Discussion Board</Link></li>
+                            <li><Link to="/create-post">Create</Link></li>
+                        </ul>
+                        <div className="hamburger-auth-buttons">
+                            {user ? (
+                                <>
+                                    <Link to="/account" className="menu-link" onClick={closeMenu}>{user.displayName}</Link>
+                                    <Signout className="menu-link" closeMenu={closeMenu} />
+                                    <button className="menu-link" onClick={() => { handleUserDocument(); closeMenu(); }}>Create/Update User Document</button>
+                                    <button className="menu-link" onClick={() => { setUserRole('admin'); closeMenu(); }}>Set as Admin</button>
+                                    <button className="menu-link" onClick={() => { setUserRole('normal'); closeMenu(); }}>Set as Normal</button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link to="/login" className="menu-link" onClick={closeMenu}>Log In</Link>
+                                    <Link to="/signup" className="menu-link" onClick={closeMenu}>Sign Up</Link>
+                                </>
+                            )}
                         </div>
                     </div>
-                ) : (
-                    <ul className='auth-links'>
-                        <li><Link to="/login">Log In</Link></li>
-                        <li><Link to="/signup">Sign Up</Link></li>
-                    </ul>
-                )}
+                </div>
             </nav>
         </header>
     );
