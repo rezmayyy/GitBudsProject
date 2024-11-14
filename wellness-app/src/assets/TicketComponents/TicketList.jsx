@@ -74,17 +74,23 @@ function TicketList() {
         return ticket.userId === user.uid;
     })
     .sort((a, b) => {
-        // Define priority for status sorting
-        const statusPriority = { 'assigned': 1, 'pending': 2, 'closed': 3 };
-        const statusOrder = statusPriority[a.status] - statusPriority[b.status];
+        // Category priority: Premium > VIP > normal
+        const categoryPriority = { 'Premium': 1, 'VIP': 2, 'normal': 3 };
+        const categoryOrder = categoryPriority[a.category || 'normal'] - categoryPriority[b.category || 'normal'];
         
-        // If statuses are the same, sort by createdAt (newest first)
-        if (statusOrder === 0) {
-            return b.createdAt - a.createdAt;
+        // If categories are the same, sort by status and then createdAt (newest first)
+        if (categoryOrder === 0) {
+            const statusPriority = { 'assigned': 1, 'pending': 2, 'closed': 3 };
+            const statusOrder = statusPriority[a.status] - statusPriority[b.status];
+            if (statusOrder === 0) {
+                return b.createdAt - a.createdAt;
+            }
+            return statusOrder;
         }
         
-        return statusOrder;
+        return categoryOrder;
     });
+
 
     // Calculate the tickets to display based on pagination
     const indexOfLastTicket = currentPage * ticketsPerPage;
