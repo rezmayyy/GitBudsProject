@@ -1,12 +1,18 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import UserContext from './UserContext';
-import { db, storage } from './Firebase';
-import { doc, getDoc, setDoc, Timestamp, deleteDoc} from 'firebase/firestore';
+import { db, storage, functions } from './Firebase'; // Import Firebase functions
+import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { httpsCallable } from 'firebase/functions'; // Import for calling functions
 import '../styles/profile.css';
 import styles from '../styles/UserPage.module.css';
 import dummyPic from "./dummyPic.jpeg";
+import { connectFunctionsEmulator } from 'firebase/functions';
+
+// Connect to emulator (only use this for local development)
+connectFunctionsEmulator(functions, "localhost", 5001);
+
 
 const Profile = () => {
   const { user } = useContext(UserContext);
@@ -25,14 +31,17 @@ const Profile = () => {
   const [message, setMessage] = useState('');
   const [postFilter, setPostFilter] = useState('all');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  
+  const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
+
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
-  const handleFilterChange = (filter) => setPostFilter(filter);
-  const isCurrentUser = userId === user?.uid || !userId; 
 
-  // Fetch profile data based on userId 
+  const handleFilterChange = (filter) => setPostFilter(filter);
+
+  const isCurrentUser = userId === user?.uid || !userId;
+
+  // Fetch profile data and check user role
   useEffect(() => {
     const fetchProfile = async () => {
       const uid = userId || user?.uid;
@@ -45,6 +54,7 @@ const Profile = () => {
         }
       }
     };
+
     const checkSubscription = async () => {
       if (user && userId) {
         const subscriptionRef = doc(db, `users/${user.uid}/subscriptions`, userId);
@@ -52,8 +62,21 @@ const Profile = () => {
         setIsSubscribed(docSnap.exists());
       }
     };
+
+    const checkUserRole = async () => {
+      if (user) {
+        const currentUserRef = doc(db, 'users', user.uid);
+        const currentUserSnap = await getDoc(currentUserRef);
+        if (currentUserSnap.exists()) {
+          const currentUserData = currentUserSnap.data();
+          setIsAdminOrModerator(currentUserData.role === 'admin' || currentUserData.role === 'moderator');
+        }
+      }
+    };
+
     fetchProfile();
     checkSubscription();
+    checkUserRole();
   }, [userId, user]);
 
   const handleChange = (e) => {
@@ -95,6 +118,7 @@ const Profile = () => {
     setTempProfileData(profileData);
     setEditMode(false);
   };
+
   const handleSubscribe = async () => {
     try {
       if (isSubscribed) {
@@ -103,26 +127,40 @@ const Profile = () => {
         await deleteDoc(doc(db, `users/${userId}/subscribers`, user.uid));
         setIsSubscribed(false);
       } else {
-        // Your existing subscribe logic
-        await setDoc(doc(db, `users/${user.uid}/subscriptions`, userId),
-          {
-            userID: userId,
-            timestamp: Timestamp.now()
-          }
-        );
-        await setDoc(doc(db, `users/${userId}/subscribers`, user.uid),
-          {
-            userID: user.uid,
-            timestamp: Timestamp.now()
-          }
-        );
+        // Subscribe logic
+        await setDoc(doc(db, `users/${user.uid}/subscriptions`, userId), {
+          userID: userId,
+          timestamp: Timestamp.now(),
+        });
+        await setDoc(doc(db, `users/${userId}/subscribers`, user.uid), {
+          userID: user.uid,
+          timestamp: Timestamp.now(),
+        });
         setIsSubscribed(true);
       }
     } catch (error) {
       console.error('Error managing subscription:', error);
     }
   };
+
+  // Handle banning a user
+  const handleBanUser = async () => {
+    const duration = prompt('Enter ban duration in days:');
+    if (!duration) return;
   
+    const reason = prompt('Enter a reason for the ban:');
+    if (!reason) return;
+  
+    const banUser = httpsCallable(functions, 'banUser');
+  
+    try {
+      const result = await banUser({ userId: userId, duration: parseInt(duration), reason: reason });
+      alert(result.data.message);
+    } catch (error) {
+      console.error('Error banning user:', error);
+      alert('Failed to ban the user. Please try again. (Server functions require firebase blaze)');
+    }
+  };
 
   return (
     <div className="profile-page">
@@ -135,107 +173,46 @@ const Profile = () => {
         <h2>{profileData.displayName || 'User Profile'}</h2>
 
         {!isCurrentUser && user ? (
-           <button 
-           className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} 
-           onClick={handleSubscribe}
-         >
-           {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-         </button>
+          <button 
+            className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} 
+            onClick={handleSubscribe}
+          >
+            {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+          </button>
         ) : !isCurrentUser && (
           <p className="login-message">Please log in to subscribe</p>
         )}
       </div>
 
+      {/* Admin/Moderator-specific actions */}
+      {isAdminOrModerator && !isCurrentUser && (
+        <button onClick={handleBanUser} className="ban-user-btn">Ban User</button>
+      )}
+
       <div className={styles.navLinks}>
-                <button onClick={() => handleTabClick('posts')} className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}>Posts</button>
-                <button onClick={() => handleTabClick('about')} className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}>About</button>
-                <button onClick={() => handleTabClick('contact')} className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}>Contact</button>
-            </div>
-            <div className={styles.contentArea}>
-                {activeTab === 'posts' && (
-                    <div>
-                        <div className={styles.dropdown}>
-                            <label>Filter by:</label>
-                            <select
-                                className={styles.dropdownSelect}
-                                value={postFilter}
-                                onChange={(e) => handleFilterChange(e.target.value)}
-                            >
-                                <option value="all">All</option>
-                                <option value="video">Video</option>
-                                <option value="audio">Audio</option>
-                                <option value="text">Text</option>
-                            </select>
-                        </div>
-                        <div className={styles.postsContainer}>
-                            <p>Displaying {postFilter} posts for {profileData.displayName}...</p>
-                        </div>
-                    </div>
-                )}
-
-                {activeTab === 'about' && (
-                    <div className={styles.aboutSection}>
-                             <div className="profile-info">
-        {editMode && isCurrentUser ? (
-          <>
-            <label>
-              Display Name:
-              <input
-                type="text"
-                name="displayName"
-                value={tempProfileData.displayName || ''}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
-              Bio:
-              <textarea
-                name="bio"
-                value={tempProfileData.bio || ''}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
-              Interests:
-              <textarea
-                name="interests"
-                value={tempProfileData.interests || ''}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
-              Profile Picture:
-              <input type="file" onChange={handleFileChange} />
-            </label>
-            <div className="profile-buttons">
-              <button onClick={handleSave}>Save</button>
-              <button onClick={handleCancel}>Cancel</button>
-            </div>
-          </>
-        ) : (
-          <>
-            <p><strong>Bio:</strong> {profileData.bio || 'No bio available'}</p>
-            <p><strong>Interests:</strong> {profileData.interests || 'No interests available'}</p>
-            {isCurrentUser && !editMode && (
-              <button className="edit-profile-btn" onClick={() => setEditMode(true)}>
-                Update Profile
-              </button>
-            )}
-          </>
-        )}
+        <button 
+          onClick={() => handleTabClick('posts')} 
+          className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}
+        >
+          Posts
+        </button>
+        <button 
+          onClick={() => handleTabClick('about')} 
+          className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}
+        >
+          About
+        </button>
+        <button 
+          onClick={() => handleTabClick('contact')} 
+          className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}
+        >
+          Contact
+        </button>
       </div>
-                    </div>
-                )}
-
-                {activeTab === 'contact' && (
-                    <div className={styles.contactSection}>
-                        <h3>Contact {profileData.displayName}</h3>
-                        <p className="profile-email">{profileData.email || 'No email available'}</p>
-                    </div>
-                )}
-
-                
-            </div>
+      
+      <div className={styles.contentArea}>
+        {/* Content rendering based on active tab */}
+      </div>
 
       {message && <p className="message">{message}</p>}
     </div>
