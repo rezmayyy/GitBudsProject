@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/login.css";
 import "../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
-import { auth} from "../assets/Firebase";
+import { auth} from "./Firebase";
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
 import { getFirestore, setDoc, doc } from 'firebase/firestore'; // Import Firestore functions
 import UserContext from "./UserContext";

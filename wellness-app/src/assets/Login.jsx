@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom"; // Keep only one import st
 import "../styles/login.css";
 import "../styles/guide.css";
 import { FaUser, FaLock } from "react-icons/fa";
-import {auth} from "../assets/Firebase";
+import {auth} from "./Firebase";
 import {signInWithEmailAndPassword} from 'firebase/auth'
 import UserContext from "./UserContext";
 
