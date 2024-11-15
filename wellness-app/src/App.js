@@ -10,8 +10,9 @@ import Login from './assets/Login';
 import Signup from './assets/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile';
-import Account from './assets/Account';
+import AccountSettings from './assets/AccountSettings/AccountSettings';
 import TOS from './assets/TOS';
+import PrivacyPolicy from './assets.PrivacyPolicy';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
@@ -40,8 +41,9 @@ function App() {
           <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
           <Route path="/create-post" element={<CreatePost />} />
           <Route path="/content/:postId" element={<ContentPostPage/> }/>
-          <Route path="/account" element={<Account />} />
+          <Route path="/accountsettings" element={<AccountSettings />} />
           <Route path="/tos" element={<TOS />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
           <Route path="/support" element={<Support />} />
           <Route path="/ticket" element={<Ticket />} />

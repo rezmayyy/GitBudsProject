@@ -126,3 +126,19 @@ exports.handleUserSignup = async (user) => {
     console.error("Error adding user to Firestore:", error);
   }
 };
+
+exports.reportUser = async (user) => {
+  const { userId, reason } = data;
+  try {
+      // Create a new document in the reports sub-collection with the details
+      await db.collection('users').doc(userId).collection('reports').add({
+        reason: reason,
+        reportedBy: context.token.uid, // Store the UID of the user who reported
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      }); 
+      return { message: `User has been reported. Reason: ${reason}` };
+    } catch (error) {
+      console.error('Error reporting user:', error);
+      throw new functions.https.HttpsError('internal', 'Failed to report user.');
+    };
+};

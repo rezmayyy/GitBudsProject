@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { db } from './Firebase';
+import { db } from '../Firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import UserContext from './UserContext'; // Import UserContext
+import UserContext from '../UserContext'; // Import UserContext
 import styles from '../styles/CreateTicket.module.css'; // Import CSS module
 
 function CreateTicket() {
