@@ -22,6 +22,7 @@ import Support from './assets/Support';
 import Ticket from './assets/Ticket';
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/ForgotPassword';
+import Account from './assets/Account';
 
 function App() {
   // Manages posts and replies
@@ -49,6 +50,7 @@ function App() {
           <Route path="/ticket" element={<Ticket />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/recover" element={<ForgotPassword />} />
+          <Route path="/account" element={<Account />} />
         </Routes>
         <Footer />
       </Router>

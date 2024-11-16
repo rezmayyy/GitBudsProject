@@ -13,9 +13,9 @@ function ForgotPassword() {
 
         try {
             await sendPasswordResetEmail(auth, email);
-            setMessage('Password reset link sent! Check your email.');
+            setMessage('Password reset link sent. Check your email.');
         } catch (error) {
-            console.error("Error sending password reset email:", error);
+            console.error("Error sending password reset email: ", error);
         }
     };
 
@@ -27,7 +27,7 @@ function ForgotPassword() {
                 <form onSubmit={handlePasswordReset}>
                     <input
                         type="email"
-                        placeholder="Enter your email"
+                        placeholder="Email"
                         className={styles.inputField}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}

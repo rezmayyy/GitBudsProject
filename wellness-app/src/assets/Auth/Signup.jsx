@@ -101,22 +101,22 @@ function Signup() {
                         <div className="input-box">
                             <input
                                 type="password"
-                                placeholder="Re-enter password"
+                                placeholder="Confirm Password"
                                 required
                             />
                             <FaLock className="icon" />
                         </div>
 
-                        <div className="remember-forgot">
+                        <div className="tos-agree">
                             <label>
                                 <input type="checkbox" required />
-                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms & conditions</Link>
+                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>.
                             </label>
                         </div>
 
                         <button type="submit">Sign Up</button>
 
-                        <div className="register-link">
+                        <div className="login-link">
                             <p>
                                 Already have an account? 
                                 <Link to="/login"> Login</Link>

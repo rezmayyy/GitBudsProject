@@ -1,7 +1,7 @@
 /* Profile Page Container */
-.profile-page {
-    max-width: 700px; 
-    width: 80%; 
+.profilePage {
+    max-width: 700px;
+    width: 80%;
     margin: 3em auto;
     padding: 2.5em;
     background: #ffffff;
@@ -9,76 +9,96 @@
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
     font-family: Arial, sans-serif;
     color: #333;
-  }
-  
-  /* Header Section */
-  .profile-header {
+}
+
+/* Profile Banner */
+.profileBanner {
+    height: 250px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 20px;
+    /* Add margin to separate it from navigation */
+}
+
+/* Header Section */
+.profileHeader {
     text-align: center;
     margin-bottom: 1.5em;
-  }
-  
-  .profile-header h2 {
+}
+
+.profileHeader h2 {
     font-size: 2em;
     margin: 0.5em 0;
     color: #222;
-  }
-  
-  .profile-header .profile-email {
+}
+
+.profileHeader .profile-email {
     font-size: 0.9em;
     color: #555;
-  }
-  
-  /* Profile Picture */
-  .profile-pic {
-    width: 150px; 
-    height: 150px;
+}
+
+/* Profile Picture */
+.profileImageWrapper {
+    position: absolute;
+    bottom: -30px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    background-color: white; /* Optional: to make the profile image stand out */
+}
+
+.profileImage {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid #e2e8f0;
-    margin-bottom: 1em;
-  }
-  
-  /* Profile Info Section */
-  .profile-info {
+}
+
+/* Profile Info Section */
+.profileInfo {
     display: flex;
     flex-direction: column;
     gap: 1.2em;
-  }
-  
-  .profile-info p {
+}
+
+.profileInfo p {
     font-size: 1.1rem;
     color: #555;
-  }
-  
-  .profile-info label {
+}
+
+.profileInfo label {
     font-weight: 600;
     color: #222;
-  }
-  
-  .profile-info input,
-  .profile-info textarea {
+}
+
+.profileInfo input,
+.profileInfo textarea {
     width: 100%;
     padding: 0.8em;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     background-color: #f9fafb;
     transition: border-color 0.3s ease;
-  }
-  
-  .profile-info input:focus,
-  .profile-info textarea:focus {
+}
+
+.profileInfo input:focus,
+.profileInfo textarea:focus {
     border-color: #3b82f6;
     outline: none;
-  }
-  
-  /* Buttons Section */
-  .profile-buttons {
+}
+
+/* Buttons Section */
+.profileButton {
     display: flex;
     gap: 1em;
     margin-top: 1.5em;
-  }
-  
-  .profile-buttons button {
+}
+
+.profile-button button {
     flex: 1;
     padding: 0.8em 1.5em;
     font-size: 1rem;
@@ -88,26 +108,26 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     border: none;
-  }
-  
-  .profile-buttons button:first-child {
+}
+
+.profile-button button:first-child {
     background-color: #34d399;
-  }
-  
-  .profile-buttons button:first-child:hover {
+}
+
+.profile-button button:first-child:hover {
     background-color: #10b981;
-  }
-  
-  .profile-buttons button:last-child {
+}
+
+.profile-button button:last-child {
     background-color: #ef4444;
-  }
-  
-  .profile-buttons button:last-child:hover {
+}
+
+.profile-button button:last-child:hover {
     background-color: #dc2626;
-  }
-  
-  /* Edit Profile Button */
-  .edit-profile-btn {
+}
+
+/* Edit Profile Button */
+.editProfileBtn {
     padding: 0.7em 1.2em;
     font-size: 1rem;
     color: white;
@@ -117,17 +137,114 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     margin-top: 1em;
-  }
-  
-  .edit-profile-btn:hover {
+}
+
+.editProfileBtn:hover {
     background-color: #2563eb;
-  }
-  
-  /* Success Message */
-  .message {
+}
+
+/* Success Message */
+.message {
     text-align: center;
     margin-top: 1em;
     font-size: 1rem;
     color: #10b981;
     font-weight: 500;
-  }
+}
+
+/* Navigation Links */
+.navLinks {
+    margin-top: 80px;
+    /* Adjust to give space under the profile image */
+    display: flex;
+    justify-content: center;
+}
+
+.navButton {
+    background-color: transparent;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007bff;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.3s;
+}
+
+.navButton:hover,
+.active {
+    border-color: #007bff;
+}
+
+/* Content Area */
+.contentArea {
+    padding: 20px;
+}
+
+/* Posts Filter Dropdown */
+.dropdown {
+    margin-bottom: 20px;
+}
+
+.dropdownSelect {
+    padding: 5px;
+    font-size: 14px;
+}
+
+/* Posts Placeholder */
+.postsContainer {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+/* Shop section */
+.shopSection {
+    padding: 20px;
+}
+
+.productGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.productCard {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.productImage {
+    width: 100%;
+    height: auto;
+}
+
+.productName {
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.productPrice {
+    color: green;
+}
+
+/* About, Contact, Report, and ModView Sections */
+.aboutSection,
+.contactSection,
+.reportSection,
+.modSection {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+/* Links */
+.link {
+    color: #0056b3;
+    /* Blue color for links */
+    text-decoration: none;
+    /* Remove underline */
+}
