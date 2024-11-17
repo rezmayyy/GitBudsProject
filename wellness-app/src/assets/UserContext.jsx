@@ -41,6 +41,7 @@ export function UserProvider({ children }) {
         }
 
         return () => unsubscribeAuth(); // Clean up the listener
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [db]); // No need for 'user' in the dependency array
 
     if (loading) {

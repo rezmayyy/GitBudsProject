@@ -125,20 +125,29 @@ a:hover {
 .nav-links a:hover {
     text-decoration: underline;
 }
+/* ============================
+   Media Queries for Navigation
+   ============================ */
 
-@media (min-width: 869px) {
+/* Desktop View: 870px and above */
+/* Adjusted by Priya on 11-17-2024 to fix breakpoint behavior */
+/* Ensures that the hamburger menu is hidden and desktop navigation is displayed */
+@media (min-width: 870px) {
     .nav-links {
-        display: flex;
+        display: flex; /* Show desktop navigation links */
     }
     .auth-buttons {
-        display: flex;
+        display: flex; /* Show desktop authentication buttons */
     }
     .hamburger-container {
-        display: none;
+        display: none !important; /* Hide hamburger menu on desktop */
     }
 }
 
-@media (max-width: 868px) {
+/* Mobile View: 869px and below */
+/* Adjusted by Priya on 11-17-24 to fix breakpoint behavior */
+/* Ensures that the hamburger menu is visible and desktop navigation is hidden */
+@media (max-width: 869px) {
     .nav-links,
     .auth-buttons {
         display: none;
@@ -153,6 +162,7 @@ a:hover {
         width: calc(100% - 32px);
     }
 }
+
 
 .hamburger-container {
     position: relative;
