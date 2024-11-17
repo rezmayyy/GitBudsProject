@@ -175,7 +175,9 @@ const Profile = () => {
         <h2>{profileData.displayName || 'User Profile'}</h2>
 
         {/* Button for adding a new diary entry */}
-        <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
+        {isCurrentUser && (
+          <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
+        )}
 
         {!isCurrentUser && user ? (
           <button 
