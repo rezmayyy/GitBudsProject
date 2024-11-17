@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from './UserContext';
 import { db, storage, functions } from './Firebase'; // Import Firebase functions
 import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
@@ -40,6 +40,8 @@ const Profile = () => {
   const handleFilterChange = (filter) => setPostFilter(filter);
 
   const isCurrentUser = userId === user?.uid || !userId;
+
+  const navigate = useNavigate();
 
   // Fetch profile data and check user role
   useEffect(() => {
@@ -171,6 +173,9 @@ const Profile = () => {
           <img src={dummyPic} alt="Profile" className="profile-pic" />
         )}
         <h2>{profileData.displayName || 'User Profile'}</h2>
+
+        {/* Button for adding a new diary entry */}
+        <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
 
         {!isCurrentUser && user ? (
           <button 

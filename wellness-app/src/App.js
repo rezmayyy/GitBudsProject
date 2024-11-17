@@ -22,6 +22,12 @@ import Ticket from './assets/Ticket';
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/ForgotPassword';
 
+import DiaryPage from './assets/DiaryPage/DiaryPage';
+import DiaryEditor from './assets/DiaryPage/DiaryEditor';
+
+
+
+
 function App() {
   // Manages posts and replies
   const [posts, setPosts] = useState([]);
@@ -47,6 +53,13 @@ function App() {
           <Route path="/ticket" element={<Ticket />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/recover" element={<ForgotPassword />} />
+
+
+          <Route path="/profile/diary" element={<DiaryPage /> } />
+          <Route path="/profile/diary/editor" element={<DiaryEditor /> } />
+          
+
+
         </Routes>
         <Footer />
       </Router>
