@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../Firebase';
+import { db } from './Firebase';
 import '../styles/Videos.css';
 
-function UserVideos() {
-    const [UserVideos, setUserVideos] = useState([]);
-    const { username } = useParams(); // Get the dynamic username from the URL
+function GigiVideos() {
+    const [GigiVideos, setGigiVideos] = useState([]);
 
     useEffect(() => {
-        const fetchUserVideos = async () => {
+        const fetchGigiVideos = async () => {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'video'), 
-                where('author', '==', username),
+                where('author', '==', 'Dr. Gigi'), // TODO: Add Gigi's author name here before deployment
                 orderBy('timestamp', 'desc'),
+                limit(5)
             );
 
             const querySnapshot = await getDocs(q);
@@ -26,17 +25,18 @@ function UserVideos() {
                     url: data.fileURL
                 };
             });
-            setUserVideos(videos);
+            setGigiVideos(videos);
         };
 
-        fetchUserVideos();
+        fetchGigiVideos();
     }, []);
 
     return (
-        <div className="userVideos">
+        <div className="gigiVideos">
+            <h2>Videos from our CEO</h2>
             <div className="video-list">
-                {UserVideos.length > 0 ? (
-                    UserVideos.map(video => (
+                {GigiVideos.length > 0 ? (
+                    GigiVideos.map(video => (
                         <div key={video.id} className="video-item">
                             <h3>{video.title}</h3>
                             <video width="320" height="240" controls>
@@ -47,11 +47,11 @@ function UserVideos() {
                         </div>
                     ))
                 ) : (
-                    <p>No videos available.</p>
+                    <p>No videos from our CEO available.</p>
                 )}
             </div>
         </div>
     );
 }
 
-export default UserVideos;
+export default GigiVideos;

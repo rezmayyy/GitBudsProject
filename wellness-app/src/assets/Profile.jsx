@@ -1,8 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
-import UserContext from '../UserContext';
-import { db, storage, functions } from '../Firebase'; // Import Firebase functions
+import UserContext from './UserContext';
+import { db, storage, functions } from './Firebase'; // Import Firebase functions
 import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions'; // Import for calling functions

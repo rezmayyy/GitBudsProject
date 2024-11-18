@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { db } from '../Firebase';
-import UserContext from '../UserContext';
+import { db } from './Firebase';
+import UserContext from './UserContext';
 import { collection, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
 import styles from '../../styles/TicketList.module.css';
 

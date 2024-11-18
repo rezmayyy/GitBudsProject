@@ -1,9 +1,9 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import UserContext from '../UserContext';
-import PostItem from '../PostItem';
+import UserContext from './UserContext';
+import PostItem from './PostItem';
 import { collection, addDoc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../Firebase';
+import { db } from './Firebase';
 
 const DiscussionBoard = ({ preview }) => { 
   const { user } = useContext(UserContext);

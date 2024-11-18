@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../Firebase';
+import { db } from './Firebase';
 import '../styles/Videos.css';
 
-function RecentVideos() {
-    const [recentVideos, setRecentVideos] = useState([]);
+function UserVideos() {
+    const [UserVideos, setUserVideos] = useState([]);
+    const { username } = useParams(); // Get the dynamic username from the URL
 
     useEffect(() => {
-        const fetchRecentVideos = async () => {
+        const fetchUserVideos = async () => {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'video'), 
+                where('author', '==', username),
                 orderBy('timestamp', 'desc'),
-                limit(4)
             );
 
             const querySnapshot = await getDocs(q);
@@ -24,18 +26,17 @@ function RecentVideos() {
                     url: data.fileURL
                 };
             });
-            setRecentVideos(videos);
+            setUserVideos(videos);
         };
 
-        fetchRecentVideos();
+        fetchUserVideos();
     }, []);
 
     return (
-        <div className="recent-videos">
-            <h2>Recent Videos</h2>
+        <div className="userVideos">
             <div className="video-list">
-                {recentVideos.length > 0 ? (
-                    recentVideos.map(video => (
+                {UserVideos.length > 0 ? (
+                    UserVideos.map(video => (
                         <div key={video.id} className="video-item">
                             <h3>{video.title}</h3>
                             <video width="320" height="240" controls>
@@ -46,11 +47,11 @@ function RecentVideos() {
                         </div>
                     ))
                 ) : (
-                    <p>No recent videos available.</p>
+                    <p>No videos available.</p>
                 )}
             </div>
         </div>
     );
 }
 
-export default RecentVideos;
+export default UserVideos;
