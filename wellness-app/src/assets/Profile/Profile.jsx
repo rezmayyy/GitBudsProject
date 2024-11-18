@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
@@ -37,6 +37,7 @@ const Profile = () => {
   const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
   const [message, setMessage] = useState('');
   const isCurrentUser = userId === user?.uid || !userId;
+  const navigate = useNavigate();
 
   // Fetch profile data and check user role
   useEffect(() => {
@@ -204,6 +205,12 @@ const Profile = () => {
 
       <div className={styles.profileHeader}>
         <h2>{profileData.displayName || 'User Profile'}</h2>
+
+        {/* Button for adding a new diary entry */}
+        {isCurrentUser && (
+          <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
+        )}
+
 
         {!isCurrentUser && user ? (
           <button
