@@ -3,15 +3,11 @@ import { useParams } from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import UserContext from './UserContext';
 import { db, storage, functions } from './Firebase'; // Import Firebase functions
-import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import styles from '../styles/profile.css';
+import styles from '../styles/profile.module.css';
 import dummyPic from "./dummyPic.jpeg";
-
-import { connectFunctionsEmulator } from 'firebase/functions';
-
-// Connect to emulator (only use this for local development)
-connectFunctionsEmulator(functions, "localhost", 5001);
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 
 function Account() {
     const { user } = useContext(UserContext);
@@ -20,15 +16,16 @@ function Account() {
         displayName: '',
         profilePictureUrl: '',
         email: '',
-        password: ''
     });
     const [editMode, setEditMode] = useState(false);
     const [reason, setReason] = useState('');
     const [tempProfileData, setTempProfileData] = useState(profileData);
     const [displayName, setDisplayName] = useState('');
     const [profilePictureFile, setProfilePictureFile] = useState('');
-    const [email, setEmail, oldEmail] = useState('');
-    const [password, setPassword, oldPassword, passwordConfirmed] = useState('');
+    const [email, setEmail] = useState('');
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
 
     // Fetch profile data and check user role
@@ -69,60 +66,50 @@ function Account() {
 
     const checkEmail = (e) => {
         const { typed } = e.target.value;
-        if (typed != profileData.email) {
+        if (typed !== profileData.email) {
             setMessage('Current email is incorrect.');
-            // TODO: Grey out & disable submit button.
             return;
         }
-    }
+    };
 
     const checkNewEmail = (e) => {
         const { typed } = e.target.value;
-        if (typed == profileData.email) {
+        if (typed === profileData.email) {
             setMessage('New email is the same as old email.');
-            // TODO: Grey out & disable submit button.
             return;
         }
-    }
-
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
     };
 
-    const checkPassword = (e) => {
-        const { typed } = e.target.value;
-        if (typed != profileData.password) {
+    // Check password validation
+    const checkPassword = () => {
+        if (currentPassword !== profileData.password) {
             setMessage('Current password is incorrect.');
-            // TODO: Grey out & disable submit button.
             return;
         }
-    }
+    };
 
-    const checkNewPassword = (e) => {
-        const { typed } = e.target.value;
-        if (typed == profileData.password) {
+    const checkNewPassword = () => {
+        if (newPassword === profileData.password) {
             setMessage('New password is the same as old password.');
-            // TODO: Grey out & disable submit button.
             return;
         }
-    }
+    };
 
-    const confirmNewPassword = (e) => {
-        const { typed } = e.target.value;
-        if (typed != password) {
+    const confirmNewPassword = () => {
+        if (newPassword !== confirmPassword) {
             setMessage('New passwords do not match.');
-            // TODO: Grey out & disable submit button.
             return;
         }
-    }
+        else{
+            setMessage('passwords match');
+        }
+    };
 
-    // Save profile updates to Firestore and Storage
     const handleSave = async () => {
         try {
             const docRef = doc(db, 'users', user.uid);
             await setDoc(docRef, tempProfileData, { merge: true });
 
-            // Handle profile picture upload
             if (profilePictureFile) {
                 const profilePictureRef = ref(storage, `profile_pics/${user.uid}/${profilePictureFile.name}`);
                 await uploadBytes(profilePictureRef, profilePictureFile);
@@ -147,16 +134,37 @@ function Account() {
 
     const handleApplication = () => {
         // TODO
-    }
+    };
 
     const handleDeletion = () => {
         // TODO
-    }
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+
+        if (newPassword !== confirmPassword) {
+            setMessage('Passwords do not match.');
+            return;
+        }
+
+        const auth = getAuth();
+        const userCredential = auth.currentUser;
+        const credentials = EmailAuthProvider.credential(userCredential.email, currentPassword);
+
+        try {
+            // Reauthenticate the user before changing password
+            await reauthenticateWithCredential(userCredential, credentials);
+            await updatePassword(userCredential, newPassword);
+            setMessage('Password updated successfully!');
+        } catch (error) {
+            setMessage('Failed to update password. Please check your current password.');
+        }
+    };
 
     const [activeTab, setActiveTab] = useState('changeDisplayName'); // default tab
 
     const renderTabContent = () => {
-        // switch between account settings
         switch (activeTab) {
             case 'changeDisplayName':
                 return (
@@ -175,7 +183,7 @@ function Account() {
                             <button className={styles.profileButton} type="submit">Change Profile Picture</button>
                         </form>
                     </div>
-                )
+                );
             case 'changeProfilePicture':
                 return (
                     <div className="picture-tab">
@@ -201,7 +209,7 @@ function Account() {
                             <input
                                 type="email"
                                 placeholder="Current Email"
-                                value={oldEmail}
+                                value={email}
                                 onChange={(e) => checkEmail(e.target.value)}
                                 required
                             />
@@ -216,7 +224,7 @@ function Account() {
                             <FaEnvelope className="icon" />
                         </form>
                     </div>
-                )
+                );
             case 'changePassword':
                 return (
                     <div className="pw-tab">
@@ -225,24 +233,33 @@ function Account() {
                             <input
                                 type="password"
                                 placeholder="Current Password"
-                                value={oldPassword}
-                                onChange={(e) => checkPassword(e.target.value)}
+                                value={currentPassword}
+                                onChange={(e) => {
+                                    setCurrentPassword(e.target.value);
+                                    checkPassword();
+                                }}
                                 required
                             />
                             <FaLock className="icon" />
                             <input
                                 type="password"
                                 placeholder="New Password"
-                                value={password}
-                                onChange={(e) => checkNewPassword(e.target.value)}
+                                value={newPassword}
+                                onChange={(e) => {
+                                    setNewPassword(e.target.value);
+                                    checkNewPassword();
+                                }}
                                 required
                             />
                             <FaLock className="icon" />
                             <input
                                 type="password"
                                 placeholder="Confirm New Password"
-                                value={passwordConfirmed}
-                                onChange={(e) => confirmNewPassword(e.target.value)}
+                                value={confirmPassword}
+                                onChange={(e) => {
+                                    setConfirmPassword(e.target.value);
+                                    confirmNewPassword();
+                                }}
                                 required
                             />
                             <FaLock className="icon" />
@@ -255,32 +272,21 @@ function Account() {
                     <div className="apply-tab">
                         <h3>Apply To Be A Healer</h3>
                         <form className="apply-form" onSubmit={handleApplication}>
-                            <p>Coming soon!</p> // TODO: Ask Dr. Gigi for specifics
+                            <textarea
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                required
+                            />
+                            <button className={styles.profileButton} type="submit">Apply</button>
                         </form>
                     </div>
                 );
             case 'deleteAccount':
                 return (
                     <div className="delete-tab">
-                        <h3>Delete Your Account</h3>
-                        <form className="deletion-form" onSubmit={handleDeletion}>
-                            <p>Are you sure you want to delete your account? This action is irreversable.</p>
-                            <input
-                                type="text"
-                                placeholder="Why are you deleting your account? (optional)"
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                            />
-                            <p>We want to make sure that it's really you. Please confirm your password.</p>
-                            <input
-                                type="password"
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) => checkPassword(e.target.value)}
-                                required
-                            />
-                            <FaLock className="icon" />
-                            <button className={styles.profileButton} type="submit">Delete Account</button>
+                        <h3>Delete Account</h3>
+                        <form className="delete-form" onSubmit={handleDeletion}>
+                            <button className={styles.profileButton} type="submit">Delete</button>
                         </form>
                     </div>
                 );
@@ -291,56 +297,18 @@ function Account() {
 
     return (
         <div className={styles.accountPage}>
-            <div className={styles.accountBanner}>
-                <div className={styles.profileImageWrapper}>
-                <img
-                    src={profileData.profilePictureUrl || dummyPic}
-                    alt={`${profileData.displayName || 'User'}'s profile`}
-                    className={styles.profileImage}
-                />
-                </div>
-            </div>
             <div className="tabs">
-                // if user clicks on Change Display Name, show display name form
-                <button
-                    onClick={() => setActiveTab('changeDisplayName')
-                    } className={`tab-button ${activeTab === 'changeDisplayName' ? 'active' : 'changeDisplayName'}`}>
+                <button onClick={() => setActiveTab('changeDisplayName')} className={`tab-button ${activeTab === 'changeDisplayName' ? 'active' : ''}`}>
                     Change Display Name
                 </button>
-
-                // if user clicks on Change Profile Picture, show profile picture form
-                <button
-                    onClick={() => setActiveTab('changeProfilePicture')
-                    } className={`tab-button ${activeTab === 'changeProfilePicture' ? 'active' : 'changeProfilePicture'}`}>
+                <button onClick={() => setActiveTab('changeProfilePicture')} className={`tab-button ${activeTab === 'changeProfilePicture' ? 'active' : ''}`}>
                     Change Profile Picture
                 </button>
-
-                // if user clicks on Change Email Address, show email address form
-                <button onClick={() =>
-                    setActiveTab('changeEmailAddress')
-                } className={`tab-button ${activeTab === 'changeEmailAddress' ? 'active' : 'changeEmailAddress'}`}>
-                    Change Email Address
-                </button>
-
-                // if user clicks on Change Password, show password form
-                <button onClick={() =>
-                    setActiveTab('changePassword')
-                } className={`tab-button ${activeTab === 'changePassword' ? 'active' : 'changePassword'}`}>
+                <button onClick={() => setActiveTab('changePassword')} className={`tab-button ${activeTab === 'changePassword' ? 'active' : ''}`}>
                     Change Password
                 </button>
-
-                // if user clicks on Apply To Be A Healer, show application form
-                <button onClick={() =>
-                    setActiveTab('applyToBeAHealer')
-                } className={`tab-button ${activeTab === 'applyToBeAHealer' ? 'active' : 'applyToBeAHealer'}`}>
-                    Apply To Be A Healer
-                </button>
-
-                // if user clicks on Delete Account, show account deletion form
-                <button onClick={() =>
-                    setActiveTab('deleteAccount')
-                } className={`tab-button ${activeTab === 'deleteAccount' ? 'active' : 'deleteAccount'}`}>
-                    Delete Account
+                <button onClick={() => setActiveTab('applyToBeAHealer')} className={`tab-button ${activeTab === 'applyToBeAHealer' ? 'active' : ''}`}>
+                    Apply to Be a Healer
                 </button>
             </div>
 
@@ -348,9 +316,9 @@ function Account() {
                 {renderTabContent()}
             </div>
 
-            {message && <p className="message">{message}</p>};
+            {message && <p className="message">{message}</p>}
         </div>
-    )
+    );
 }
 
 export default Account;
