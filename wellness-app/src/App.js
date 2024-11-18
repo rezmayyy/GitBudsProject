@@ -25,6 +25,7 @@ import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
 import DiaryPage from './assets/Diary/DiaryPage';
 import DiaryEditor from './assets/Diary/DiaryEditor';
+import ExplorePage from './assets/ExplorePage';
 
 
 function App() {
@@ -56,6 +57,7 @@ function App() {
           <Route path="/account" element={<Account />} />
           <Route path="/profile/diary" element={<DiaryPage /> } />
           <Route path="/profile/diary/editor" element={<DiaryEditor /> } />
+          <Route path="/explore" element={<ExplorePage />} />
         </Routes>
         <Footer />
       </Router>
