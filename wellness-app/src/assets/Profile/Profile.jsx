@@ -6,8 +6,8 @@ import { db, storage, functions } from '../Firebase'; // Import Firebase functio
 import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions'; // Import for calling functions
-import styles from '../styles/Profile.css';
-import dummyPic from "./dummyPic.jpeg";
+import styles from '../../styles/profile.css';
+import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
 import ProfileVideos from './ProfileVideos';
 import ProfileAudio from './ProfileAudio';

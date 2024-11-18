@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../styles/Videos.css';
+import '../../styles/Videos.css';
 
 function UserVideos() {
     const [UserVideos, setUserVideos] = useState([]);

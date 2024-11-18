@@ -3,7 +3,7 @@ import React, { useContext, useState, useEffect, useRef } from 'react';
 import '../styles/header.css';
 import logo from './Logo.png';
 import UserContext from './UserContext';
-import Signout from './Signout';
+import Signout from './Auth/Signout';
 import { db } from './Firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import styles from '../styles/HamburgerMenu.module.css';

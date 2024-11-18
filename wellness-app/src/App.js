@@ -5,23 +5,23 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
 // Update these import statements
 import Header from './assets/Header';
-import Home from './assets/Home';
-import Login from './assets/Login';
-import Signup from './assets/Signup';
+import Home from './assets/Home/Home';
+import Login from './assets/Auth/Login';
+import Signup from './assets/Auth/Signup';
 import Footer from './assets/Footer';
-import Profile from './assets/Profile';
-import AccountSettings from './assets/AccountSettings/AccountSettings';
+import Profile from './assets/Profile/Profile';
+import AccountSettings from './assets/Account';
 import TOS from './assets/TOS';
-import PrivacyPolicy from './assets.PrivacyPolicy';
+import PrivacyPolicy from './assets/PrivacyPolicy';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/ModDashboard';
 import Support from './assets/Support';
-import Ticket from './assets/Ticket';
+import Ticket from './assets/Ticket/TicketList';
 import SearchResults from './assets/SearchResults';
-import ForgotPassword from './assets/ForgotPassword';
+import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
 
 function App() {

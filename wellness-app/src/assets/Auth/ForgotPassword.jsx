@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { auth } from '../../Firebase'; // Adjust the path if needed
+import { auth } from '../Firebase'; // Adjust the path if needed
 import { sendPasswordResetEmail } from 'firebase/auth';
-import styles from '../styles/ForgotPassword.module.css';
+import styles from '../../styles/ForgotPassword.module.css';
 
 function ForgotPassword() {
     const [email, setEmail] = useState('');

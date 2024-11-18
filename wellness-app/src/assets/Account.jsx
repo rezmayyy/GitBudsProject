@@ -1,11 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
-import UserContext from '../UserContext';
-import { db, storage, functions } from '../Firebase'; // Import Firebase functions
+import UserContext from './UserContext';
+import { db, storage, functions } from './Firebase'; // Import Firebase functions
 import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import styles from '../styles/Profile.css';
+import styles from '../styles/profile.css';
 import dummyPic from "./dummyPic.jpeg";
 
 import { connectFunctionsEmulator } from 'firebase/functions';
@@ -23,12 +23,12 @@ function Account() {
         password: ''
     });
     const [editMode, setEditMode] = useState(false);
-    const [tempProfileData, setTempProfileData] = useState(accountData);
+    const [reason, setReason] = useState('');
+    const [tempProfileData, setTempProfileData] = useState(profileData);
     const [displayName, setDisplayName] = useState('');
     const [profilePictureFile, setProfilePictureFile] = useState('');
     const [email, setEmail, oldEmail] = useState('');
     const [password, setPassword, oldPassword, passwordConfirmed] = useState('');
-
     const [message, setMessage] = useState('');
 
     // Fetch profile data and check user role
@@ -109,7 +109,7 @@ function Account() {
 
     const confirmNewPassword = (e) => {
         const { typed } = e.target.value;
-        if (typed != newPassword) {
+        if (typed != password) {
             setMessage('New passwords do not match.');
             // TODO: Grey out & disable submit button.
             return;
@@ -269,6 +269,7 @@ function Account() {
                                 type="text"
                                 placeholder="Why are you deleting your account? (optional)"
                                 value={reason}
+                                onChange={(e) => setReason(e.target.value)}
                             />
                             <p>We want to make sure that it's really you. Please confirm your password.</p>
                             <input
@@ -279,7 +280,7 @@ function Account() {
                                 required
                             />
                             <FaLock className="icon" />
-                            <button className={styles.profile - button} type="submit">Delete Account</button>
+                            <button className={styles.profileButton} type="submit">Delete Account</button>
                         </form>
                     </div>
                 );
@@ -292,11 +293,11 @@ function Account() {
         <div className={styles.accountPage}>
             <div className={styles.accountBanner}>
                 <div className={styles.profileImageWrapper}>
-                    <img
-                        src={profileImage || dummyPic} // Use dummyPic as the default profile picture
-                        alt={`${username}'s profile`}
-                        className={styles.profileImage}
-                    />
+                <img
+                    src={profileData.profilePictureUrl || dummyPic}
+                    alt={`${profileData.displayName || 'User'}'s profile`}
+                    className={styles.profileImage}
+                />
                 </div>
             </div>
             <div className="tabs">

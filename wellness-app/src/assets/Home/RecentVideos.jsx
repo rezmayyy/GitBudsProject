@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../styles/Videos.css';
+import '../../styles/Videos.css';
 
 function RecentVideos() {
     const [recentVideos, setRecentVideos] = useState([]);

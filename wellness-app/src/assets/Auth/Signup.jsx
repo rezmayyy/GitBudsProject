@@ -1,8 +1,8 @@
 import React from "react";
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/login.css";
-import "../styles/guide.css";
+import "../../styles/login.css";
+import "../../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { auth} from "../Firebase";
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'

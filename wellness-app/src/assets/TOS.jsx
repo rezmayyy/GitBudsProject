@@ -1,10 +1,10 @@
 import React from 'react';
-import styles from '../styles/TOS.module.css'; // Adjust the path as necessary
+import styles from '../styles/Legal.module.css'; // Updated path to Legal.module.css
 
 function TOS() {
     return (
-        <div className={styles.tosContainer}>
-            <h1 className={styles.tosTitle}>Terms of Service</h1>
+        <div className={styles.legalContainer}>
+            <h1 className={styles.legalTitle}>Terms of Service</h1>
             <p className={styles.effectiveDate}><strong>Effective Date:</strong> [Insert Date]</p>
 
             <p className={styles.introduction}>
