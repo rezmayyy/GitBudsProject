@@ -23,6 +23,9 @@ import Ticket from './assets/Ticket/TicketList';
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
+import DiaryPage from './assets/Diary/DiaryPage';
+import DiaryEditor from './assets/Diary/DiaryEditor';
+
 
 function App() {
   // Manages posts and replies
@@ -51,6 +54,8 @@ function App() {
           <Route path="/search" element={<SearchResults />} />
           <Route path="/recover" element={<ForgotPassword />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/profile/diary" element={<DiaryPage /> } />
+          <Route path="/profile/diary/editor" element={<DiaryEditor /> } />
         </Routes>
         <Footer />
       </Router>
