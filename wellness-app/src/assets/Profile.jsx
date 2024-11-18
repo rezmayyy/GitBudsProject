@@ -213,8 +213,8 @@ const Profile = () => {
       </div>
 
       <div className={styles.profileHeader}>
-        {profileData.profilePicUrl ? (
-          <img src={profileData.profilePicUrl} alt="Profile" className="profile-pic" />
+        {profileData.profilePictureUrl ? (
+          <img src={profileData.profilePictureUrl} alt="Profile" className="profile-pic" />
         ) : (
           <img src={dummyPic} alt="Profile" className="profile-pic" />
         )}

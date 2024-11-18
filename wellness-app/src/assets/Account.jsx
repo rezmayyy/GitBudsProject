@@ -109,7 +109,7 @@ function Account() {
 
     const confirmNewPassword = (e) => {
         const { typed } = e.target.value;
-        if (typed != newPassword) {
+        if (typed != password) {
             setMessage('New passwords do not match.');
             // TODO: Grey out & disable submit button.
             return;
