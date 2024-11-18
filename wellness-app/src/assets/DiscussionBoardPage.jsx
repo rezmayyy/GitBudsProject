@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import React from 'react';
-import DiscussionBoard from './DiscussionBoard';
+import DiscussionBoard from './Home/DiscussionBoard';
 
 const DiscussionBoardPage = ({ posts, setPosts }) => {
   return (

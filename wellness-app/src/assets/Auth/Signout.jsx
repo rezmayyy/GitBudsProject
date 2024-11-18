@@ -11,7 +11,7 @@ const Signout = ({ className }) => {
         navigate('/'); // Redirect to the home page after signout
       })
       .catch((error) => {
-        console.error("Sign out failed:", error);
+        console.error("Sign out failed: ", error);
       });
   };
 

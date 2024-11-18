@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+.audio {
+    margin-top: 20px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.audio-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; 
+    justify-content: center;
+    background-color: rgb(240, 240, 240);
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.audio-item {
+    width: calc(50% - 10px);
+    background-color: white;
+    border-radius: 10px;
+    padding-left: 10px;
+}
+
+.audio-item h3 {
+    margin: 5px 0;
+    font-size: 1em;
+    font-weight: 400; /* Thinner font */
+    word-wrap: break-word;
+    text-decoration: underline;
+}
+
+.audio-item audio {
+    width: 50%; 
+    height: 200px; 
+    max-height: 240px; 
+    border-radius: 10px;
+}
+
+@media (max-width: 900px) {
+    .audio-item {
+        width: calc(100% - 20px); /* Stack audio vertically on smaller screens */
+    }
+}

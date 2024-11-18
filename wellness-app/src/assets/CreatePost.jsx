@@ -92,7 +92,8 @@ function CreatePost() {
             description: videoDescription,
             author: user.name || user.email,
             userID: user.uid,
-            timestamp: Timestamp.now()
+            timestamp: Timestamp.now(),
+            status: "pending"
         };
 
         try {
@@ -139,7 +140,8 @@ function CreatePost() {
             description: audioDescription,
             author: user.name || user.email,
             userID: user.uid,
-            timestamp: Timestamp.now()
+            timestamp: Timestamp.now(),
+            status: "pending"
         };
 
         try {
@@ -192,7 +194,8 @@ function CreatePost() {
             body: articleBody,
             author: user.name || user.email,
             userID: user.uid,
-            timestamp: Timestamp.now()
+            timestamp: Timestamp.now(),
+            status: "pending"
         };
 
         try {

@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Keep only one import statement for Link
-import "../styles/login.css";
-import "../styles/guide.css";
+import "../../styles/login.css";
+import "../../styles/guide.css";
 import { FaUser, FaLock } from "react-icons/fa";
-import {auth} from "../assets/Firebase";
+import {auth} from "../Firebase";
 import {signInWithEmailAndPassword} from 'firebase/auth'
-import UserContext from "./UserContext";
+import UserContext from "../UserContext";
 
 
 function Login() {

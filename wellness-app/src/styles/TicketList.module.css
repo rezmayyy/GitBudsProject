@@ -249,3 +249,33 @@
 .ticketStatus.pending {
     color: #f0ad4e; /* Orange for pending */
 }
+
+/* Normal Ticket */
+.normalTicket {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+}
+
+/* VIP Ticket */
+.vipTicket {
+    background-color: #f9f5c7; /* Light gold background */
+    border: 1px solid #e6c200;
+    color: #a67c00;
+}
+
+/* Premium Ticket */
+.premiumTicket {
+    background-color: #e3f2fd; /* Light blue background */
+    border: 1px solid #0d47a1;
+    color: #0d47a1;
+}
+
+/* Category Tag */
+.categoryTag {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+}

@@ -1,0 +1,148 @@
+/* Profile Page Container */
+.profilePage {
+    max-width: 700px;
+    width: 80%;
+    margin: 3em auto;
+    padding: 2.5em;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    font-family: Arial, sans-serif;
+    color: #333;
+    text-align: center; /* Center content */
+}
+
+/* Profile Banner */
+.profileBanner {
+    height: 200px; /* Adjusted height for better appearance */
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 40px;
+    /* Increased margin to separate from navigation */
+}
+
+/* Profile Picture */
+.profileImageWrapper {
+    position: absolute;
+    bottom: -40px;
+    /* Adjusted for better spacing */
+    width: 100px; /* Smaller profile image */
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #ddd;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profileImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Profile Header */
+.profileHeader {
+    margin-top: 60px; /* Adjusted to align with profile image */
+    margin-bottom: 2em;
+}
+
+.profileHeader h2 {
+    font-size: 2em;
+    margin: 0.5em 0;
+    color: #222;
+}
+
+/* Buttons */
+.profileButton {
+    margin-top: 1.5em;
+    padding: 0.8em 1.5em;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border: none;
+    background-color: #3b82f6; /* Default button color */
+    margin-bottom: 1em; /* Spacing for multiple buttons */
+}
+
+.profileButton:hover {
+    background-color: #2563eb; /* Hover state color */
+}
+
+/* Subscribe Button */
+.subscribe-button {
+    background-color: #34d399;
+    padding: 0.7em 1.5em;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s;
+}
+
+.subscribe-button:hover {
+    background-color: #10b981;
+}
+
+.subscribed {
+    background-color: #f87171; /* Different color for subscribed state */
+}
+
+.subscribed:hover {
+    background-color: #ef4444; /* Hover state for unsubscribe */
+}
+
+/* Navigation Links */
+.navLinks {
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Space between buttons */
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.navButton {
+    background-color: #007bff;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.navButton:hover {
+    background-color: #0056b3;
+}
+
+.active {
+    border-bottom: 3px solid #007bff; /* Active indicator */
+    font-weight: bold;
+}
+
+/* Content Area */
+.contentArea {
+    padding: 25px;
+    background-color: #f9fafb;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    text-align: left; /* Align content to the left */
+}
+
+/* Success Message */
+.message {
+    text-align: center;
+    margin-top: 1em;
+    font-size: 1rem;
+    color: #10b981;
+    font-weight: 500;
+}

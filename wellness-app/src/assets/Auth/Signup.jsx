@@ -1,13 +1,13 @@
 import React from "react";
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/login.css";
-import "../styles/guide.css";
+import "../../styles/login.css";
+import "../../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
-import { auth} from "../assets/Firebase";
+import { auth} from "../Firebase";
 import {createUserWithEmailAndPassword, updateProfile} from 'firebase/auth'
 import { getFirestore, setDoc, doc } from 'firebase/firestore'; // Import Firestore functions
-import UserContext from "./UserContext";
+import UserContext from "../UserContext";
 
 function Signup() {
     const navigate = useNavigate();
@@ -101,22 +101,22 @@ function Signup() {
                         <div className="input-box">
                             <input
                                 type="password"
-                                placeholder="Re-enter password"
+                                placeholder="Confirm Password"
                                 required
                             />
                             <FaLock className="icon" />
                         </div>
 
-                        <div className="remember-forgot">
+                        <div className="tos-agree">
                             <label>
                                 <input type="checkbox" required />
-                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">terms & conditions</Link>
+                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>.
                             </label>
                         </div>
 
                         <button type="submit">Sign Up</button>
 
-                        <div className="register-link">
+                        <div className="login-link">
                             <p>
                                 Already have an account? 
                                 <Link to="/login"> Login</Link>
