@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/TOS.css'; // Adjust the path as necessary
+import styles from '../styles/Legal.module.css'; // Adjust the path as necessary
 
 function PrivacyPolicy() {
     return (
