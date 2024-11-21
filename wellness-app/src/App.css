@@ -5,7 +5,7 @@
 }
 
 main {
-  flex: 1; 
+  flex: 1;
 }
 
 /* Layout for the main page */
@@ -29,7 +29,7 @@ body{
   gap: 20px;
   padding: 20px;
   width: 100%;
-  height: calc(80vh - 100px); 
+  height: calc(80vh - 100px);
 }
 
 /* ----------Subscription Section---------- */
@@ -41,18 +41,18 @@ body{
   border-bottom: 1px solid #ddd;
 }
 
-.subscriptions-list li span { 
+.subscriptions-list li span {
   margin-right: 15px;
 }
 
 .remove-link {
-  color: #e91515; 
-  text-decoration: none; 
-  cursor: pointer; 
+  color: #e91515;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .remove-link:hover {
-  text-decoration: underline; 
+  text-decoration: underline;
 }
 
 
@@ -62,14 +62,14 @@ body{
 /* ----------Home Page Discussion Board Container (Preview)---------- */
 #discussion-board {
   width: 100%;
-  max-width: 400px; 
-  max-height: 320px;  
+  max-width: 400px;
+  max-height: 320px;
   background-color: #fff;
   padding: 15px;
   border-radius: 10px;
   box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
-  overflow-y: auto; 
-  margin-bottom: 20px; 
+  overflow-y: auto;
+  margin-bottom: 20px;
 }
 
 #discussion-board h2 {
@@ -184,13 +184,13 @@ body{
 }
 
 .heart-icon.liked {
-  color: #ff4500; 
+  color: #ff4500;
 }
 
 .replies-list {
   margin-top: 15px;
   padding-left: 20px;
-  border-left: 2px solid #eee; 
+  border-left: 2px solid #eee;
 }
 
 .reply-item {
@@ -252,7 +252,7 @@ footer {
 .footer-section h4 {
   font-size: 1.2em;
   margin-bottom: 5px;
-  color: black; 
+  color: black;
 }
 
 footer a {
@@ -268,7 +268,84 @@ footer a:hover {
 footer p {
   margin-top: 10px;
   font-size: 0.9em;
-  color: black; 
+  color: black;
   text-align: center;
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
+}
+
+
+/*-------- Responsive Design --------- */
+
+/* Adjust layout for tablets (768px or smaller) */
+@media (max-width: 768px) {
+  .home-container {
+    flex-direction: column; /* Stack items vertically on smaller screens */
+    gap: 15px; /* Reduce gap for tighter layout */
+    padding: 15px; /* Smaller padding */
+    height: auto; /* Adjust height automatically */
+  }
+
+  #discussion-board {
+    max-width: 100%; /* Use full width on tablets */
+    max-height: none; /* Allow dynamic height */
+    padding: 10px; /* Reduce padding */
+  }
+
+  .discussion-board-page-container {
+    padding: 20px; /* Less padding for smaller screens */
+  }
+
+  .discussion-board {
+    width: 100%; /* Make discussion board full-width */
+    padding: 20px; /* Adjust padding */
+  }
+
+  .discussion-board h2 {
+    font-size: 1.8em; /* Smaller font for header */
+  }
+}
+
+/* Adjust layout for mobile devices (480px or smaller) */
+@media (max-width: 480px) {
+  footer {
+    grid-template-columns: 1fr; /* Stack footer sections in a single column */
+    text-align: center; /* Center-align text */
+  }
+
+  .footer-section {
+    align-items: center; /* Center footer items */
+    margin-bottom: 15px; /* Add space between sections */
+  }
+
+  .discussion-board textarea,
+  .reply-form textarea {
+    padding: 8px; /* Reduce padding in text areas */
+    font-size: 1em; /* Smaller font size */
+  }
+
+  .discussion-board button,
+  .reply-actions button {
+    padding: 10px 15px; /* Reduce button padding */
+    font-size: 1em; /* Smaller button font size */
+  }
+
+  .post-item {
+    padding: 10px; /* Smaller padding */
+    margin-bottom: 15px; /* Reduce space between posts */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); /* Smaller shadow */
+  }
+
+  .post-actions {
+    flex-direction: column; /* Stack action buttons vertically */
+    gap: 10px; /* Adjust gap between buttons */
+  }
+
+  #discussion-board h2 {
+    font-size: 1.4em; /* Smaller header font */
+  }
+
+  #discussion-board button {
+    font-size: 1em; /* Smaller button font */
+    padding: 8px; /* Less padding */
+  }
 }
