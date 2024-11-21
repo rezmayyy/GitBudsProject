@@ -69,4 +69,5 @@ function App() {
 export default App;
 
 
+// eslint-disable-next-line no-lone-blocks
 {/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */}
