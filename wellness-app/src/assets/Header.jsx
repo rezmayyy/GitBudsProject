@@ -9,29 +9,27 @@ import { doc, setDoc } from 'firebase/firestore';
 import dummyPic from './dummyPic.jpeg';
 
 function Header() {
-    const { user } = useContext(UserContext);
+    const { user } = useContext(UserContext); // Get the user object from context
     const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef(null); // Create a ref for the menu
-    const hamburgerRef = useRef(null); // Create a ref for the hamburger button
-    const [profilePic, setProfilePic] = useState(dummyPic); // Initialize with dummyPic
+    const [searchTerm, setSearchTerm] = useState(''); // Search bar state
+    const [menuOpen, setMenuOpen] = useState(false); // State to control hamburger menu visibility
+    const menuRef = useRef(null); // Reference for the dropdown menu
+    const hamburgerRef = useRef(null); // Reference for the hamburger button
+    const [profilePic, setProfilePic] = useState(dummyPic); // State for the profile picture
 
-    // Check and set profile picture
+    // Update profile picture dynamically based on user data
     useEffect(() => {
         if (user?.profilePicUrl) {
             const img = new Image();
             img.src = user.profilePicUrl;
 
-            // On successful load, set profile picture to user's URL
-            img.onload = () => setProfilePic(user.profilePicUrl);
-            // On error, fall back to dummyPic
-            img.onerror = () => setProfilePic(dummyPic);
+            img.onload = () => setProfilePic(user.profilePicUrl); // Set user's profile picture on success
+            img.onerror = () => setProfilePic(dummyPic); // Fallback to dummy picture on error
         }
     }, [user?.profilePicUrl]);
 
     const toggleMenu = () => {
-        setMenuOpen((prev) => !prev); // Toggle the menu open state
+        setMenuOpen((prev) => !prev); // Toggle the hamburger menu open state
     };
 
     const closeMenu = () => {
@@ -39,14 +37,15 @@ function Header() {
     };
 
     const handleProfileClick = (event) => {
+        // If the user is not logged in, redirect them to the login page
         if (!user) {
             event.preventDefault();
             navigate('/login');
         }
     };
 
+    // Close menu when user logs out
     useEffect(() => {
-        // Close the menu when the user logs out
         if (!user) {
             closeMenu();
         }
@@ -89,7 +88,7 @@ function Header() {
         }
     };
 
-    // Handle click outside the menu
+    // Close the menu if the user clicks outside of it
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (
@@ -120,6 +119,7 @@ function Header() {
             </div>
             <nav>
                 <div className="nav-center">
+                    {/* Search bar */}
                     <input
                         type="text"
                         placeholder="Search..."
@@ -128,6 +128,7 @@ function Header() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyPress={handleKeyPress}
                     />
+                    {/* Navigation links */}
                     <ul className="nav-links">
                         <li><Link to="/">Home</Link></li>
                         <li><Link to="/explore">Explore</Link></li>
@@ -139,21 +140,27 @@ function Header() {
                     </ul>
                 </div>
                 <div className="auth-buttons">
+                    {/* Conditional rendering based on user authentication */}
                     {!user ? (
+                        // If no user is logged in, show Log In and Sign Up buttons
                         <>
                             <Link to="/login" className="auth-button">Log In</Link>
                             <Link to="/signup" className="auth-button">Sign Up</Link>
                         </>
                     ) : (
+                        // If a user is logged in, show the Signout component
                         <Signout />
                     )}
                 </div>
                 <div className="hamburger-container">
+                    {/* Conditional rendering for hamburger button */}
                     <button ref={hamburgerRef} onClick={toggleMenu} className="hamburger-button">
                         {user ? <img src={profilePic} alt="Profile" /> : '☰'}
+                        {/* If user is logged in, show their profile picture; otherwise, show a menu icon */}
                     </button>
                     <div ref={menuRef} className={`menu-content ${menuOpen ? 'active' : ''}`}>
                         <ul className="hamburger-nav-links">
+                            {/* Same navigation links as in the main nav */}
                             <li><Link to="/">Home</Link></li>
                             <li><Link to="/explore">Explore</Link></li>
                             <li><Link to="/learn">Learn</Link></li>
@@ -163,7 +170,9 @@ function Header() {
                             <li><Link to="/create-post">Create</Link></li>
                         </ul>
                         <div className="hamburger-auth-buttons">
+                            {/* Conditional rendering for authentication actions */}
                             {user ? (
+                                // If a user is logged in, show account management and signout options
                                 <>
                                     <Link to="/account" className="menu-link" onClick={closeMenu}>{user.displayName}</Link>
                                     <Signout className="menu-link" closeMenu={closeMenu} />
@@ -172,6 +181,7 @@ function Header() {
                                     <button className="menu-link" onClick={() => { setUserRole('normal'); closeMenu(); }}>Set as Normal</button>
                                 </>
                             ) : (
+                                // If no user is logged in, show Log In and Sign Up links
                                 <>
                                     <Link to="/login" className="menu-link" onClick={closeMenu}>Log In</Link>
                                     <Link to="/signup" className="menu-link" onClick={closeMenu}>Sign Up</Link>

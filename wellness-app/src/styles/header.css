@@ -122,14 +122,88 @@ a:hover {
     text-decoration: none;
 }
 
-.auth-links a {
-    background-color: #EAC784; /* Button color */
-    color: black; /* Text color */
-    padding: 0.5rem 1rem; 
-    border-radius: 5px; 
-    text-decoration: none; 
-    transition: background-color 0.3s ease; 
-    font-family: 'Montserrat';
+.nav-links a:hover {
+    text-decoration: underline;
+}
+/* For screens wider than 768px */
+@media (min-width: 769px) {
+    .nav-links,
+    .auth-buttons {
+        display: flex;
+    }
+    .hamburger-container {
+        display: none;
+    }
+}
+
+/* For screens 768px or smaller */
+@media (max-width: 768px) {
+    .nav-links,
+    .auth-buttons {
+        display: none;
+    }
+    .hamburger-container {
+        display: block;
+    }
+    .menu-content {
+        padding: 0 16px;
+        width: calc(100% - 32px);
+    }
+}
+
+
+.hamburger-button {
+    font-size: 24px;
+    padding: 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--menu-icon-color);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.hamburger-button:hover {
+    background-color: var(--menu-hover-bg);
+    transform: scale(1.1);
+    border-radius: 4px;
+}
+
+.menu-content {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: var(--menu-item-bg);
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.menu-content.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hamburger-nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hamburger-nav-links a {
+    text-decoration: none;
+    color: var(--menu-text-color);
+    font-family: 'Montserrat', sans-serif;
+    padding: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
 }
 
 .hamburger-nav-links a:hover {
@@ -139,27 +213,28 @@ a:hover {
 .hamburger-auth-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .hamburger-auth-buttons .menu-link {
     display: block;
-    padding: 12px;
+    width: 100%;
+    padding: 10px;
     text-align: center;
     background-color: var(--auth-button-bg);
     color: black;
-    font-family: 'Montserrat', sans-serif;
+    margin-top: 5px;
     border-radius: 5px;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    border: 1px solid black;
 }
 
-.auth-links a:hover {
-    background-color: white; /* Hover effect for button */
+.hamburger-auth-buttons .menu-link:hover {
+    background-color: var(--auth-button-hover-bg);
+    color: black;
 }
 
-hr {
-    border: 1px solid #F4A623; /* Random line idk */
+.hamburger-button img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
 }
