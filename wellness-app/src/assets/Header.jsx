@@ -149,7 +149,8 @@ function Header() {
                         </>
                     ) : (
                         // If a user is logged in, show the Signout component
-                        <Signout />
+                        <Signout Link to="/" className="auth-button">Sign out</Signout>
+                    
                     )}
                 </div>
                 <div className="hamburger-container">
