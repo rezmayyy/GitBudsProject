@@ -16,12 +16,15 @@ function CreatePost() {
     const [videoTitle, setVideoTitle] = useState('');
     const [videoFile, setVideoFile] = useState(null);
     const [videoDescription, setVideoDescription] = useState('');
-
+    const [videoPreview, setVideoPreview] = useState('');
+    
     const [audioTitle, setAudioTitle] = useState('');
     const [audioFile, setAudioFile] = useState(null);
     const [audioDescription, setAudioDescription] = useState('');
+    const [audioPreview, setAudioPreview] = useState('');
 
     const [thumbnailFile, setThumbnailFile] = useState(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState('');
 
     const [articleTitle, setArticleTitle] = useState('');
     const [articleBody, setArticleBody] = useState('');
@@ -41,10 +44,13 @@ function CreatePost() {
         if (file && file.size <= maxSize) { //set file state
             if (event.target.accept.startsWith('video/')) {
                 setVideoFile(file);
+                setVideoPreview(URL.createObjectURL(file)); //preview
             } else if (event.target.accept.startsWith('audio/')){
                 setAudioFile(file);
+                setAudioPreview(URL.createObjectURL(file));
             }else if (event.target.accept.startsWith('image/')){
                 setThumbnailFile(file);
+                setThumbnailPreview(URL.createObjectURL(file)); //preview
             }
 
         } else {
@@ -245,19 +251,31 @@ function CreatePost() {
                     <div className="video-content">
                         <h2>Post a Video</h2>
                         <form className="video-form" onSubmit={handleVideoSubmit}>
+                            <label>Video title</label>
                             <input className="content-input"
                                 type="text"
                                 placeholder="Video Title"
                                 value={videoTitle}
                                 onChange={(e) => setVideoTitle(e.target.value)}
                                 required />
+                            <label>Choose video file <small>(Max file size: {MAX_VID_SIZE / 1024 / 1024} MB</small>)</label>
+                            
                             <input className="content-input"
                                 type="file"
                                 accept="video/*"
                                 required
                                 onChange={(e) => handleFileChange(e, MAX_VID_SIZE, 'video')}
                             />
-                            <small>Max file size: {MAX_VID_SIZE / 1024 / 1024} MB</small>
+                            {/* video file preview */}
+                            {videoPreview && (
+                                <div className="preview-container">
+                                    <video controls width="300">
+                                        <source src={videoPreview} type="video/mp4" />
+                                        Your browser does not support the video tag
+                                    </video>
+                                </div>
+                            )}
+                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
                             <input className="content-input"
                                 type="file" 
                                 accept="image/*" 
@@ -265,12 +283,19 @@ function CreatePost() {
                                 required
                                 onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
                             />
-                            <small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>
+                            {/* thumbnail file preview */}
+                            {thumbnailPreview && (
+                                <div className="preview-container">
+                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
+                                </div>
+                            )}
+                            <label>Add post description</label>
                             <textarea className="content-textarea"
                                 placeholder="Video Description"
                                 value={videoDescription}
                                 onChange={(e) => setVideoDescription(e.target.value)}
                             ></textarea>
+                            <label>Add post tags</label>
                             <input className="content-input" type="text" placeholder="Tags (comma separated)" />
                             <button className="tab-button" type="submit">Submit Video</button>
                         </form>
@@ -281,6 +306,7 @@ function CreatePost() {
                     <div className="audio-content" >
                         <h2>Post an Audio</h2>
                         <form className="audio-form" onSubmit={handleAudioSubmit}>
+                            <label>Audio title</label>
                             <input className="content-input"
                                 type="text" 
                                 placeholder="Audio Title"
@@ -289,13 +315,25 @@ function CreatePost() {
                                 onChange={(e) => setAudioTitle(e.target.value)}
                                 
                             />
+                            <label>Choose audio file (<small>Max file size: {MAX_AUD_SIZE / 1024 / 1024} MB</small>)</label>
                             <input className="content-input"
                                 type="file"
                                 accept="audio/*"
                                 required
                                 onChange={(e) => handleFileChange(e, MAX_AUD_SIZE, 'audio', setAudioFile)}
                             />
-                            <small>Max file size: {MAX_AUD_SIZE / 1024 / 1024} MB</small>
+                            
+                            {/* audio file preview */}
+                            {audioPreview && (
+                                <div className="preview-container">
+                                    <audio controls width="300">
+                                        <source src={audioPreview} type="audio/mp4" />
+                                        Your browser does not support the audio tag
+                                    </audio>
+                                </div>
+                            )}
+
+                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
                             <input className="content-input"
                                 type="file" 
                                 accept="image/*" 
@@ -303,11 +341,19 @@ function CreatePost() {
                                 required
                                 onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
                             />
-                            <small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>
+                            
+                            {/* thumbnail file preview */}
+                            {thumbnailPreview && (
+                                <div className="preview-container">
+                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
+                                </div>
+                            )}
+                            <label>Add post description</label>
                             <textarea className="content-textarea"
                                 placeholder="Audio Description"
                                 value={audioDescription} onChange={(e) => setAudioDescription(e.target.value)}
                             ></textarea>
+                            <label>Add post tags</label>
                             <input className="content-input" type="text" placeholder="Tags (comma separated)" />
                             <button className="tab-button" type="submit">Submit Audio</button>
                         </form>
@@ -318,6 +364,7 @@ function CreatePost() {
                     <div className="article-content">
                         <h2>Post an Article</h2>
                         <form className="article-form" onSubmit={handleArticleSubmit}>
+                            <label>Article title</label>
                             <input 
                                 type="text" 
                                 placeholder="Article Title"
@@ -326,6 +373,7 @@ function CreatePost() {
                                 required
 
                             />
+                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
                             <input className="content-input"
                                 type="file" 
                                 accept="image/*" 
@@ -333,14 +381,20 @@ function CreatePost() {
                                 required
                                 onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
                             />
-                            <small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>
+                            {/* thumbnail file preview */}
+                            {thumbnailPreview && (
+                                <div className="preview-container">
+                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
+                                </div>
+                            )}
+                            <label>Add article body</label>
                             <textarea 
                                 placeholder="Article Body" 
                                 value={articleBody}
                                 onChange={(e) => setArticleBody(e.target.value)}
                                 required
                             ></textarea>
-
+                            <label>Add post tags</label>
                             <input type="text" placeholder="Tags (comma separated)" />
 
                             <button className="tab-button" type="submit">Submit Article</button>
