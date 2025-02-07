@@ -87,6 +87,11 @@ function CreatePost() {
             return;
         }
 
+        if (!thumbnailFile) {
+            alert('Please select a thumbnail image to upload');
+            return;
+        }
+
         const newVideoPost = {
             title: videoTitle,
             description: videoDescription,
@@ -99,9 +104,12 @@ function CreatePost() {
         try {
             //upload file to firebase and get url
             const videoURL = await uploadFileToStorage(videoFile, 'video-uploads');
+            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
+            
             const docRef = await addDoc(collection(db, 'content-posts'), {
                 ...newVideoPost,
                 fileURL: videoURL,
+                thumbnailURL: thumbnailURL,
                 type: 'video'
             });
             //alert('Video posted successfully!'); //testing
@@ -112,6 +120,7 @@ function CreatePost() {
             //reset fields
             setVideoTitle('');
             setVideoFile(null);
+            setThumbnailFile(null);
             setVideoDescription('');
         } catch (error) {
             console.log('Error adding video post: ', error);
@@ -147,7 +156,7 @@ function CreatePost() {
         try {
             //upload file to firebase and get url
             const audioURL = await uploadFileToStorage(audioFile, 'audio-uploads');
-            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails')
+            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
 
             console.log("audio URL:", audioURL);    //testing
             console.log("thumbnail URL:", thumbnailURL);    //testing
@@ -184,6 +193,10 @@ function CreatePost() {
             alert('Please enter article title to upload');
             return;
         }
+        if (!thumbnailFile) {
+            alert('Please select a thumbnail image to upload');
+            return;
+        }
         if (!articleBody) {
             alert('Please enter article body to upload');
             return;
@@ -200,8 +213,10 @@ function CreatePost() {
 
         try {
             //upload file to firebase and get url
+            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
             const docRef = await addDoc(collection(db, 'content-posts'), {
                 ...newArticlePost,
+                thumbnailURL: thumbnailURL,
                 type: 'article'
             });
             //alert('Article posted successfully!');
@@ -211,6 +226,7 @@ function CreatePost() {
 
             //reset fields
             setArticleTitle('');
+            setThumbnailFile(null);
             setArticleBody('');
         } catch (error) {
             console.log('Error adding article post: ', error);
@@ -242,6 +258,14 @@ function CreatePost() {
                                 onChange={(e) => handleFileChange(e, MAX_VID_SIZE, 'video')}
                             />
                             <small>Max file size: {MAX_VID_SIZE / 1024 / 1024} MB</small>
+                            <input className="content-input"
+                                type="file" 
+                                accept="image/*" 
+                                placeholder="Cover Image" 
+                                required
+                                onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
+                            />
+                            <small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>
                             <textarea className="content-textarea"
                                 placeholder="Video Description"
                                 value={videoDescription}
@@ -302,6 +326,14 @@ function CreatePost() {
                                 required
 
                             />
+                            <input className="content-input"
+                                type="file" 
+                                accept="image/*" 
+                                placeholder="Cover Image" 
+                                required
+                                onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
+                            />
+                            <small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>
                             <textarea 
                                 placeholder="Article Body" 
                                 value={articleBody}
