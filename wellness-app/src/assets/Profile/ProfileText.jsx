@@ -4,7 +4,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { db } from '../Firebase';
 import '../../styles/Text.css';
 
-function UserText() {
+function ProfileText() {
     const [UserText, setUserText] = useState([]);
     const { username } = useParams(); // Get the dynamic username from the URL
 
@@ -50,4 +50,4 @@ function UserText() {
     );
 }
 
-export default UserText;
+export default ProfileText;
