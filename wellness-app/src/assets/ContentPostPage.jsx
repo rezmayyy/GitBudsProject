@@ -39,7 +39,7 @@ const ContentPostPage = () => {
                 {post.type === 'video' && (
                     <div>
                         <div className="card-header">
-                            <video className="card-img-top" controls>
+                            <video className="card-img-top" controls poster={post.thumbnailURL}>
                                 <source src={post.fileURL} type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>

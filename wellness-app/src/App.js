@@ -25,7 +25,7 @@ import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
 import DiaryPage from './assets/Diary/DiaryPage';
 import DiaryEditor from './assets/Diary/DiaryEditor';
-import ExplorePage from './assets/ExplorePage';
+import ExplorePage from './assets/Explore/ExplorePage';
 
 
 function App() {
