@@ -47,7 +47,6 @@ function Signup() {
             await setDoc(doc(db, 'users', user.uid), {
                 email: email,
                 displayName: displayName,
-                status: 'active' // Set default status
             });
 
             // Update User Context and navigate

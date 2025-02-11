@@ -101,8 +101,7 @@ function CreatePost() {
         const newVideoPost = {
             title: videoTitle,
             description: videoDescription,
-            author: user.name || user.email,
-            userID: user.uid,
+            author: user.displayName,
             timestamp: Timestamp.now(),
             status: "pending"
         };
@@ -153,8 +152,7 @@ function CreatePost() {
         const newAudioPost = {
             title: audioTitle,
             description: audioDescription,
-            author: user.name || user.email,
-            userID: user.uid,
+            author: user.displayName,
             timestamp: Timestamp.now(),
             status: "pending"
         };
@@ -211,8 +209,7 @@ function CreatePost() {
         const newArticlePost = {
             title: articleTitle,
             body: articleBody,
-            author: user.name || user.email,
-            userID: user.uid,
+            author: user.displayName,
             timestamp: Timestamp.now(),
             status: "pending"
         };

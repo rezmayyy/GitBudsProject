@@ -57,8 +57,6 @@ function Header() {
             const userData = {
                 email: user.email,
                 displayName: user.displayName,
-                role: 'admin',
-                status: 'active',
             };
 
             try {
@@ -148,8 +146,11 @@ function Header() {
                             <Link to="/signup" className="auth-button">Sign Up</Link>
                         </>
                     ) : (
-                    // If a user is logged in, show the Signout component
-                    <Signout Link to="/" className="auth-button">Sign out</Signout>
+
+                        // If a user is logged in, show the Signout component
+                        <Signout Link to="/" className="auth-button">Sign out</Signout>
+                    
+
                     )}
                 </div>
                 <div className="hamburger-container">

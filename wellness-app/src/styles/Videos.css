@@ -1,45 +1,98 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
 
-.video {
-    margin-top: 20px;
-    font-family: 'Poppins', sans-serif;
-}
-
-.video-list {
+.video-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; 
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 10px;
+}
+
+.video-card {
+    width: calc(33.33% - 20px);
+    background: #fff;
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    overflow: hidden;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.video-thumbnail {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
     justify-content: center;
-    background-color: rgb(240, 240, 240);
-    padding: 5px;
+    background: #000;
+}
+
+.video-thumbnail video {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
     border-radius: 10px;
 }
 
-.video-item {
-    width: calc(50% - 10px);
-    background-color: white;
-    border-radius: 10px;
-    padding-left: 10px;
-}
-
-.video-item h3 {
-    margin: 5px 0;
-    font-size: 1em;
-    font-weight: 400; /* Thinner font */
+.video-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 10px;
+    color: #222;
+    text-align: center;
     word-wrap: break-word;
-    text-decoration: underline;
 }
 
-.video-item video {
-    width: 50%; 
-    height: 200px; 
-    max-height: 240px; 
+.load-btn {
+    display: block;
+    margin: 20px auto;
+    padding: 14px 22px;
+    font-size: 18px;
+    color: white;
+    background: #007BFF;
+    border: none;
     border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-@media (max-width: 900px) {
-    .video-item {
-        width: calc(100% - 20px); /* Stack videos vertically on smaller screens */
+.load-btn:hover {
+    background: #0056b3;
+}
+
+/* Responsive Edits */
+@media (max-width: 1024px) {
+    .video-card {
+        width: calc(50% - 20px); 
+    }
+}
+
+@media (max-width: 768px) {
+    .video-card {
+        width: calc(100% - 20px); 
+    }
+
+    .video-thumbnail video {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .video-card {
+        width: 100%;
+    }
+
+    .video-thumbnail video {
+        height: 160px;
+    }
+
+    .video-title {
+        font-size: 18px;
     }
 }

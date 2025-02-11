@@ -4,7 +4,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { db } from '../Firebase';
 import '../../styles/Audio.css';
 
-function UserAudio() {
+function ProfileAudio() {
     const [UserAudio, setUserAudio] = useState([]);
     const { username } = useParams(); // Get the dynamic username from the URL
 
@@ -54,4 +54,4 @@ function UserAudio() {
     );
 }
 
-export default UserAudio;
+export default ProfileAudio;
