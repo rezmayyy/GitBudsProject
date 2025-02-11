@@ -5,6 +5,7 @@ import '../../styles/Videos.css';
 
 function RecentVideos() {
     const [recentVideos, setRecentVideos] = useState([]);
+    const [visibleVideos, setVisibleVideos] = useState(4); 
 
     useEffect(() => {
         const fetchRecentVideos = async () => {
@@ -12,7 +13,7 @@ function RecentVideos() {
                 collection(db, 'content-posts'),
                 where('type', '==', 'video'), 
                 orderBy('timestamp', 'desc'),
-                limit(4)
+                limit(10)
             );
 
             const querySnapshot = await getDocs(q);
@@ -31,24 +32,30 @@ function RecentVideos() {
     }, []);
 
     return (
-        <div className="recent-videos">
-            <h2>Recent Videos</h2>
-            <div className="video-list">
+         <div className="recent-videos-container">
+            <h2 className="section-title">🎥 Recent Videos</h2>
+            <div className="video-grid">
                 {recentVideos.length > 0 ? (
-                    recentVideos.map(video => (
-                        <div key={video.id} className="video-item">
-                            <h3>{video.title}</h3>
-                            <video width="320" height="240" controls>
-                                <source src={video.url} type="video/mp4" />
-                                Your browser does not support the video tag.
-                                <p>Video is not available. Please check the URL.</p>
-                            </video>
+                    recentVideos.slice(0, visibleVideos).map(video => (
+                        <div key={video.id} className="video-card">
+                            <div className="video-thumbnail">
+                                <video controls>
+                                    <source src={video.url} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <h3 className="video-title">{video.title}</h3>
                         </div>
                     ))
                 ) : (
-                    <p>No recent videos available.</p>
+                    <p className="no-videos">No recent videos available.</p>
                 )}
             </div>
+            {visibleVideos < recentVideos.length && (
+                <button className="load-btn" onClick={() => setVisibleVideos(visibleVideos + 4)}>
+                    Load More
+                </button>
+            )}
         </div>
     );
 }
