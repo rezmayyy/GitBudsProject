@@ -58,7 +58,6 @@ function Header() {
                 email: user.email,
                 displayName: user.displayName,
                 role: 'admin',
-                status: 'active',
             };
 
             try {

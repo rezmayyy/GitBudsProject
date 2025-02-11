@@ -21,6 +21,7 @@ unique usernames (firebase function)
 password enforcement (firebase function)
 quick link peoples names to their profile on videos/articles/audio
 fix video descriptions to support new lines
+signup does not create a user profile
 
 done:
 link all posts to their creators profile
