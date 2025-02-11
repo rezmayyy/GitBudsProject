@@ -57,7 +57,6 @@ function Header() {
             const userData = {
                 email: user.email,
                 displayName: user.displayName,
-                role: 'admin',
             };
 
             try {
