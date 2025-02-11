@@ -20,6 +20,7 @@ import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/ModDashboard';
 import Support from './assets/Support';
 import Ticket from './assets/Ticket/TicketList';
+import CreateTicket from "./assets/Ticket/CreateTicket";
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
@@ -52,6 +53,7 @@ function App() {
           <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
           <Route path="/support" element={<Support />} />
           <Route path="/ticket" element={<Ticket />} />
+          <Route path="/create-ticket" element={<CreateTicket />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/recover" element={<ForgotPassword />} />
           <Route path="/account" element={<Account />} />
