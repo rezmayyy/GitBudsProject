@@ -4,7 +4,7 @@ import { collection, query, where, orderBy, limit, getDocs } from 'firebase/fire
 import { db } from '../Firebase';
 import '../../styles/Videos.css';
 
-function UserVideos() {
+function ProfileVideos() {
     const [UserVideos, setUserVideos] = useState([]);
     const { username } = useParams(); // Get the dynamic username from the URL
 
@@ -54,4 +54,4 @@ function UserVideos() {
     );
 }
 
-export default UserVideos;
+export default ProfileVideos;

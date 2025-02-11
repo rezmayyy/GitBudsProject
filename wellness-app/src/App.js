@@ -41,7 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/profile/:username" element={<Profile />} />
           <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
           <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
           <Route path="/create-post" element={<CreatePost />} />
