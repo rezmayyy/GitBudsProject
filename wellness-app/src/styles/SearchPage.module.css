@@ -129,3 +129,9 @@
 .reportButton:hover {
     text-decoration: underline;
 }
+
+/* Active category styling */
+.dropdownContent li a.activeCategory {
+    background-color: #007bff;
+    color: #fff;
+}
