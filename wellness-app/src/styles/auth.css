@@ -56,24 +56,24 @@ form .input-box {
     font-size: 16px;
 }
 
-form .remember-forgot {
+form .checkbox {
     display: flex;
     justify-content: space-around;
     font-size: 14.5px;
     margin: -15px 0 15px;
 }
 
-.remember-forgot label input {
+.checkbox label input {
     accent-color: var(--light-beige);
     margin-right: 4px;
 }
 
-.remember-forgot a {
+.checkbox a {
     color: black;
     text-decoration: none;
 }
 
-.remember-forgot a:hover {
+.checkbox a:hover {
     text-decoration: underline;
 }
 
@@ -96,18 +96,18 @@ form button:hover {
     background-color: white;
 }
 
-form .register-link {
+form .link {
     font-size: 14.5px;
     text-align: center;
     margin: 20px 0 15px;
 }
 
-.register-link p a {
+.link p a {
     color: black;
     text-decoration: none;
     font-weight: 600;
 }
 
-.register-link p a:hover {
+.link p a:hover {
     text-decoration: underline;
 }

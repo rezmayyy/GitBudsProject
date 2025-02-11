@@ -207,10 +207,11 @@ const PostItem = ({ post, preview }) => {
       {/* Reply form for the main post */}
       {!preview && (
         <>
-          <button onClick={() => setShowReplyForm(!showReplyForm)}>
-            {showReplyForm ? 'Cancel' : 'Reply'}
-          </button>
-
+          <div style={{paddingTop: '10px'}}>
+            <button onClick={() => setShowReplyForm(!showReplyForm)}>
+              {showReplyForm ? 'Cancel' : 'Reply'}
+            </button>
+          </div>
           {showReplyForm && (
             <div className="reply-form">
               <textarea

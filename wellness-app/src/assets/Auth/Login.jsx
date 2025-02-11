@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Keep only one import statement for Link
-import "../../styles/login.css";
+import "../../styles/auth.css";
 import "../../styles/guide.css";
 import { FaUser, FaLock } from "react-icons/fa";
 import {auth} from "../Firebase";
@@ -66,7 +66,7 @@ function Login() {
                             <FaLock className="icon" />
                         </div>
 
-                        <div className="remember-forgot">
+                        <div className="checkbox">
                             <label>
                                 <input type="checkbox" /> Remember me
                             </label>
@@ -75,10 +75,9 @@ function Login() {
 
                         <button type="submit">Login</button>
 
-                        <div className="register-link">
+                        <div className="link">
                             <p>
-                                Don't have an account? 
-                                <Link to="/signup"> Sign Up</Link>
+                                Don't have an account? <Link to="/signup">Sign Up</Link>
                             </p>
                         </div>
                     </form>
