@@ -6,6 +6,7 @@ import styles from '../../styles/TicketList.module.css';
 import TicketFilters from './TicketFilters';
 import TicketItem from './TicketItem';
 import ViewTicket from './ViewTicket';
+import { useNavigate } from "react-router-dom";  // Import navigation
 
 function TicketList() {
     const [tickets, setTickets] = useState([]);
@@ -14,6 +15,7 @@ function TicketList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [ticketsPerPage] = useState(5);
     const [viewedTicketId, setViewedTicketId] = useState(null);
+    const navigate = useNavigate();  // Initialize navigation
 
     useEffect(() => {
         fetchTickets();
@@ -91,7 +93,6 @@ function TicketList() {
         return categoryOrder;
     });
 
-
     // Calculate the tickets to display based on pagination
     const indexOfLastTicket = currentPage * ticketsPerPage;
     const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
@@ -104,6 +105,15 @@ function TicketList() {
             ) : (
                 <>
                     <h2>{user.role === 'admin' || user.role === 'moderator' ? "All Tickets" : "Your Tickets"}</h2>
+                    
+                    {/* Add "New Ticket" Button */}
+                    <button 
+                        className={styles.newTicketButton} 
+                        onClick={() => navigate("/create-ticket")}
+                    >
+                        + New Ticket
+                    </button>
+
                     {user.role === 'admin' || user.role === 'moderator' ? (
                         <>
                             <TicketFilters currentView={view} setView={changeView} />
