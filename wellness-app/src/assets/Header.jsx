@@ -137,6 +137,7 @@ function Header() {
                         <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
                         <li><Link to="/discussion">Discussion Board</Link></li>
                         <li><Link to="/create-post">Create</Link></li>
+                        <li><Link to="/account">Account</Link></li>
                     </ul>
                 </div>
                 <div className="auth-buttons">
@@ -171,6 +172,7 @@ function Header() {
                             <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
                             <li><Link to="/discussion">Discussion Board</Link></li>
                             <li><Link to="/create-post">Create</Link></li>
+                          
                         </ul>
                         <div className="hamburger-auth-buttons">
                             {/* Conditional rendering for authentication actions */}
