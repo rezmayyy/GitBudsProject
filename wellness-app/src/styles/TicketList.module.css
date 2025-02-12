@@ -279,3 +279,19 @@
     font-weight: bold;
     border-radius: 4px;
 }
+
+.newTicketButton {
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.newTicketButton:hover {
+    background-color: #0056b3;
+}
+

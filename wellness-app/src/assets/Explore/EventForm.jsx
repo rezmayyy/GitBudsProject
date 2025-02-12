@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../Firebase';
 import { getAuth } from 'firebase/auth';
 
@@ -17,12 +17,16 @@ function EventForm({ setEvents }) {
         if (!user) return alert('You must be logged in to create events.');
 
         try {
-            await addDoc(collection(db, 'calendar-events'), {
+            const docRef = await addDoc(collection(db, 'calendar-events'), {
                 ...newEvent,
                 createdBy: user.uid,
                 createdByName: user.displayName || 'Anonymous',
+                timestamp: serverTimestamp(),
             });
-            alert('Event added successfully!');
+
+            setEvents(prevEvents => [...prevEvents, { id: docRef.id, ...newEvent, createdByName: user.displayName || 'Anonymous' }]);
+            alert('Event was added successfully!');
+
             setNewEvent({ title: '', description: '', date: '' });
         } catch (error) {
             console.error('Error adding event:', error);

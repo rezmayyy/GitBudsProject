@@ -113,7 +113,9 @@ function Header() {
                 <Link to="/">
                     <img src={logo} alt="TribeWell Logo" className="logo" />
                 </Link>
-                <h1>TribeWell</h1>
+                <Link style={{textDecoration: 'none'}} to="/">
+                    <h1 style={{align: 'center', color: 'white'}}>TribeWell</h1>
+                </Link>
             </div>
             <nav>
                 <div className="nav-center">
@@ -146,9 +148,11 @@ function Header() {
                             <Link to="/signup" className="auth-button">Sign Up</Link>
                         </>
                     ) : (
+
                         // If a user is logged in, show the Signout component
                         <Signout Link to="/" className="auth-button">Sign out</Signout>
                     
+
                     )}
                 </div>
                 <div className="hamburger-container">

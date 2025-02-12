@@ -40,10 +40,9 @@ h1 {
 }
 
 .logo {
-    margin-top: 0.5rem;
     max-width: 75px;
     height: auto;
-    padding-right: 0.5rem;
+    padding-right: 0.75rem;
 }
 
 nav {

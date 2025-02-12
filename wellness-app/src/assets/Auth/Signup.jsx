@@ -1,7 +1,7 @@
 import React from "react";
 import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "../../styles/login.css";
+import "../../styles/auth.css";
 import "../../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { auth} from "../Firebase";
@@ -106,19 +106,17 @@ function Signup() {
                             <FaLock className="icon" />
                         </div>
 
-                        <div className="tos-agree">
+                        <div className="checkbox">
                             <label>
-                                <input type="checkbox" required />
-                                I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>.
+                                <input type="checkbox" required /> I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>.
                             </label>
                         </div>
 
                         <button type="submit">Sign Up</button>
 
-                        <div className="login-link">
+                        <div className="link">
                             <p>
-                                Already have an account? 
-                                <Link to="/login"> Login</Link>
+                                Already have an account? <Link to="/login">Login</Link>
                             </p>
                         </div>
                     </form>

@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import PostItem from '../PostItem';
 import { collection, addDoc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
@@ -73,7 +73,7 @@ const DiscussionBoard = ({ preview }) => {
         </>
       )}
 
-      <div className="posts-list">
+      <div style={{paddingTop: '20px'}} className="posts-list">
         {user ? (
           displayedPosts.length > 0 ? (
             displayedPosts.map((post) => (
@@ -83,17 +83,23 @@ const DiscussionBoard = ({ preview }) => {
             <p>No posts yet. Be the first to share!</p>
           )
         ) : (
-          <p>You need to log in first to see the discussion board.</p>
+          <div>
+            <p>You must be a member to see the discussion board.</p>
+            <div className="auth-buttons">
+              <Link to="/login" className="auth-button">Log In</Link>
+              <Link to="/signup" className="auth-button">Sign Up</Link>
+            </div>
+          </div>
         )}
       </div>
 
-      {preview && (
-        <button onClick={() => navigate('/discussion')}>
-          Go to Discussion Board
-        </button>
+      <div className="view-board-button">
+      {user && preview && (
+          <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
       )}
+      </div>
     </div>
-  );
+  )
 };
 
 export default DiscussionBoard;

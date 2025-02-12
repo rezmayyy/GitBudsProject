@@ -49,3 +49,8 @@
     border: 1px solid #ddd; /* Light border around contact info */
     border-radius: 5px; /* Rounded corners for contact info */
 }
+/* Smooth scrolling effect */
+html {
+    scroll-behavior: smooth;
+}
+  
