@@ -2,8 +2,8 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import UserContext from './UserContext';
-import { db, storage, functions } from './Firebase'; // Import Firebase functions
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { db, storage, functions} from './Firebase'; // Import Firebase functions
+import { doc, getDoc, setDoc, Timestamp, deleteDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from '../styles/profile.module.css';
 import dummyPic from "./dummyPic.jpeg";
@@ -27,6 +27,8 @@ function Account() {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
+    const [activeTab, setActiveTab] = useState('changeDisplayName'); // default tab
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     // Fetch profile data and check user role
     useEffect(() => {
@@ -44,6 +46,10 @@ function Account() {
 
         fetchProfile();
     }, [userId, user]);
+
+    useEffect(() => {
+        setMessage('');
+    }, [activeTab]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -136,8 +142,23 @@ function Account() {
         // TODO
     };
 
-    const handleDeletion = () => {
-        // TODO
+        const handleDeletion = async (e) => {
+        e.preventDefault();
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDeletion = async () => {
+        try {
+            const docRef = doc(db, 'users', user.uid);
+            await deleteDoc(docRef);
+            // Add any additional cleanup like signing out the user
+            setMessage('Account deleted successfully');
+            // You might want to redirect the user or sign them out here
+        } catch (error) {
+            console.error('Error deleting account:', error);
+            setMessage('Failed to delete account. Please try again later.');
+        }
+        setShowDeleteConfirm(false);
     };
 
     const handlePasswordChange = async (e) => {
@@ -162,7 +183,7 @@ function Account() {
         }
     };
 
-    const [activeTab, setActiveTab] = useState('changeDisplayName'); // default tab
+    
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -180,7 +201,7 @@ function Account() {
                                 required
                             />
                             <FaUser className="icon" />
-                            <button className={styles.profileButton} type="submit">Change Profile Picture</button>
+                            <button className={styles.profileButton} type="submit">Change Display Name</button>
                         </form>
                     </div>
                 );
@@ -284,11 +305,29 @@ function Account() {
             case 'deleteAccount':
                 return (
                     <div className="delete-tab">
-                        <h3>Delete Account</h3>
-                        <form className="delete-form" onSubmit={handleDeletion}>
-                            <button className={styles.profileButton} type="submit">Delete</button>
-                        </form>
-                    </div>
+                    <h3>Delete Account</h3>
+                    <form className="delete-form" onSubmit={handleDeletion}>
+                        <p>Warning: This action cannot be undone.</p>
+                        <button className={styles.profileButton} type="submit">Delete Account</button>
+                    </form>
+                    
+                    {showDeleteConfirm && (
+                        <div className={styles.popup}>
+                            <div className={styles.popupContent}>
+                                <h4>Are you sure you want to delete your account?</h4>
+                                <p>This action cannot be undone.</p>
+                                <div className={styles.popupButtons}>
+                                    <button onClick={confirmDeletion} className={styles.deleteButton}>
+                                        Yes, Delete Account
+                                    </button>
+                                    <button onClick={() => setShowDeleteConfirm(false)} className={styles.cancelButton}>
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
                 );
             default:
                 return null;
@@ -309,6 +348,9 @@ function Account() {
                 </button>
                 <button onClick={() => setActiveTab('applyToBeAHealer')} className={`tab-button ${activeTab === 'applyToBeAHealer' ? 'active' : ''}`}>
                     Apply to Be a Healer
+                </button>
+                <button onClick={() => setActiveTab('deleteAccount')} className={`tab-button ${activeTab === 'deleteAccount' ? 'active' : ''}`}>
+                    Delete Account
                 </button>
             </div>
 
