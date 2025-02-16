@@ -14,15 +14,13 @@ import ProfileAudio from './ProfileAudio';
 import ProfileText from './ProfileText';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
-
 // Connect to emulator (only use this for local development)
 connectFunctionsEmulator(functions, "localhost", 5001);
 
-
 const Profile = () => {
   const { user } = useContext(UserContext);
-  const { userId } = user.uid;
-  const { username} = useParams();
+  const { uid} = useParams();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState({
     email: '',
     displayName: '',
@@ -40,40 +38,40 @@ const Profile = () => {
   const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
   const [message, setMessage] = useState('');
   const [isCurrentUser, setIsCurrentUser] = useState(false);
-  const navigate = useNavigate();
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [viewedUserId, setViewedUserId] = useState(null);
 
-
   // Fetch profile data and check user role
   useEffect(() => {
-    
     const fetchProfile = async () => {
-      if (!username) return;
+      if (!user) return;
 
-      // Correct Firestore v9+ query syntax
-      const usersRef = collection(db, 'users');
-      const q = query(usersRef, where('displayName', '==', username));
-      const querySnapshot = await getDocs(q);
+      let targetUid;
+      if (!uid) {
+        targetUid = user.uid;
+        setIsCurrentUser(true);
+      } else {
+        targetUid = uid;
+        setIsCurrentUser(uid === user.uid);
+      }
 
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-        const viewedUserId = userDoc.id; 
-        setProfileData(userDoc.data());
-        setTempProfileData(userDoc.data());
+      const docRef = doc(db, 'users', targetUid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setProfileData(userData);
+        setTempProfileData(userData);
         setProfilePicturePreview(userData.profilePicUrl || dummyPic);
-        // Determine if the logged-in user is viewing their own profile
-        setIsCurrentUser(user?.uid === userDoc.id);
-        setViewedUserId(viewedUserId);
+        setViewedUserId(targetUid);
       } else {
         console.log("User not found");
-        setIsCurrentUser(false)
+        setIsCurrentUser(false);
       }
-    };
+  };
 
     const checkSubscription = async () => {
-      if (user && userId) {
+      if (user && viewedUserId && viewedUserId !== user.uid) {
         const subscriptionRef = doc(db, `users/${user.uid}/subscriptions`, viewedUserId);
         const docSnap = await getDoc(subscriptionRef);
         setIsSubscribed(docSnap.exists());
@@ -94,14 +92,13 @@ const Profile = () => {
     fetchProfile();
     checkSubscription();
     checkUserRole();
-  }, [userId, user, username]);
+  }, [user, uid, viewedUserId]);
 
   useEffect(() => {
-    if (!username && user?.displayName) {
-      navigate(`/profile/${user.displayName}`);
+    if (!uid && user?.displayName) {
+      navigate(`/profile/${user.uid}`);
     }
-  }, [user, username, navigate]);
-  
+  }, [user, uid, navigate]);
 
   const handleProfilePictureChange = (e) => {
     if (e.target.files[0]) {
@@ -111,7 +108,6 @@ const Profile = () => {
     }
   };
   
-
   // Save profile updates to Firestore and Storage
   const handleSave = async () => {
     try {
@@ -139,7 +135,6 @@ const Profile = () => {
       setMessage('Failed to update profile. Try again later.');
     }
   };
-  
 
   const handleSubscribe = async () => {
     try {
@@ -151,7 +146,7 @@ const Profile = () => {
       } else {
         // Subscribe logic
         await setDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId), {
-          userID: userId,
+          userID: user.uid,
           timestamp: Timestamp.now(),
         });
         await setDoc(doc(db, `users/${viewedUserId}/subscribers`, user.uid), {
@@ -211,7 +206,6 @@ const Profile = () => {
       console.error('Error unbanning user:', error);
       alert('Failed to unban the user. Please try again. (Server functions require firebase blaze)');
     }
-
   };
 
   const handleMainTabClick = (tab) => {
@@ -247,7 +241,6 @@ const Profile = () => {
               >
                 Change Profile Picture
               </button>
-
               {profilePictureFile && (
                 <button className={styles.profileButton} onClick={handleSave}>
                   Save Changes
@@ -264,7 +257,6 @@ const Profile = () => {
         {isCurrentUser && (
           <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
         )}
-
 
         {!isCurrentUser && user ? (
           <button
