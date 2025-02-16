@@ -1,5 +1,5 @@
 import './App.css';
-import "./styles/auth.css"
+import "./styles/auth.css";
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
@@ -10,6 +10,7 @@ import Login from './assets/Auth/Login';
 import Signup from './assets/Auth/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile/Profile';
+import PublicProfile from './assets/Profile/PublicProfile';
 import AccountSettings from './assets/Account';
 import TOS from './assets/TOS';
 import PrivacyPolicy from './assets/PrivacyPolicy';
@@ -39,27 +40,34 @@ function App() {
       <Router>
         <Header />
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/profile/:username" element={<Profile />} />
-          <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
-          <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
-          <Route path="/create-post" element={<CreatePost />} />
-          <Route path="/content/:postId" element={<ContentPostPage/> }/>
-          <Route path="/accountsettings" element={<AccountSettings />} />
-          <Route path="/tos" element={<TOS />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
-          <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
-          <Route path="/support" element={<Support />} />
-          <Route path="/ticket" element={<Ticket />} />
-          <Route path="/create-ticket" element={<CreateTicket />} />
-          <Route path="/search" element={<SearchResults />} />
-          <Route path="/recover" element={<ForgotPassword />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/profile/diary" element={<DiaryPage /> } />
-          <Route path="/profile/diary/editor" element={<DiaryEditor /> } />
-          <Route path="/explore" element={<ExplorePage />} />
+          {/* Auth routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/recover" element={<ForgotPassword />} />
+
+            {/* Profile routes */}
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:username" element={<Profile />} />
+            {/* Public profile route for viewing other users */}
+            <Route path="/publicprofile/:userId" element={<PublicProfile />} />
+
+            {/* Main pages */}
+            <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
+            <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
+            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/content/:postId" element={<ContentPostPage />} />
+            <Route path="/accountsettings" element={<AccountSettings />} />
+            <Route path="/tos" element={<TOS />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/ticket" element={<Ticket />} />
+            <Route path="/create-ticket" element={<CreateTicket />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/profile/diary" element={<DiaryPage />} />
+            <Route path="/profile/diary/editor" element={<DiaryEditor />} />
+            <Route path="/explore" element={<ExplorePage />} />
         </Routes>
         <Footer />
       </Router>
