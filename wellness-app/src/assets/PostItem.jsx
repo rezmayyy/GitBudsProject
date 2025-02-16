@@ -30,9 +30,14 @@ const PostItem = ({ post, preview }) => {
     fetchUserProfilePic();
   }, [post.profilePicUrl, post.userId]);
 
-  const goToUserProfile = (userId) => {
-    navigate(`/profile/${userId}`);
-  };
+  const goToUserProfile = (clickedUserId) => {
+  if (user && clickedUserId === user.uid) {
+    navigate(`/profile/${user.uid}`);
+  } else {
+    navigate(`/publicprofile/${clickedUserId}`);
+  }
+};
+
   
   // Toggle like for the main post
   const toggleLike = async () => {
