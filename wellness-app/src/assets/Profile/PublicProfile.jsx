@@ -5,6 +5,7 @@ import { db } from '../Firebase';
 import UserContext from '../UserContext';
 import dummyPic from '../dummyPic.jpeg';
 import styles from '../../styles/profile.module.css';
+import '../../styles//Subscriptions.css';
 
 const PublicProfile = () => {
   const { userId } = useParams(); // The public user's ID
