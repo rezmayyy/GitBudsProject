@@ -34,8 +34,6 @@ body{
 
 /* ----------Subscription Section---------- */
 .subscriptions-list li {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
   padding: 10px 10px;
   border-bottom: 1px solid #ddd;
@@ -44,17 +42,6 @@ body{
 .subscriptions-list li span {
   margin-right: 15px;
 }
-
-.remove-link {
-  color: #e91515;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.remove-link:hover {
-  text-decoration: underline;
-}
-
 
 /* Content Posts */
 

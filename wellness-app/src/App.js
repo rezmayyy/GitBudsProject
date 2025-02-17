@@ -3,7 +3,6 @@ import "./styles/auth.css";
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
-// Update these import statements
 import Header from './assets/Header';
 import Home from './assets/Home/Home';
 import Login from './assets/Auth/Login';
@@ -47,7 +46,7 @@ function App() {
 
             {/* Profile routes */}
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/profile/:uid" element={<Profile />} />
             {/* Public profile route for viewing other users */}
             <Route path="/publicprofile/:userId" element={<PublicProfile />} />
 
