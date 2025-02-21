@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { getAuth } from 'firebase/auth';
 import { db } from './Firebase';
 import 'bootstrap/dist/css/bootstrap.min.css'
 
@@ -10,13 +11,24 @@ const ContentPostPage = () => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTitle, setEditedTitle] = useState("");
+    const [editedDescription, setEditedDescription] = useState("");
+
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+
+
     //error handling
     useEffect(() => {
         const fetchPost = async () => { //fetch from firebase
             const postDoc = doc(db, 'content-posts', postId);
             const postSnapshot = await getDoc(postDoc);
             if (postSnapshot.exists()) {
-                setPost({ id: postId, ...postSnapshot.data() });
+                const postData = {id: postId, ...postSnapshot.data()};
+                setPost(postData);
+                setEditedTitle(postData.title);
+                setEditedDescription(postData.description);
             } else {
                 console.error('No such document!');
             }
@@ -29,6 +41,42 @@ const ContentPostPage = () => {
     if (loading) {
         return <div>Loading...</div>;
     }
+    if(!post){
+        return <div>Error loading post</div>
+    }
+
+    const isAuthor = currentUser?.displayName === post.author; //do we have authorId for the author field?
+
+    const handleEdit = () => {
+        if(isAuthor) {
+            setIsEditing(true);
+        }
+    }
+
+    const handleSave = async() => {
+        try{
+            if(!post) {
+                return;
+            }
+            const postRef = doc(db, "content-posts", post.id);
+            await updateDoc(postRef, {
+                title: editedTitle, 
+                description: editedDescription
+            });
+            setPost((prev) => ({
+                ...prev, 
+                title: editedTitle, 
+                description: editedDescription
+            }))
+            setIsEditing(null);
+        } catch(error){
+            console.error("Error updating post ", error)
+        }
+    }
+
+
+
+
 
     return (
         <div className="container d-flex justify-content-center align-items-center" style={{marginTop: '50px', marginBottom: '50px'}}>
@@ -47,9 +95,44 @@ const ContentPostPage = () => {
                 
                         {/* title and description */}
                         <div className="card-body">
-                            <h5 className="card-title">{post.title}</h5>
+                        {isAuthor ? (isEditing === "title" ? (
+                                <input 
+                                    type="text"
+                                    className="form-control mb-2"
+                                    value={editedTitle}
+                                    onChange={(e) => setEditedTitle(e.target.value)} 
+                                    onBlur={handleSave} //stop edititng when clicked away
+                                    autoFocus
+                                />
+                                ) : (
+                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
+                                )) : (
+                                    <h5 className="card-title">{post.title}</h5>
+                                )}
+
+                            {isAuthor ? (isEditing === "description" ? (
+                                <textarea 
+                                    type="text"
+                                    className="form-control mb-2"
+                                    value={editedDescription}
+                                    onChange={(e) => setEditedDescription(e.target.value)} 
+                                    onBlur={handleSave}
+                                    autoFocus
+                                />
+                                
+                        ) : (
+                            <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
+                        )) : (
                             <p className="card-text">{post.description}</p>
-                            <h6 className="card-subtitle text-muted"> By: {post.author} </h6> {/* will need to add author field to the db */}
+                        )}
+
+                        {isEditing && (
+                            <button className="btn btn-success" onClick={handleSave}>
+                                Save
+                            </button>
+                        )}
+                        
+                        <h6 className="card-subtitle text-muted"> By: {post.author} </h6> {/* will need to add author field to the db */}
                         </div>
 
                         {/* author section */}
@@ -81,9 +164,56 @@ const ContentPostPage = () => {
                         <source src={post.fileURL} type="audio/mpeg" />
                         Your browser does not support the audio tag.
                       </audio>
-                      <h5 className="card-title mt-3">{post.title}</h5>
-                      <p className="card-text">{post.description}</p>
-                      <h6 className="card-subtitle text-muted">By: {post.author}</h6>
+                      
+                    </div>
+                    {/* title and description */}
+                    <div className="card-body">
+                        
+                        {isAuthor ? (isEditing === "title" ? (
+                                <input 
+                                    type="text"
+                                    className="form-control mb-2"
+                                    value={editedTitle}
+                                    onChange={(e) => setEditedTitle(e.target.value)} 
+                                    onBlur={handleSave} //stop edititng when clicked away
+                                    autoFocus
+                                />
+                                ) : (
+                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
+                                )) : (
+                                    <h5 className="card-title">{post.title}</h5>
+                                )}
+
+                            {isAuthor ? (isEditing === "description" ? (
+                                <textarea 
+                                    type="text"
+                                    className="form-control mb-2"
+                                    value={editedDescription}
+                                    onChange={(e) => setEditedDescription(e.target.value)} 
+                                    onBlur={handleSave}
+                                    autoFocus
+                                />
+                                
+                        ) : (
+                            <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
+                        )) : (
+                            <p className="card-text">{post.description}</p>
+                        )}
+
+                        {isEditing && (
+                            <button className="btn btn-success" onClick={handleSave}>
+                                Save
+                            </button>
+                        )}
+                        
+                        <h6 className="card-subtitle text-muted"> By: {post.author} </h6> {/* will need to add author field to the db */}
+                        
+                    </div>
+
+                    {/* author section */}
+                    <div className="card-footer">
+                        <h6>About the Author</h6>
+                        <p className="text-muted">Short section about the author.</p>
                     </div>
                   </div>
                 )}
