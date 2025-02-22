@@ -22,3 +22,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .DS_Store
+
+# Ignore Firebase service account key for security reasons
+src/assets/Events/ServiceAccountKey.json

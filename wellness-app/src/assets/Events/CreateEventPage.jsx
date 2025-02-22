@@ -10,6 +10,7 @@ function CreateEventPage() {
     const [description, setDescription] = useState('');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
+    const [endTime, setEndTime] = useState('');
     const [location, setLocation] = useState('');
     const [maxParticipants, setMaxParticipants] = useState('');
     const [images, setImages] = useState([]); // Store selected images
@@ -21,12 +22,10 @@ function CreateEventPage() {
 
     const handleImageChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-
         setImages((prevImages) => {
             const newImages = [...prevImages, ...selectedFiles].slice(0, 5); // Append new images while keeping max 5
             return newImages;
         });
-
         setThumbnail(null); // Reset thumbnail selection when new images are uploaded
     };
 
@@ -35,7 +34,6 @@ function CreateEventPage() {
             const updatedImages = prevImages.filter((_, i) => i !== index);
             return updatedImages;
         });
-
         // Reset thumbnail if the removed image was set as the thumbnail
         if (thumbnail && images[index] === thumbnail) {
             setThumbnail(null);
@@ -51,17 +49,26 @@ function CreateEventPage() {
             now.setSeconds(0, 0);
 
             const [year, month, day] = date.split('-').map(Number);
-            const [hours, minutes] = time.split(':').map(Number);
-            const eventDateTime = new Date(year, month - 1, day, hours, minutes, 0);
+            const [startHours, startMinutes] = time.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+            const eventDateTime = new Date(year, month - 1, day, startHours, startMinutes, 0);
+            const eventEndDateTime = new Date(year, month - 1, day, endHours, endMinutes, 0);
 
             if (eventDateTime <= now) {
-                alert("Event date and time must be in the future.");
+                alert("Event start time must be in the future.");
+                setUploading(false);
+                return;
+            }
+
+            if (eventEndDateTime <= eventDateTime) {
+                alert("End time must be after start time.");
                 setUploading(false);
                 return;
             }
 
             const eventRef = doc(collection(db, 'events'));
-            const eventId = eventRef.id;
+            const eventId = eventRef.id; // Get the generated event ID
             const imageUrls = [];
             let thumbnailUrl = DEFAULT_THUMBNAIL;
 
@@ -80,9 +87,11 @@ function CreateEventPage() {
 
             await setDoc(eventRef, {
                 title,
+                title_lower: title.toLowerCase(),
                 description,
                 date: eventDateTime,
                 time,
+                endTime,
                 location,
                 maxParticipants: parsedMaxParticipants,
                 images: imageUrls,
@@ -93,14 +102,10 @@ function CreateEventPage() {
             });
 
             alert('Event Created Successfully!');
-            setTitle('');
-            setDescription('');
-            setDate('');
-            setTime('');
-            setLocation('');
-            setMaxParticipants('');
-            setImages([]);
-            setThumbnail(null);
+
+            // Redirect user to the newly created event's details page
+            navigate(`/events/${eventId}`);
+
         } catch (error) {
             console.error('Error creating event:', error);
             alert('Failed to create event.');
@@ -108,7 +113,6 @@ function CreateEventPage() {
             setUploading(false);
         }
     };
-
 
     return (
         <div>
@@ -129,77 +133,169 @@ function CreateEventPage() {
 
             <h1>Create Event</h1>
             <form onSubmit={handleSubmit}>
-                <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-                <textarea placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} min={new Date().toISOString().split("T")[0]} />
-                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} required />
-                <input type="text" placeholder="Location (Address or Zoom Link)" value={location} onChange={(e) => setLocation(e.target.value)} required />
-                <input
-                    type="number"
-                    placeholder="Max Participants (leave empty for unlimited)"
-                    value={maxParticipants}
-                    onChange={(e) => setMaxParticipants(Math.max(0, parseInt(e.target.value) || ''))}
-                    min="1"
-                />
+                <fieldset>
+                    <legend>Event Details</legend>
 
-
-                {/* File input for images */}
-                <input type="file" multiple accept="image/*" onChange={handleImageChange} />
-                <p>Selected {images.length} image(s) (Max: 5)</p>
-
-                {/* Thumbnail selection (only show if images were uploaded) */}
-                {images.length > 0 && (
                     <div>
-                        <h3>Selected Images</h3>
-                        {images.map((image, index) => (
-                            <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
-                                <input
-                                    type="radio"
-                                    name="thumbnail"
-                                    checked={thumbnail && thumbnail.name === image.name}
-                                    onChange={() => setThumbnail(image)}
-                                    style={{ marginRight: "10px" }}
-                                />
-                                <img
-                                    src={URL.createObjectURL(image)}
-                                    alt="Selected preview"
-                                    style={{
-                                        width: "100px",
-                                        height: "100px",
-                                        objectFit: "cover",
-                                        marginRight: "10px",
-                                        border: thumbnail && thumbnail.name === image.name ? "3px solid blue" : "1px solid gray",
-                                        cursor: "pointer"
-                                    }}
-                                    onClick={() => setThumbnail(image)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveImage(index)}
-                                    style={{
-                                        background: "none",
-                                        border: "1px solid gray",
-                                        color: "gray",
-                                        padding: "5px 10px",
-                                        cursor: "pointer",
-                                        borderRadius: "5px",
-                                        fontSize: "14px",
-                                        width: "100px"
-                                    }}
-                                >
-                                    Remove
-                                </button>
-                            </div>
-                        ))}
+                        <label htmlFor="title">Title: </label>
+                        <input
+                            type="text"
+                            id="title"
+                            maxLength="100"
+                            placeholder="Title (Max: 100)"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            required
+                        />
+                        <small>{title.length}/100</small>
                     </div>
-                )}
 
+                    <div>
+                        <label htmlFor="description">Description: </label>
+                        <textarea
+                            id="description"
+                            maxLength="1000"
+                            placeholder="Description (Max: 1000)"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            required
+                        />
+                        <small>{description.length}/1000</small>
+                    </div>
 
+                    <div>
+                        <label htmlFor="date">Date: </label>
+                        <input
+                            type="date"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            min={new Date().toISOString().split("T")[0]}
+                        />
+                    </div>
 
-                <button type="submit" disabled={uploading}>{uploading ? 'Uploading...' : 'Create Event'}</button>
+                    <div>
+                        <label htmlFor="time">Time: </label>
+                        <input
+                            type="time"
+                            id="time"
+                            value={time}
+                            onChange={(e) => setTime(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="endTime">End Time: </label>
+                        <input
+                            type="time"
+                            id="endTime"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="location">Location: </label>
+                        <input
+                            type="text"
+                            id="location"
+                            maxLength="200"
+                            placeholder="Location (Address or Zoom Link (Max: 200))"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            required
+                        />
+                        <small>{location.length}/200</small>
+                    </div>
+
+                    <div>
+                        <label htmlFor="maxParticipants">Max Participants: </label>
+                        <input
+                            type="number"
+                            id="maxParticipants"
+                            placeholder="Max Participants (leave empty for unlimited)"
+                            value={maxParticipants}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setMaxParticipants(value === '' ? '' : Math.max(1, parseInt(value) || 1));
+                            }}
+                            min="1"
+                        />
+
+                    </div>
+
+                    <div>
+                        <label htmlFor="eventImages">Upload event images: </label>
+                        <input
+                            type="file"
+                            id="eventImages"
+                            multiple
+                            accept="image/*"
+                            onChange={handleImageChange}
+                        />
+                        <p>Selected {images.length} image(s) (Max: 5)</p>
+                    </div>
+
+                    {images.length > 0 && (
+                        <div>
+                            <h3>Selected Images</h3>
+                            {images.map((image, index) => (
+                                <div
+                                    key={index}
+                                    style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="thumbnail"
+                                        checked={thumbnail && thumbnail.name === image.name}
+                                        onChange={() => setThumbnail(image)}
+                                        style={{ marginRight: "10px" }}
+                                    />
+                                    <img
+                                        src={URL.createObjectURL(image)}
+                                        alt="Selected preview"
+                                        style={{
+                                            width: "100px",
+                                            height: "100px",
+                                            objectFit: "cover",
+                                            marginRight: "10px",
+                                            border: thumbnail && thumbnail.name === image.name ? "3px solid blue" : "1px solid gray",
+                                            cursor: "pointer"
+                                        }}
+                                        onClick={() => setThumbnail(image)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveImage(index)}
+                                        style={{
+                                            background: "none",
+                                            border: "1px solid gray",
+                                            color: "gray",
+                                            padding: "5px 10px",
+                                            cursor: "pointer",
+                                            borderRadius: "5px",
+                                            fontSize: "14px",
+                                            width: "100px"
+                                        }}
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <button type="submit" disabled={uploading}>
+                        {uploading ? 'Uploading...' : 'Create Event'}
+                    </button>
+                </fieldset>
             </form>
+
         </div>
     );
+
 }
 
 export default CreateEventPage;
