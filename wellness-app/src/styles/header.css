@@ -237,3 +237,53 @@ a:hover {
     border-radius: 50%;
     object-fit: cover;
 }
+
+
+.hamburger-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Adds space between the icon and profile picture */
+}
+
+/* Styles the hamburger button */
+.hamburger-button {
+    font-size: 24px;
+    padding: 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--menu-icon-color);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Styles the profile picture */
+.profile-picture {
+    width: 40px; /* Adjusts size */
+    height: 40px;
+    border-radius: 50%; /* Makes it circular */
+    object-fit: cover; /* Ensures proper cropping */
+    cursor: pointer; /* Indicates it's clickable */
+}
+
+/* Menu Content Styling */
+.menu-content {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    position: absolute;
+    top: 50px;
+    left: auto;
+    right: 16px; /* Ensures proper alignment */
+    background-color: var(--menu-item-bg);
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+/* Makes menu visible */
+.menu-content.active {
+    opacity: 1;
+    visibility: visible;
+}
