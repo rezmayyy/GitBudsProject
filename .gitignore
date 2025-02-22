@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Ignore Firebase service account key for security reasons
+src/assets/Events/ServiceAccountKey.json
