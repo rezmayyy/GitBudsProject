@@ -1,9 +1,10 @@
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from './Firebase';
-import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 
 const ContentPostPage = () => {
@@ -14,6 +15,12 @@ const ContentPostPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedTitle, setEditedTitle] = useState("");
     const [editedDescription, setEditedDescription] = useState("");
+
+    const [likes, setLikes] = useState([]);
+    const [dislikes, setDislikes] = useState([]);
+
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState("");
 
     const auth = getAuth();
     const currentUser = auth.currentUser;
@@ -29,6 +36,8 @@ const ContentPostPage = () => {
                 setPost(postData);
                 setEditedTitle(postData.title);
                 setEditedDescription(postData.description);
+                setLikes(postData.likes || []);
+                setDislikes(postData.dislikes || []);
             } else {
                 console.error('No such document!');
             }
@@ -46,6 +55,72 @@ const ContentPostPage = () => {
     }
 
     const isAuthor = currentUser?.displayName === post.author; //do we have authorId for the author field?
+
+
+    const handleLike = async () => {
+
+        if(!currentUser){
+            setMessage("You need to be logged in to like to a post.")
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 3000)
+            return;
+        }
+
+        const postRef = doc(db, "content-posts", post.id);
+        
+        let updatedLikes = [...likes];
+        let updatedDislikes = [...dislikes];
+
+        if(likes.includes(currentUser.uid)){
+            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
+        }
+        else{
+            updatedLikes.push(currentUser.uid);
+            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
+        }
+
+        await updateDoc(postRef, {
+            likes: updatedLikes,
+            dislikes: updatedDislikes,
+        })
+
+        setLikes(updatedLikes);
+        setDislikes(updatedDislikes);
+    }
+
+
+    const handleDislike = async () => {
+
+        if(!currentUser){
+            setMessage("You need to be logged in to dislike to a post.")
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 3000)
+            return;
+        }
+
+        const postRef = doc(db, "content-posts", post.id);
+        
+        let updatedLikes = [...likes];
+        let updatedDislikes = [...dislikes];
+
+        if(dislikes.includes(currentUser.uid)){
+            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
+        }
+        else{
+            updatedDislikes.push(currentUser.uid);
+            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
+        }
+
+        await updateDoc(postRef, {
+            likes: updatedLikes,
+            dislikes: updatedDislikes,
+        })
+
+        setLikes(updatedLikes);
+        setDislikes(updatedDislikes);
+
+    }
+
 
     const handleEdit = () => {
         if(isAuthor) {
@@ -92,6 +167,16 @@ const ContentPostPage = () => {
                                 Your browser does not support the video tag.
                             </video>
                         </div>
+
+                        <div className="card-body">
+                            <button className="btn btn-light" onClick={handleLike}>
+                                <i className="bi bi-hand-thumbs-up"></i> {likes.length}
+                            </button>
+                            <button className="btn btn-light ms-2" onClick={handleDislike}>
+                                <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
+                            </button>    
+                        </div>
+
                 
                         {/* title and description */}
                         <div className="card-body">
@@ -166,6 +251,18 @@ const ContentPostPage = () => {
                       </audio>
                       
                     </div>
+
+
+                    <div className="card-body">
+                        <button className="btn btn-light" onClick={handleLike}>
+                            <i className="bi bi-hand-thumbs-up"></i> {likes.length}
+                        </button>
+                        <button className="btn btn-light ms-2" onClick={handleDislike}>
+                            <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
+                        </button>    
+                    </div>
+
+
                     {/* title and description */}
                     <div className="card-body">
                         
@@ -220,15 +317,26 @@ const ContentPostPage = () => {
 
 
                 {/* article posts */}
-
                 {post.type === 'article' && (
                     <div>
                         <div className="article-header">
                             <h2 className="card-title mb-2">{post.title}</h2>
-                            <p className="text-muted">
-                                By: {post.author} | Date: {post.date}
-                            </p>
+                            <div className="d-flex align-items-center justify-content-between">
+                                <p className="text-muted mb-0">
+                                    By: {post.author} | Date: {post.date}
+                                </p>
+                                <div className="d-flex align-items-center gap-2">
+                                <button className="btn btn-light" onClick={handleLike}>
+                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
+                                </button>
+                                <button className="btn btn-light ms-2" onClick={handleDislike}>
+                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
+                                </button>    
+                            </div>
                         </div>
+                        </div>
+
+                        
 
                         <div className="card-body">
                             <p className="card-text">{post.description}</p>
@@ -237,6 +345,23 @@ const ContentPostPage = () => {
                     </div>
                 )}
             </div>
+
+            {showMessage && (
+                <div className="modal show d-block" tabIndex="-1">
+                    <div className="modal-dialog">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Notice</h5>
+                                <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
+                            </div>
+                            <div className="modal-body">
+                                <p>{message}</p>
+                                <Link to="/login" className="btn btn-primary">Log In</Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
