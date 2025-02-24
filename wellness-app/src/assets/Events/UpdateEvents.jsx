@@ -1,5 +1,7 @@
+// Script to add eventType to all events in Firestore
+
 const admin = require("firebase-admin");
-const serviceAccount = require("./ServiceAccountKey.json"); // Replace with your actual service account key file
+const serviceAccount = require("./ServiceAccountKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -7,7 +9,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-async function updateOldEvents() {
+async function updateEventTypes() {
   const eventsRef = db.collection("events");
   const snapshot = await eventsRef.get();
 
@@ -22,20 +24,19 @@ async function updateOldEvents() {
   snapshot.forEach((doc) => {
     const eventData = doc.data();
 
-    // Only update if titleLower does not exist
-    if (!eventData.titleLower) {
-      const titleLower = eventData.title ? eventData.title.toLowerCase() : "";
-      batch.update(doc.ref, { titleLower });
+    // Only update if eventType does not exist
+    if (!eventData.eventType) {
+      batch.update(doc.ref, { eventType: "Local Gathering" });
       updatedCount++;
     }
   });
 
   if (updatedCount > 0) {
     await batch.commit();
-    console.log(`✅ Updated ${updatedCount} events.`);
+    console.log(`✅ Updated ${updatedCount} events with eventType: "Local Gathering".`);
   } else {
-    console.log("🎉 All events already have titleLower!");
+    console.log("🎉 All events already have an eventType!");
   }
 }
 
-updateOldEvents().catch(console.error);
+updateEventTypes().catch(console.error);

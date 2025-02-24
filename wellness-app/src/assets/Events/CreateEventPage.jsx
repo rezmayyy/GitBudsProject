@@ -4,6 +4,7 @@ import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
+import Events from "./Events.css";
 
 function CreateEventPage() {
     const [title, setTitle] = useState('');
@@ -11,6 +12,8 @@ function CreateEventPage() {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [eventType, setEventType] = useState("Local Gathering"); // Default to one type
+    const EVENT_TYPES = ["Local Gathering", "Workshop", "Retreat", "Webinar"];
     const [location, setLocation] = useState('');
     const [maxParticipants, setMaxParticipants] = useState('');
     const [images, setImages] = useState([]); // Store selected images
@@ -92,6 +95,7 @@ function CreateEventPage() {
                 date: eventDateTime,
                 time,
                 endTime,
+                eventType,
                 location,
                 maxParticipants: parsedMaxParticipants,
                 images: imageUrls,
@@ -115,28 +119,17 @@ function CreateEventPage() {
     };
 
     return (
-        <div>
-            <button
-                onClick={() => navigate("/events")}
-                style={{
-                    marginBottom: "15px",
-                    padding: "8px 12px",
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer"
-                }}
-            >
+        <div className="create-event-page">
+            <button onClick={() => navigate("/events")} className="back-button">
                 ← Back to Events
             </button>
 
-            <h1>Create Event</h1>
-            <form onSubmit={handleSubmit}>
-                <fieldset>
-                    <legend>Event Details</legend>
+            <h1 className="create-event-title">Create Event</h1>
+            <form onSubmit={handleSubmit} className="create-event-form">
+                <fieldset className="event-fieldset">
+                    <legend className="event-legend">Event Details</legend>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="title">Title: </label>
                         <input
                             type="text"
@@ -147,10 +140,10 @@ function CreateEventPage() {
                             onChange={(e) => setTitle(e.target.value)}
                             required
                         />
-                        <small>{title.length}/100</small>
+                        <small className="char-count">{title.length}/100</small>
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="description">Description: </label>
                         <textarea
                             id="description"
@@ -160,10 +153,10 @@ function CreateEventPage() {
                             onChange={(e) => setDescription(e.target.value)}
                             required
                         />
-                        <small>{description.length}/1000</small>
+                        <small className="char-count">{description.length}/1000</small>
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="date">Date: </label>
                         <input
                             type="date"
@@ -174,7 +167,7 @@ function CreateEventPage() {
                         />
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="time">Time: </label>
                         <input
                             type="time"
@@ -185,7 +178,7 @@ function CreateEventPage() {
                         />
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="endTime">End Time: </label>
                         <input
                             type="time"
@@ -196,7 +189,21 @@ function CreateEventPage() {
                         />
                     </div>
 
-                    <div>
+                    <div className="form-group">
+                        <label htmlFor="eventType">Event Type: </label>
+                        <select
+                            id="eventType"
+                            value={eventType}
+                            onChange={(e) => setEventType(e.target.value)}
+                            required
+                        >
+                            {EVENT_TYPES.map((type) => (
+                                <option key={type} value={type}>{type}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
                         <label htmlFor="location">Location: </label>
                         <input
                             type="text"
@@ -207,10 +214,10 @@ function CreateEventPage() {
                             onChange={(e) => setLocation(e.target.value)}
                             required
                         />
-                        <small>{location.length}/200</small>
+                        <small className="char-count">{location.length}/200</small>
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="maxParticipants">Max Participants: </label>
                         <input
                             type="number"
@@ -223,10 +230,9 @@ function CreateEventPage() {
                             }}
                             min="1"
                         />
-
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="eventImages">Upload event images: </label>
                         <input
                             type="file"
@@ -235,67 +241,47 @@ function CreateEventPage() {
                             accept="image/*"
                             onChange={handleImageChange}
                         />
-                        <p>Selected {images.length} image(s) (Max: 5)</p>
+                        <p className="image-count">Selected {images.length} image(s) (Max: 5)</p>
                     </div>
 
                     {images.length > 0 && (
-                        <div>
-                            <h3>Selected Images</h3>
-                            {images.map((image, index) => (
-                                <div
-                                    key={index}
-                                    style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}
-                                >
-                                    <input
-                                        type="radio"
-                                        name="thumbnail"
-                                        checked={thumbnail && thumbnail.name === image.name}
-                                        onChange={() => setThumbnail(image)}
-                                        style={{ marginRight: "10px" }}
-                                    />
-                                    <img
-                                        src={URL.createObjectURL(image)}
-                                        alt="Selected preview"
-                                        style={{
-                                            width: "100px",
-                                            height: "100px",
-                                            objectFit: "cover",
-                                            marginRight: "10px",
-                                            border: thumbnail && thumbnail.name === image.name ? "3px solid blue" : "1px solid gray",
-                                            cursor: "pointer"
-                                        }}
-                                        onClick={() => setThumbnail(image)}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveImage(index)}
-                                        style={{
-                                            background: "none",
-                                            border: "1px solid gray",
-                                            color: "gray",
-                                            padding: "5px 10px",
-                                            cursor: "pointer",
-                                            borderRadius: "5px",
-                                            fontSize: "14px",
-                                            width: "100px"
-                                        }}
-                                    >
-                                        Remove
-                                    </button>
-                                </div>
-                            ))}
+                        <div className="image-preview-container">
+                            <h3>Choose Thumbnail</h3>
+                            <div className="image-preview-container-images">
+                                {images.map((image, index) => (
+                                    <div key={index} className="image-preview">
+                                        <input
+                                            type="radio"
+                                            name="thumbnail"
+                                            checked={thumbnail && thumbnail.name === image.name}
+                                            onChange={() => setThumbnail(image)}
+                                        />
+                                        <img
+                                            src={URL.createObjectURL(image)}
+                                            alt="Selected preview"
+                                            className={`thumbnail-preview ${thumbnail && thumbnail.name === image.name ? 'selected-thumbnail' : ''}`}
+                                            onClick={() => setThumbnail(image)}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveImage(index)}
+                                            className="remove-image-button"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 
-                    <button type="submit" disabled={uploading}>
+                    <button type="submit" className="submit-button" disabled={uploading}>
                         {uploading ? 'Uploading...' : 'Create Event'}
                     </button>
                 </fieldset>
             </form>
-
         </div>
     );
-
 }
 
 export default CreateEventPage;
