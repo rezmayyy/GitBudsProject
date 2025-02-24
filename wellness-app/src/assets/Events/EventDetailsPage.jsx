@@ -7,6 +7,7 @@ import { formatToLocalTime } from "./EventsPage";
 import dummyPic from "../dummyPic.jpeg"; // Replace with your default profile pic
 import RegistrationForm from "./RegistrationForm";
 import ParticipantList from "./ParticipantList";
+import Events from "./Events.css";
 
 function EventDetailsPage() {
     const { eventId } = useParams();
@@ -22,9 +23,7 @@ function EventDetailsPage() {
     const [userRegistered, setUserRegistered] = useState(false); // New state for user registration status
 
     const handleRegisterClick = () => {
-        console.log("Register button clicked, showing form");
         setShowRegistrationForm(true);
-        console.log("showRegistrationForm:", showRegistrationForm); // Debugging log
     };
 
     const handleCloseForm = () => {
@@ -33,49 +32,49 @@ function EventDetailsPage() {
 
     const handleUnregister = async () => {
         if (!auth.currentUser || !event) return;
-    
+
         try {
             const userIsRegistered = event.attendees.some(attendee => attendee.uid === auth.currentUser.uid);
-    
+
             if (!userIsRegistered) {
                 alert("You are not registered for this event.");
                 return;
             }
-    
+
             const eventRef = doc(db, "events", eventId);
-    
+
             // Find the index of the user to remove from the attendees array
             const indexToRemove = event.attendees.findIndex(attendee => attendee.uid === auth.currentUser.uid);
-    
+
             if (indexToRemove === -1) {
                 console.log("User not found in attendees array.");
                 return;
             }
-    
+
             // Construct a new array excluding the user
             const updatedAttendees = [
                 ...event.attendees.slice(0, indexToRemove),
                 ...event.attendees.slice(indexToRemove + 1)
             ];
-    
+
             // Update the document with the new attendees array
             await updateDoc(eventRef, {
                 attendees: updatedAttendees
             });
-    
+
             // Reload the page to get fresh data
             window.location.reload(); // This will refresh the page and fetch the latest data
-    
+
             alert("You have been unregistered from the event.");
         } catch (error) {
             console.error("Error unregistering:", error);
             alert("Failed to unregister.");
         }
     };
-    
-    
 
     useEffect(() => {
+        let unsubscribe; // Declare outside to clean up properly
+
         async function fetchEventDetails() {
             try {
                 const eventDoc = await getDoc(doc(db, "events", eventId));
@@ -106,14 +105,14 @@ function EventDetailsPage() {
                         }
                     }
 
-                    // Real-time listener for attendees to update the participant count
+                    // Real-time listener for attendees
                     const eventRef = doc(db, "events", eventId);
-                    const unsubscribe = onSnapshot(eventRef, (doc) => {
+                    unsubscribe = onSnapshot(eventRef, (doc) => {
                         if (doc.exists()) {
                             const data = doc.data();
-                            setParticipants(data.attendees ? data.attendees.length : 0);  // Update participants count
+                            setParticipants(data.attendees ? data.attendees.length : 0); // Update count
 
-                            // Check if current user is in the attendees list
+                            // Check if current user is registered
                             if (auth.currentUser && data.attendees) {
                                 const isUserRegistered = data.attendees.some(
                                     (attendee) => attendee.uid === auth.currentUser.uid
@@ -122,9 +121,6 @@ function EventDetailsPage() {
                             }
                         }
                     });
-
-                    // Cleanup listener when the component is unmounted
-                    return () => unsubscribe();
                 }
             } catch (error) {
                 console.error("Error fetching event details:", error);
@@ -134,6 +130,13 @@ function EventDetailsPage() {
         }
 
         fetchEventDetails();
+
+        // Cleanup listener when the component is unmounted
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
     }, [eventId]);
 
     async function handleDelete() {
@@ -174,64 +177,18 @@ function EventDetailsPage() {
     if (!event) return <p>Event not found.</p>;
 
     return (
-        <div>
-            <button
-                onClick={() => navigate("/events")}
-                style={{
-                    marginBottom: "15px",
-                    padding: "8px 12px",
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer"
-                }}
-            >
+        <div className="event-details-container">
+            <button className="back-button" onClick={() => navigate("/events")}>
                 ← Back to Events
             </button>
-
-            <h1>{event.title}</h1>
-            <p><strong>Description:</strong> {event.description}</p>
-            <p><strong>Date:</strong> {event.date?.toLocaleDateString() || "Date unavailable"}</p>
-            <p><strong>Time:</strong> {event.localTime} {event.endTime ? ` - ${formatToLocalTime(new Date(`1970-01-01T${event.endTime}`))}` : ""}</p>
-            <p><strong>Location:</strong> {event.location}</p>
-            <p><strong>Participants:</strong> {participants} {event.maxParticipants === -1 ? "(Unlimited)" : `/${event.maxParticipants}`}</p> {/* Updated count here */}
-            <ParticipantList attendees={event.attendees || []} />
-
-            <div style={{ marginTop: "10px" }}>
-                <strong>Created by:</strong>
-                {user ? (
-                    <a
-                        href={`/profile/${event.createdBy}`}
-                        style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            textDecoration: "underline",
-                            color: "#007bff", /* Bootstrap's blue */
-                            fontWeight: "bold",
-                            marginLeft: "5px"
-                        }}
-                    >
-                        {creatorName}
-                        <img
-                            src={creatorPic || dummyPic}
-                            alt={`${creatorName}'s profile`}
-                            style={{ width: "40px", height: "40px", borderRadius: "50%", marginLeft: "8px" }}
-                        />
-                    </a>
-                ) : (
-                    <span style={{ marginLeft: "5px", fontStyle: "italic", color: "#888" }}>
-                        Log in to see the creator
-                    </span>
-                )}
-            </div>
-
-            {userRegistered ? (
-                <button onClick={handleUnregister} style={{ marginTop: "10px", padding: "8px 12px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+            <div className="event-info-details">
+                <h1 className="event-title-details">{event.title}</h1>
+                {userRegistered ? (
+                <button className="unregister-button" onClick={handleUnregister}>
                     Unregister from Event
                 </button>
             ) : (
-                <button onClick={handleRegisterClick} style={{ marginTop: "10px", padding: "8px 12px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                <button className="register-button" onClick={handleRegisterClick}>
                     Register for Event
                 </button>
             )}
@@ -241,32 +198,44 @@ function EventDetailsPage() {
             )}
 
             {user?.uid === event.createdBy && (
-                <button
-                    onClick={handleDelete}
-                    style={{
-                        marginTop: "20px",
-                        padding: "10px",
-                        backgroundColor: "red",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer"
-                    }}
-                >
+                <button className="delete-button" onClick={handleDelete}>
                     Delete Event
                 </button>
             )}
+                <p><strong>Date:</strong> {event.date?.toLocaleDateString() || "Date unavailable"}</p>
+                <p><strong>Time:</strong> {event.localTime} {event.endTime ? ` - ${formatToLocalTime(new Date(`1970-01-01T${event.endTime}`))}` : ""}</p>
+                <p><strong>Event Type:</strong> {event.eventType || "Not specified"}</p>
+                <p><strong>Location:</strong> {event.location}</p>
+                <p><strong>Participants:</strong> {participants} {event.maxParticipants === -1 ? "(Unlimited)" : `/${event.maxParticipants}`}</p>
+                <ParticipantList attendees={event.attendees || []} />
+                <br></br><br></br>
+                <strong>Description:</strong><br></br> 
+                <div className="event-info-description">
+                    {event.description}
+                </div>
+            </div>
+            <br></br>
+
+            <div className="event-creator">
+                <strong>Created by:</strong>
+                {user ? (
+                    <a href={`/profile/${event.createdBy}`} className="creator-link">
+                        {creatorName}
+                        <img src={creatorPic || dummyPic} alt={`${creatorName}'s profile`} className="creator-image" />
+                    </a>
+                ) : (
+                    <span className="creator-placeholder">
+                        Log in to see the creator
+                    </span>
+                )}
+            </div>
+            <br></br><br></br>
 
             <h3>Event Images</h3>
             {event.images?.length > 0 ? (
-                <div style={{ display: "flex", overflowX: "auto", gap: "10px", marginTop: "10px" }}>
+                <div className="event-images-container">
                     {event.images.map((imageUrl, index) => (
-                        <img
-                            key={index}
-                            src={imageUrl}
-                            alt={`Event ${index + 1}`}
-                            style={{ width: "200px", height: "150px", objectFit: "cover", borderRadius: "8px" }}
-                        />
+                        <img key={index} src={imageUrl} alt={`Event ${index + 1}`} className="event-image" />
                     ))}
                 </div>
             ) : (
@@ -274,6 +243,7 @@ function EventDetailsPage() {
             )}
         </div>
     );
+
 }
 
 export default EventDetailsPage;
