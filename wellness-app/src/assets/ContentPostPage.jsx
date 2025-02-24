@@ -1,8 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from './Firebase';
+import {format} from "date-fns";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -150,6 +151,7 @@ const ContentPostPage = () => {
     }
 
 
+    const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
 
 
 
@@ -323,23 +325,24 @@ const ContentPostPage = () => {
                             <h2 className="card-title mb-2">{post.title}</h2>
                             <div className="d-flex align-items-center justify-content-between">
                                 <p className="text-muted mb-0">
-                                    By: {post.author} | Date: {post.date}
+                                    By: {post.author} | Date: {formattedDate}
                                 </p>
                                 <div className="d-flex align-items-center gap-2">
-                                <button className="btn btn-light" onClick={handleLike}>
-                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                </button>
-                                <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                </button>    
+                                    <button className="btn btn-light" onClick={handleLike}>
+                                        <i className="bi bi-hand-thumbs-up"></i> {likes.length}
+                                    </button>
+                                    <button className="btn btn-light ms-2" onClick={handleDislike}>
+                                        <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
+                                    </button>    
+                                </div>
                             </div>
                         </div>
-                        </div>
-
-                        
 
                         <div className="card-body">
-                            <p className="card-text">{post.description}</p>
+                            
+                            {post.thumbnailURL && (
+                                <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{maxHeight: "300px", objectFit: "cover"}} />
+                            )}
                             <div dangerouslySetInnerHTML={{ __html: post.body }} className="article-body" />
                         </div>
                     </div>
