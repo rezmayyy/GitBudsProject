@@ -213,6 +213,7 @@ function CreatePost() {
             body: articleBody,
             author: user.displayName,
             timestamp: serverTimestamp(),
+            lastUpdated: serverTimestamp(),
             status: "pending"
         };
 
@@ -244,7 +245,6 @@ function CreatePost() {
             [{ 'header': [3, 4, 5, 6, false] }],
             [{ 'list': 'ordered' }, { 'list': 'bullet' }],
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
             [{ 'color': [] }, { 'background': [] }],
             [{ 'align': [] }],
             ['link', 'image'],
