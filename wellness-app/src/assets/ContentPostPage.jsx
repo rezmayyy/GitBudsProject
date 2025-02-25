@@ -7,6 +7,9 @@ import {format} from "date-fns";
 import { getUserIdByDisplayName } from '../Utils/firebaseUtils';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import DOMPurify from 'dompurify';
 
 
 const ContentPostPage = () => {
@@ -17,6 +20,7 @@ const ContentPostPage = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [editedTitle, setEditedTitle] = useState("");
     const [editedDescription, setEditedDescription] = useState("");
+    const [editedBody, setEditedBody] = useState("");
 
     const [likes, setLikes] = useState([]);
     const [dislikes, setDislikes] = useState([]);
@@ -39,8 +43,9 @@ const ContentPostPage = () => {
             if (postSnapshot.exists()) {
                 const postData = {id: postId, ...postSnapshot.data()};
                 setPost(postData);
-                setEditedTitle(postData.title);
-                setEditedDescription(postData.description);
+                setEditedTitle(postData.title || "");
+                setEditedDescription(postData.description || "");
+                setEditedBody(postData.body || "")
                 setLikes(postData.likes || []);
                 setDislikes(postData.dislikes || []);
                 const id = await getUserIdByDisplayName(postData.author);
@@ -62,7 +67,7 @@ const ContentPostPage = () => {
         return <div>Error loading post</div>
     }
 
-    const isAuthor = currentUser?.displayName === post.author; //do we have authorId for the author field?
+    const isAuthor = currentUser?.displayName === post.author;
     
     
 
@@ -143,28 +148,45 @@ const ContentPostPage = () => {
                 return;
             }
             const postRef = doc(db, "content-posts", post.id);
-            await updateDoc(postRef, {
-                title: editedTitle, 
-                description: editedDescription
-            });
+            const updatedData = {};
+            if(editedTitle) updatedData.title = editedTitle;
+            if(editedDescription) updatedData.description = editedDescription;
+            if(editedBody) updatedData.body = editedBody;
+            updatedData.lastUpdated = serverTimestamp();
+            
+            await updateDoc(postRef, updatedData);
+
+            const updatedPostSnapshot = await getDoc(postRef);
+            const updatedPostData = updatedPostSnapshot.data();
             setPost((prev) => ({
                 ...prev, 
-                title: editedTitle, 
-                description: editedDescription
+                ...updatedPostData
             }))
-            setIsEditing(null);
+            setIsEditing("");
         } catch(error){
-            console.error("Error updating post ", error)
+            console.error("Error updating post ", error);
         }
     }
    
     const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
+    const formattedLastUpdated = post.lastUpdated && post.lastUpdated.toDate ? format(post.lastUpdated.toDate(), "PP p") : "Unknown Date";
 
+    const modules = {
+        toolbar: [
+            [{ 'header': [3, 4, 5, 6, false] }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    }
 
 
     return (
         <div className="container d-flex justify-content-center align-items-center" style={{marginTop: '50px', marginBottom: '50px'}}>
-            <div className={`card ${post.type}-post`} style={{ maxWidth: '600px', width: '100%'}}>
+            <div className={`card ${post.type}-post`} style={{ maxWidth: '800px', width: '100%'}}>
                 
                 {/* video posts */}
 
@@ -329,11 +351,31 @@ const ContentPostPage = () => {
                 {post.type === 'article' && (
                     <div>
                         <div className="article-header">
-                            <h2 className="card-title mb-2">{post.title}</h2>
+                            
+                            {isAuthor ? (isEditing === "title" ? (
+                                <input 
+                                    type="text"
+                                    className="form-control mb-2"
+                                    value={editedTitle}
+                                    onChange={(e) => setEditedTitle(e.target.value)} 
+                                    onBlur={handleSave} //stop edititng when clicked away
+                                    autoFocus
+                                />
+                                ) : (
+                                    <h2 className="card-title mb-2" onDoubleClick={() => setIsEditing("title")}>{post.title}</h2>
+                                )) : (
+                                    <h2 className="card-title mb-2">{post.title}</h2>
+                            )}
+
+                            {isEditing === "title" && (
+                                <button className="btn btn-success" onClick={handleSave}>
+                                    Save
+                                </button>
+                            )}
+                        
+                        
                             <div className="d-flex align-items-center justify-content-between">
-                                <p className="text-muted mb-0">
-                                By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate}
-                                </p>
+                            <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6> {/* will need to add author field to the db */}
                                 <div className="d-flex align-items-center gap-2">
                                     <button className="btn btn-light" onClick={handleLike}>
                                         <i className="bi bi-hand-thumbs-up"></i> {likes.length}
@@ -348,9 +390,30 @@ const ContentPostPage = () => {
                         <div className="card-body">
                             
                             {post.thumbnailURL && (
-                                <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{maxHeight: "300px", objectFit: "cover"}} />
+                                <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{maxHeight: "800px", objectFit: "cover"}} />
                             )}
-                            <div dangerouslySetInnerHTML={{ __html: post.body }} className="article-body" />
+
+                            {isAuthor ? (isEditing === "body" ? (
+                                <ReactQuill
+                                    value={editedBody}
+                                    onChange={setEditedBody}
+                                    onBlur={handleSave}
+                                    autoFocus
+                                    modules={modules}
+                                />
+                                ) : (
+                                    <div className="article-body" onDoubleClick={() => setIsEditing("body")} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
+                                )) : (
+                                    <div className="article-body" dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(post.body)}}/> 
+                                )}
+
+                            {isEditing === "body" && (
+                                <button className="btn btn-success" onClick={handleSave}>
+                                    Save
+                                </button>
+                            )}
+
+                            
                         </div>
                     </div>
                 )}
