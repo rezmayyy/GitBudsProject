@@ -1,5 +1,5 @@
 import './App.css';
-import "./styles/auth.css";
+import './styles/auth.css';
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { UserProvider } from './assets/UserContext';
@@ -28,8 +28,11 @@ import DiaryPage from './assets/Diary/DiaryPage';
 import DiaryEditor from './assets/Diary/DiaryEditor';
 import ExplorePage from './assets/Explore/ExplorePage';
 import EventsPage from './assets/Events/EventsPage';
-import EventDetailsPage from "./assets/Events/EventDetailsPage";
+import EventDetailsPage from './assets/Events/EventDetailsPage';
 import CreateEventPage from './assets/Events/CreateEventPage';
+import About from './assets/About';
+import Contact from './assets/Contact';
+import Payment from './assets/Payment';
 
 
 function App() {
@@ -73,6 +76,9 @@ function App() {
             <Route path="/events" element={<EventsPage/>} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
             <Route path="/create-event" element={<CreateEventPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/payment" element={<Payment />} />
         </Routes>
         <Footer />
       </Router>
