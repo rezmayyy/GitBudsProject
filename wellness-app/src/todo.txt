@@ -17,6 +17,7 @@ User Profiles & Subscriptions
     Clicking profile icons (discussion board/home) should lead to usernames, not user IDs.
     Quick-link usernames to profiles on videos, articles, and audio.
     Add a support option on users' profile pages.
+    Add an option to edit your own about section
 
 Payments & Memberships
 

@@ -11,7 +11,8 @@ function RecentVideos() {
         const fetchRecentVideos = async () => {
             const q = query(
                 collection(db, 'content-posts'),
-                where('type', '==', 'video'), 
+                where('status', '==', 'approved'), 
+                where('type', '==', 'video'),
                 orderBy('timestamp', 'desc'),
                 limit(10)
             );

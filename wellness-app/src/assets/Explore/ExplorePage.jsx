@@ -22,7 +22,7 @@ function ExplorePage() {
 
         const fetchContent = async () => {
             const fetchData = async (type) => {
-                const q = query(collection(db, 'content-posts'), where('type', '==', type));
+                const q = query(collection(db, 'content-posts'), where('status', '==', 'approved'), where('type', '==', type));
                 const snapshot = await getDocs(q);
                 return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             };
