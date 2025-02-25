@@ -294,7 +294,7 @@ const Profile = () => {
           activeSubTab === 'videos' ? <ProfileVideos /> :
           activeSubTab === 'audio' ? <ProfileAudio /> :
           activeSubTab === 'articles' ? <ProfileArticles /> :
-          <p>Select a category above.</p>
+          <></>
         )}
         {activeTab === 'about' && <p>About Content</p>}
         {activeTab === 'contact' && <p>Contact Content</p>}
