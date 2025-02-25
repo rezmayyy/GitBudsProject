@@ -1,9 +1,10 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs} from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from './Firebase';
 import {format} from "date-fns";
+import { getUserIdByDisplayName } from '../Utils/firebaseUtils';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
@@ -26,6 +27,9 @@ const ContentPostPage = () => {
     const auth = getAuth();
     const currentUser = auth.currentUser;
 
+    const [uid, setUid] = useState("");
+
+
 
     //error handling
     useEffect(() => {
@@ -39,6 +43,9 @@ const ContentPostPage = () => {
                 setEditedDescription(postData.description);
                 setLikes(postData.likes || []);
                 setDislikes(postData.dislikes || []);
+                const id = await getUserIdByDisplayName(postData.author);
+                setUid(id);
+
             } else {
                 console.error('No such document!');
             }
@@ -56,7 +63,8 @@ const ContentPostPage = () => {
     }
 
     const isAuthor = currentUser?.displayName === post.author; //do we have authorId for the author field?
-
+    
+    
 
     const handleLike = async () => {
 
@@ -149,8 +157,7 @@ const ContentPostPage = () => {
             console.error("Error updating post ", error)
         }
     }
-
-
+   
     const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
 
 
@@ -219,7 +226,7 @@ const ContentPostPage = () => {
                             </button>
                         )}
                         
-                        <h6 className="card-subtitle text-muted"> By: {post.author} </h6> {/* will need to add author field to the db */}
+                        <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
                         </div>
 
                         {/* author section */}
@@ -305,7 +312,7 @@ const ContentPostPage = () => {
                             </button>
                         )}
                         
-                        <h6 className="card-subtitle text-muted"> By: {post.author} </h6> {/* will need to add author field to the db */}
+                        <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
                         
                     </div>
 
@@ -325,7 +332,7 @@ const ContentPostPage = () => {
                             <h2 className="card-title mb-2">{post.title}</h2>
                             <div className="d-flex align-items-center justify-content-between">
                                 <p className="text-muted mb-0">
-                                    By: {post.author} | Date: {formattedDate}
+                                By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate}
                                 </p>
                                 <div className="d-flex align-items-center gap-2">
                                     <button className="btn btn-light" onClick={handleLike}>
