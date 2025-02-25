@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
 import '../../styles/Text.css';
+import UserContext from '../UserContext';
 
 function ProfileText() {
     const [UserText, setUserText] = useState([]);
-    const { username } = useParams(); // Get the dynamic username from the URL
+    const { user } = useContext(UserContext);
+   
+     // Get the dynamic username from the URL
 
     useEffect(() => {
         const fetchUserText = async () => {
             const q = query(
                 collection(db, 'content-posts'),
-                where('type', '==', 'text'), 
-                where('author', '==', username),
+                where('type', '==', 'article'), 
+                where('author', '==', user.displayName),
                 orderBy('timestamp', 'desc'),
             );
 
@@ -38,8 +41,9 @@ function ProfileText() {
                 {UserText.length > 0 ? (
                     UserText.map(text => (
                         <div key={text.id} className="text-item">
-                            <h3>{text.title}</h3>
-                            <source src={text.url} type="text" />
+                            <Link to={`/content/${text.id}`}>
+                                <h3>{text.title}</h3>
+                            </Link>
                         </div>
                     ))
                 ) : (

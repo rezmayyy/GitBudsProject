@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
 import '../../styles/Posts.css';
+import UserContext from '../UserContext';
 
 function UserPosts() {
     const [UserPosts, setUserPosts] = useState([]);
-    const { username } = useParams(); // Get the dynamic username from the URL
-
+    const { user } = useContext(UserContext);
     useEffect(() => {
         const fetchUserPosts = async () => {
             const q = query(
                 collection(db, 'content-posts'),
-                where('author', '==', username),
+                where('author', '==', user.displayName),
                 orderBy('timestamp', 'desc'),
             );
 
