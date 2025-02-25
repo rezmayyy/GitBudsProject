@@ -7,7 +7,7 @@ import { formatToLocalTime } from "./EventsPage";
 import dummyPic from "../dummyPic.jpeg"; // Replace with your default profile pic
 import RegistrationForm from "./RegistrationForm";
 import ParticipantList from "./ParticipantList";
-import Events from "./Events.css";
+import styles from "../../styles/Events.css";
 
 function EventDetailsPage() {
     const { eventId } = useParams();

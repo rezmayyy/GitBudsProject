@@ -4,7 +4,7 @@ import { collection, query, orderBy, where, getDocs, Timestamp } from "firebase/
 import { db } from "../Firebase";
 import logo from '../Logo.png';
 import EventSearch from "./EventSearch";
-import Events from "./Events.css";
+import styles from "../../styles/Events.css";
 
 const defaultThumbnail = logo;
 

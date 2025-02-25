@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../../styles/Posts.css';
+import styles from '../../styles/Posts.css';
 import UserContext from '../UserContext';
 
 function UserPosts() {
@@ -32,8 +32,8 @@ function UserPosts() {
     }, []);
 
     return (
-        <div className="userPosts">
-            <div className="posts-list">
+        <div className="post">
+            <div className="post-list">
                 {UserPosts.length > 0 ? (
                     UserPosts.map(post => (
                         <div key={post.id} className="post-item">

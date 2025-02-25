@@ -11,7 +11,7 @@ import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
 import ProfileVideos from './ProfileVideos';
 import ProfileAudio from './ProfileAudio';
-import ProfileText from './ProfileText';
+import ProfileArticles from './ProfileArticles';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
 // Connect to emulator (only use this for local development)
@@ -31,8 +31,8 @@ const Profile = () => {
 
   const [tempProfileData, setTempProfileData] = useState(profileData);
   const [profilePictureFile, setProfilePictureFile] = useState(null);
-  const [activeTab, setActiveTab] = useState('posts'); // Initialize activeTab
-  const [activeSubTab, setActiveSubTab] = useState(null); // Sub-tab state
+  const [activeTab, setActiveTab] = useState('posts'); // set default tab state to posts
+  const [activeSubTab, setActiveSubTab] = useState('videos'); // set default sub-tab state to videos
   const [reason, setReason] = useState(''); // State for report reason
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
@@ -211,7 +211,7 @@ const Profile = () => {
   const handleMainTabClick = (tab) => {
     setActiveTab(tab);
     if (tab !== 'posts') {
-      setActiveSubTab(null); // Reset sub-tabs if not in Posts
+      setActiveSubTab(activeSubTab); // remember state of active sub tab
     }
   };
 
@@ -255,7 +255,7 @@ const Profile = () => {
 
         {/* Button for adding a new diary entry */}
         {isCurrentUser && (
-          <button className="btn btn-primary mt-3" onClick={() => navigate('/profile/diary')}>View My Diary</button>
+          <button className="diaryButton" onClick={() => navigate('/profile/diary')}>View My Diary</button>
         )}
 
         {!isCurrentUser && user ? (
@@ -275,32 +275,29 @@ const Profile = () => {
         )}
       </div>
 
-      <div className={styles.profilePage}>
-        <div className={styles.navLinks}>
-          <button onClick={() => handleMainTabClick('posts')} className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}>Posts</button>
-          <button onClick={() => handleMainTabClick('about')} className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}>About</button>
-          <button onClick={() => handleMainTabClick('contact')} className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}>Contact</button>
-        </div>
+      <div className={styles.navLinks}>
+        <button onClick={() => handleMainTabClick('posts')} className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}>Posts</button>
+        <button onClick={() => handleMainTabClick('about')} className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}>About</button>
+        <button onClick={() => handleMainTabClick('contact')} className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}>Contact</button>
+      </div>
 
-        {/* Sub-tabs for Posts */}
+      <div className={styles.contentArea}>
         {activeTab === 'posts' && (
           <div className={styles.subNavLinks}>
-            <button onClick={() => setActiveSubTab('videos')} className={`${styles.navButton} ${activeSubTab === 'videos' ? styles.active : ''}`}>Videos</button>
-            <button onClick={() => setActiveSubTab('audio')} className={`${styles.navButton} ${activeSubTab === 'audio' ? styles.active : ''}`}>Audio</button>
-            <button onClick={() => setActiveSubTab('articles')} className={`${styles.navButton} ${activeSubTab === 'articles' ? styles.active : ''}`}>Articles</button>
+            <button onClick={() => setActiveSubTab('videos')} className={`${styles.subNavButton} ${activeSubTab === 'videos' ? styles.active : ''}`}>Videos</button>
+            <button onClick={() => setActiveSubTab('audio')} className={`${styles.subNavButton} ${activeSubTab === 'audio' ? styles.active : ''}`}>Audio</button>
+            <button onClick={() => setActiveSubTab('articles')} className={`${styles.subNavButton} ${activeSubTab === 'articles' ? styles.active : ''}`}>Articles</button>
           </div>
         )}
 
-        <div className={styles.contentArea}>
-          {activeTab === 'posts' && (
-            activeSubTab === 'videos' ? <ProfileVideos /> :
-            activeSubTab === 'audio' ? <ProfileAudio /> :
-            activeSubTab === 'articles' ? <ProfileText /> :
-            <p>Select a category under Posts.</p>
-          )}
-          {activeTab === 'about' && <p>About Content</p>}
-          {activeTab === 'contact' && <p>Contact Content</p>}
-        </div>
+        {activeTab === 'posts' && (
+          activeSubTab === 'videos' ? <ProfileVideos /> :
+          activeSubTab === 'audio' ? <ProfileAudio /> :
+          activeSubTab === 'articles' ? <ProfileArticles /> :
+          <></>
+        )}
+        {activeTab === 'about' && <p>About Content</p>}
+        {activeTab === 'contact' && <p>Contact Content</p>}
       </div>
 
       {message && <p className="message">{message}</p>}

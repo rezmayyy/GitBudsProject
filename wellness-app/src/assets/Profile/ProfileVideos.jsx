@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../../styles/Text.css';
+import styles from '../../styles/Videos.css';
 import UserContext from '../UserContext';
 
 function ProfileVideos() {
@@ -34,11 +34,11 @@ function ProfileVideos() {
     }, []);
 
     return (
-        <div className="userVideos">
-            <div className="video-list">
+        <div className="video">
+            <div className="video-grid">
                 {UserVideos.length > 0 ? (
                     UserVideos.map(video => (
-                        <div key={video.id} className="video-item">
+                        <div key={video.id} className="video-card">
                             <h3>{video.title}</h3>
                             <video width="320" height="240" controls>
                                 <source src={video.url} type="video/mp4" />
