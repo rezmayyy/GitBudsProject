@@ -28,6 +28,8 @@ header {
     justify-content: space-between;
 }
 
+
+
 .brand-container {
     display: flex;
     align-items: center;
@@ -49,7 +51,10 @@ h1 {
 .right-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* Profile Picture */
@@ -59,7 +64,9 @@ h1 {
     border-radius: 50%;
     object-fit: cover;
     cursor: pointer;
+    border: 2px solid white;
 }
+
 
 nav {
     display: flex;
@@ -89,7 +96,9 @@ nav {
     padding: 0;
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-grow: 1;
+    font-size: 0.9rem;  /* Reduce font size for better fit */
 }
 
 .auth-buttons {
@@ -102,11 +111,11 @@ nav {
 .auth-button, .menu-link {
     background-color: var(--auth-button-bg);
     color: black;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.5rem; /* Increased padding for uniform size */
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease;
-    font-family: 'Montserrat';
+    font-family: 'Montserrat', sans-serif;
     color: var(--menu-text-color);
     border: 1px solid #333;
 }
@@ -140,6 +149,16 @@ a:hover {
 .nav-links a:hover {
     text-decoration: underline;
 }
+
+
+/* Add More Space Between Sidebar Auth Buttons */
+.hamburger-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increased spacing between buttons */
+    margin-top: 20px;
+}
+
 /* For screens wider than 768px */
 @media (min-width: 769px) {
     .nav-links,
@@ -166,157 +185,3 @@ a:hover {
     }
 }
 
-
-.hamburger-button {
-    font-size: 24px;
-    padding: 8px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--menu-icon-color);
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.hamburger-button:hover {
-    background-color: var(--menu-hover-bg);
-    transform: scale(1.1);
-    border-radius: 4px;
-}
-
-/* Sidebar Menu - Initially Hidden */
-.menu-content {
-    position: fixed;
-    top: 0;
-    right: -300px; /* Off-screen initially */
-    width: 280px;
-    height: 100vh;
-    background: var(--menu-item-bg);
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    transition: right 0.3s ease-in-out;
-    padding: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    border-left: 2px solid rgba(0, 0, 0, 0.1);
-}
-
-/* Sidebar Active - Slides in */
-.menu-content.active {
-    right: 0;
-}
-
-/* Sidebar Links */
-.hamburger-nav-links a {
-    display: block;
-    font-size: 16px;
-    font-family: 'Poppins', sans-serif;
-    color: black;
-    text-decoration: none;
-    padding: 12px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-.hamburger-nav-links a:hover {
-    background-color: var(--menu-item-hover-bg);
-}
-
-/* Authentication Buttons Inside Sidebar */
-.hamburger-auth-buttons .menu-link {
-    width: 100%;
-    text-align: center;
-    background-color: var(--auth-button-bg);
-    color: black;
-    padding: 10px;
-    border-radius: 5px;
-    font-weight: bold;
-    text-decoration: none;
-    margin-top: 10px;
-    transition: background-color 0.3s ease;
-}
-
-.hamburger-auth-buttons .menu-link:hover {
-    background-color: var(--auth-button-hover-bg);
-}
-
-/* Close Button (X) */
-.close-button {
-    font-size: 24px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: black;
-    position: absolute;
-    top: 16px;
-    right: 16px;
-}
-
-.close-button:hover {
-    opacity: 0.7;
-}
-
-/* Overlay - Closes Sidebar on Click */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 900;
-    display: none;
-}
-
-.overlay.active {
-    display: block;
-}
-
-
-
-/* Sidebar - Initially Hidden */
-.menu-content {
-    position: fixed;
-    top: 0;
-    right: -300px; /* Off-screen */
-    width: 280px;
-    height: 100vh;
-    background: white;
-    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
-    transition: right 0.3s ease-in-out;
-    padding: 20px;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Sidebar Active - Slides in */
-.menu-content.active {
-    right: 0;
-}
-
-/* Overlay - Covers Background When Sidebar Opens */
-.overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 900;
-    display: none;
-}
-
-.overlay.active {
-    display: block;
-}
-
-/* Close Button */
-.close-button {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
