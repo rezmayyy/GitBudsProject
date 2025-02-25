@@ -225,7 +225,7 @@ function CreatePost() {
             author: user.displayName,
             timestamp: serverTimestamp(),
             lastUpdated: serverTimestamp(),
-            status: "pending"
+            status: autoApprove? "approved" : "pending"
         };
       
         try {

@@ -32,8 +32,8 @@ const ContentPostPage = () => {
     const currentUser = auth.currentUser;
 
     const [uid, setUid] = useState("");
-
-
+    const [isAuthorized, setIsAuthorized] = useState(false);
+    const [error, setError] = useState(null);
 
     //error handling
     useEffect(() => {
@@ -50,7 +50,24 @@ const ContentPostPage = () => {
                 setDislikes(postData.dislikes || []);
                 const id = await getUserIdByDisplayName(postData.author);
                 setUid(id);
+                if (postData.status === 'approved') {
+                    setIsAuthorized(true);
+                }
+                else if (currentUser) {
+                    const userRef = doc(db, 'users', currentUser.uid);
+                    const userSnap = await getDoc(userRef);
 
+                    if (userSnap.exists()) {
+                        const role = userSnap.data().role;
+                        const isAuthorized = role === 'admin' || role === 'moderator';
+
+                        if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
+                            setIsAuthorized(true);
+                        } else {
+                            setError('You do not have permission to view this post.');
+                        }
+                    }
+                }
             } else {
                 console.error('No such document!');
             }
@@ -66,8 +83,12 @@ const ContentPostPage = () => {
     if(!post){
         return <div>Error loading post</div>
     }
-
     const isAuthor = currentUser?.displayName === post.author;
+    if(!isAuthorized)
+    {
+        return <div>Page is private</div>
+    }
+    
     
     
 
