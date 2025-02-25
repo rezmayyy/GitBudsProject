@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { doc, updateDoc, arrayUnion, getDoc } from "firebase/firestore";
 import { db, auth } from "../Firebase";
-import './Events.css';
+import styles from '../../styles/Events.css';
 
 function RegistrationForm({ eventId, onClose }) {
     const [firstName, setFirstName] = useState("");

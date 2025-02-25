@@ -4,7 +4,7 @@ import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
-import Events from "./Events.css";
+import styles from "../../styles/Events.css";
 
 function CreateEventPage() {
     const [title, setTitle] = useState('');

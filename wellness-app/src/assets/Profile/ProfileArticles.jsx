@@ -2,17 +2,15 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../../styles/Text.css';
+import styles from '../../styles/Articles.css';
 import UserContext from '../UserContext';
 
-function ProfileText() {
-    const [UserText, setUserText] = useState([]);
-    const { user } = useContext(UserContext);
-   
-     // Get the dynamic username from the URL
+function ProfileArticles() {
+    const [UserArticles, setUserArticles] = useState([]);
+    const { user } = useContext(UserContext); // Get the dynamic username from the URL
 
     useEffect(() => {
-        const fetchUserText = async () => {
+        const fetchUserArticles = async () => {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'article'), 
@@ -21,7 +19,7 @@ function ProfileText() {
             );
 
             const querySnapshot = await getDocs(q);
-            const text = querySnapshot.docs.map(doc => {
+            const Articles = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -29,29 +27,29 @@ function ProfileText() {
                     url: data.fileURL
                 };
             });
-            setUserText(text);
+            setUserArticles(Articles);
         };
 
-        fetchUserText();
+        fetchUserArticles();
     }, []);
 
     return (
-        <div className="userText">
-            <div className="text-list">
-                {UserText.length > 0 ? (
-                    UserText.map(text => (
-                        <div key={text.id} className="text-item">
-                            <Link to={`/content/${text.id}`}>
-                                <h3>{text.title}</h3>
+        <div className="article">
+            <div className="article-list">
+                {UserArticles.length > 0 ? (
+                    UserArticles.map(Articles => (
+                        <div key={Articles.id} className="article-item">
+                            <Link to={`/content/${Articles.id}`}>
+                                <h3>{Articles.title}</h3>
                             </Link>
                         </div>
                     ))
                 ) : (
-                    <p>No text available.</p>
+                    <p>No articles available.</p>
                 )}
             </div>
         </div>
     );
 }
 
-export default ProfileText;
+export default ProfileArticles;
