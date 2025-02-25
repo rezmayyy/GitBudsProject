@@ -1,0 +1,152 @@
+.hamburgerContainer {
+    position: relative; /* Position relative to this container */
+    display: inline-block;
+}
+
+.hamburgerButton {
+    font-size: 24px;
+    padding: 8px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: var(--menu-icon-color, #333);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.hamburgerButton:hover {
+    background-color: var(--menu-hover-bg);
+    transform: scale(1.1);
+    border-radius: 4px;
+}
+
+/*Profile Picture*/
+.profilePicture {
+    width: 60px;  /* Keep it small */
+    height: 60px;  
+    border-radius: 50%; /* Makes it circular */
+    object-fit: cover;
+    display: block; 
+    margin: 10px auto; /* Center it */
+    border: 2px solid #ddd; /* Optional subtle border */
+}
+
+
+
+
+/* Sidebar Menu - Initially Hidden */
+.menuContent {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Off-screen initially */
+    width: 280px;
+    height: 100vh;
+    background: var(--menu-item-bg);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease-in-out;
+    padding: 10px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Sidebar Active - Slides in */
+.menuContent.active {
+    right: 0;
+}
+
+
+.menuLink {
+    width: 100%;
+    background-color: var(--auth-button-bg);
+    color: black;
+    padding: 10px 15px; 
+    border-radius: 5px;
+    text-align: center;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 1px solid #333;
+    margin: 8px 0;
+    transition: background-color 0.3s ease;
+}
+
+.menuLink:hover {
+    background-color: var(--auth-button-hover-bg);
+    color: black;
+}
+
+/* Sidebar Links */
+.hamburgerNavLinks a {
+    display: block;
+    font-size: 16px;
+    font-family: 'Poppins', sans-serif;
+    color: black;
+    text-decoration: none;
+    padding: 12px 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.hamburgerNavLinks a:hover {
+    background-color: var(--menu-item-hover-bg);
+}
+
+/* Sidebar Auth Buttons */
+.hamburgerAuthButtons .menuLink {
+    width: 100%;
+    text-align: center;
+    background-color: var(--auth-button-bg);
+    color: black;
+    padding: 0.6rem 1.5rem; /* Ensuring uniform button size */
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    margin-top: 10px;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+}
+
+.hamburgerAuthButtons .menuLink:hover {
+    background-color: var(--auth-button-hover-bg);
+}
+
+/* Add More Space Between Sidebar Auth Buttons */
+.hamburgerAuthButtons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increased spacing between buttons */
+    margin-top: 20px;
+}
+
+/* Close Button (X) */
+.closeButton {
+    font-size: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: black;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+.closeButton:hover {
+    opacity: 0.7;
+}
+
+/* Overlay - Covers Background When Sidebar Opens */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 900;
+    display: none;
+}
+
+.overlay.active {
+    display: block;
+}
