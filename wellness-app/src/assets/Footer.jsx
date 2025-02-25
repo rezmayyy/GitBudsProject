@@ -1,28 +1,20 @@
-
+import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import styles from '../styles/footer.css'
 
 function Footer(){
 
     return (
     <footer>
-      <div className="footer-section">
-        <h4>Links</h4>
-        <a href="/">Home</a>
-        <a href="#">About</a>
-        <a href="#">Contact</a>
-      </div>
-      <div className="footer-section">
-        <h4>Help</h4>
-        <a href="/support">Support</a>
-        <a href="#">Payment Options</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/tos">Terms Of Service</a>
-      </div>
-      <div className="footer-section">
-        <h4>Other</h4>
-        <a href="#">Other Link </a>
-        <a href="#">Other Link </a>
-      </div>
-      <p>© 2024 TribeWell. All rights reserved.</p>
+      <ul className="nav-links">
+        <li><Link to="/about">About</Link></li>
+        <li><Link to="/contact">Contact Us</Link></li>
+        <li><Link to="/support">Support</Link></li>
+        <li><Link to="/payment">Payment Options</Link></li>
+        <li><Link to="/privacy">Privacy Policy</Link></li>
+        <li><Link to="/tos">Terms Of Service</Link></li>
+      </ul>
+      <p style={{color: "white"}}>© {new Date().getUTCFullYear()} TribeWell. All rights reserved.</p>
     </footer>
   );
 };

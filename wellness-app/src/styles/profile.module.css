@@ -7,8 +7,6 @@
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-    font-family: Arial, sans-serif;
-    color: #333;
     text-align: center; /* Center content */
 }
 
@@ -67,17 +65,17 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     border: none;
-    background-color: #3b82f6; /* Default button color */
+    background-color: #007bff; /* Default button color */
     margin-bottom: 1em; /* Spacing for multiple buttons */
 }
 
 .profileButton:hover {
-    background-color: #2563eb; /* Hover state color */
+    background-color: #0056b3; /* Hover state color */
 }
 
 /* Subscribe Button */
 .subscribe-button {
-    background-color: #34d399;
+    background-color: #007bff;
     padding: 0.7em 1.5em;
     border: none;
     border-radius: 8px;
@@ -89,7 +87,7 @@
 }
 
 .subscribe-button:hover {
-    background-color: #10b981;
+    background-color: #0056b3;
 }
 
 .subscribed {
@@ -100,42 +98,74 @@
     background-color: #ef4444; /* Hover state for unsubscribe */
 }
 
+/* Diary Button */
+.diaryButton {
+    background-color: #007bff;
+    border: none;
+    padding: 8px 15px;
+    cursor: pointer;
+    color: white;
+    margin-right: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.diaryButton:hover {
+    background-color: #0056b3;
+}
+
 /* Navigation Links */
 .navLinks {
     display: flex;
     justify-content: center;
-    gap: 15px; /* Space between buttons */
-    margin-top: 40px;
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .navButton {
     background-color: #007bff;
     border: none;
-    padding: 12px 20px;
+    padding: 8px 15px;
     cursor: pointer;
-    font-size: 16px;
     color: white;
+    margin-right: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s, border-color 0.3s;
+    transition: background-color 0.3s;
 }
 
 .navButton:hover {
     background-color: #0056b3;
 }
 
-.active {
-    border-bottom: 3px solid #007bff; /* Active indicator */
-    font-weight: bold;
-}
-
 /* Content Area */
 .contentArea {
-    padding: 25px;
     background-color: #f9fafb;
     border-radius: 10px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    text-align: left; /* Align content to the left */
+}
+
+.subNavLinks {
+    display: flex;
+    justify-content: center;
+}
+
+.subNavButton {
+    background-color: #ff0800;
+    border: none;
+    padding: 5px;
+    cursor: pointer;
+    color: white;
+    margin: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.subNavButton:hover {
+    background-color: #b30000;
+}
+
+.active {
+    font-weight: bold;
 }
 
 /* Success Message */

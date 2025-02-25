@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../../styles/Videos.css';
+import styles from '../../styles/Videos.css';
+import UserContext from '../UserContext';
 
 function ProfileVideos() {
     const [UserVideos, setUserVideos] = useState([]);
-    const { username } = useParams(); // Get the dynamic username from the URL
+    const { user } = useContext(UserContext); // Get the dynamic username from the URL
 
     useEffect(() => {
         const fetchUserVideos = async () => {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'video'), 
-                where('author', '==', username),
+                where('author', '==', user.displayName),
                 orderBy('timestamp', 'desc'),
             );
 
@@ -33,11 +34,11 @@ function ProfileVideos() {
     }, []);
 
     return (
-        <div className="userVideos">
-            <div className="video-list">
+        <div className="video">
+            <div className="video-grid">
                 {UserVideos.length > 0 ? (
                     UserVideos.map(video => (
-                        <div key={video.id} className="video-item">
+                        <div key={video.id} className="video-card">
                             <h3>{video.title}</h3>
                             <video width="320" height="240" controls>
                                 <source src={video.url} type="video/mp4" />

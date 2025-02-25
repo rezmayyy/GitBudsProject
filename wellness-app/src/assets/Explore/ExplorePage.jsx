@@ -5,6 +5,8 @@ import { getAuth } from 'firebase/auth';
 import '../../styles/ExplorePage.css';
 import ContentSection from './ContentSection';
 import CalendarSection from './CalendarSection';
+import { Link } from 'react-router-dom';
+
 
 function ExplorePage() {
     const [videos, setVideos] = useState([]);
@@ -64,7 +66,8 @@ function ScrollNavigation({ toggleCalendar }) {
             <li><a href="#videos" onClick={(e) => handleScroll(e, 'videos')}>Videos</a></li>
             <li><a href="#audios" onClick={(e) => handleScroll(e, 'audios')}>Audios</a></li>
             <li><a href="#texts" onClick={(e) => handleScroll(e, 'texts')}>Articles</a></li>
-            <li><button onClick={toggleCalendar}>Calendar</button></li>
+           {/* <li><button onClick={toggleCalendar}>Calendar</button></li> */}  {/*Ill comment out my hardwork on the calendar for now */}
+            <li><Link to="/events"><button>Events</button></Link></li>
         </ul>
     );
 }

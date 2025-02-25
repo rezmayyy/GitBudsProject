@@ -1,0 +1,579 @@
+/* Add styles for your modal */
+.modal {
+    display: block; /* Always display the modal when rendered */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0, 0, 0);
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Add styles for the registration form */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form div {
+    margin-bottom: 10px;
+}
+
+label {
+    font-weight: bold;
+}
+
+input {
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Start EventsPage *******************************/
+/* Container for the entire events page */
+.events-page {
+    max-width: 2000px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.event-search-container {
+    display: flex;
+    justify-content: center; /* Center it horizontally */
+    margin-bottom: 20px; /* Add some spacing */
+}
+.event-search-container input {
+    width: 500px; /* Adjust to match filter buttons */
+    padding: 8px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Title styling */
+.events-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+/* Create Event button */
+.create-event-button {
+    display: block;
+    width: 200px;
+    margin: 0 auto 20px;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.create-event-button:hover {
+    background-color: #0056b3;
+}
+
+/* Loading and No Events messages */
+.loading-message, .no-events-message {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+
+/* Events list container */
+.events-list {
+    list-style: none;
+    padding: 0;
+}
+
+/* Ensure consistent height to prevent shifting */
+.events-list-container {
+    min-height: 400px; /* Adjust based on typical content height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Individual event item */
+.event-item {
+    width: 1000px;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: transform 0.2s ease-in-out;
+}
+
+.event-item:hover {
+    transform: scale(1.02);
+}
+
+/* Event thumbnail image */
+.event-thumbnail {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 15px;
+}
+
+/* Event details container */
+.event-info {
+    flex: 1;
+}
+
+.event-info-no-title {
+    flex: 1;
+    padding-left: 50px;
+}
+
+/* Event title */
+.event-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 5px 0;
+    text-align: center;
+    text-decoration: underline;
+}
+
+/* Event description */
+.event-description {
+    font-size: 16px;
+    color: #555;
+    margin: 5px 0;
+    padding-bottom: 10px;
+    font-style: italic;
+}
+
+/* Event metadata (date, time, location, type) */
+.event-date, .event-time, .event-type, .event-location {
+    font-size: 14px;
+    margin: 3px 0;
+}
+
+/* View Details button */
+.event-details-button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.event-details-button:hover {
+    background-color: #218838;
+}
+/* End Events Page */
+
+/* Start CreateEventPage Styling *******************************/
+.create-event-page {
+    max-width: 90%;
+    width: 50%;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+/* Back Button */
+.back-button {
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+}
+
+/* Form Styling */
+.create-event-form {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers inputs and labels */
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 60%; /* Adjusts input width */
+    text-align: center; /* Centers text inside input */
+}
+
+
+
+.event-fieldset {
+    border: none;
+    padding: 0;
+}
+
+.event-legend {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* Form Groups */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.form-group textarea {
+    resize: vertical;
+    height: 80px;
+}
+
+.char-count {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+}
+
+/* Image Upload */
+.image-count {
+    font-size: 14px;
+    color: #555;
+}
+
+.image-preview-container {
+    margin-top: 15px;
+}
+
+.image-preview-container-images {
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping if there are too many images */
+    gap: 15px; /* Adds space between images */
+    justify-content: center;
+}
+
+.image-preview {
+    display: flex;
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center everything */
+    gap: 5px; /* Space between elements */
+}
+
+
+.thumbnail-preview {
+    width: 300px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-right: 10px;
+    border: 1px solid gray;
+    cursor: pointer;
+}
+
+.thumbnail-preview.selected-thumbnail {
+    border: 3px solid blue;
+}
+
+/* Remove Image Button */
+.remove-image-button {
+    background: none;
+    border: 1px solid gray;
+    color: gray;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100px;
+}
+
+.remove-image-button:hover {
+    background-color: #f2f2f2;
+}
+
+/* Submit Button */
+.submit-button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.submit-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.submit-button:hover:not(:disabled) {
+    background-color: #218838;
+}
+/* End CreateEventPage Styling */
+
+/* Start EventDetails Page ******************************/
+/* Event Details Container */
+.event-details-container {
+    max-width: 90%;
+    width: 60%;
+    margin: 20px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.event-info-description {
+    font-size: 24px;
+    color: #555;
+    margin: 5px 0;
+    padding-bottom: 10px;
+    font-style: italic;
+}
+
+/* Back Button */
+.back-button {
+    display: inline-block;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+}
+
+/* Event Title */
+.event-title-details {
+    font-size: 30px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+    text-decoration: underline;
+}
+
+/* Event Details */
+.event-details-container p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
+    margin: 5px 0;
+}
+
+.event-details-container strong {
+    color: #222;
+}
+
+/* Event Creator */
+.event-creator {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px; /* Adds spacing between elements */
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.creator-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    margin-left: 5px;
+    transition: color 0.3s;
+}
+
+.creator-link:hover {
+    color: #0056b3;
+}
+
+.creator-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-left: 8px;
+    border: 2px solid #ddd;
+    object-fit: cover; /* Ensures the image maintains aspect ratio */
+}
+
+.creator-placeholder {
+    margin-left: 5px;
+    font-style: italic;
+    color: #888;
+}
+
+/* Buttons */
+.register-button,
+.unregister-button,
+.delete-button {
+    display: block;
+    width: 100%;
+    max-width: 250px;
+    text-align: center;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.register-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.register-button:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+}
+
+.unregister-button {
+    background-color: red;
+    color: white;
+}
+
+.unregister-button:hover {
+    background-color: darkred;
+    transform: scale(1.02);
+}
+
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+    transform: scale(1.02);
+}
+
+/* Event Images */
+.event-images-container {
+    display: flex;
+    flex-wrap: wrap; /* Allows images to move to the next row if needed */
+    justify-content: center; /* Centers images */
+    gap: 15px; /* Space between images */
+    margin-top: 15px;
+    padding-bottom: 10px;
+}
+
+.event-image {
+    width: 400px; /* Increase width */
+    height: 300px; /* Increase height */
+    object-fit: cover; /* Ensures the image is properly cropped without distortion */
+    border-radius: 10px; /* Slightly round edges for a polished look */
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+
+.event-image:hover {
+    transform: scale(1.08); /* Slight zoom effect */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* Adds depth */
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .event-details-container {
+        padding: 15px;
+    }
+
+    .event-title {
+        font-size: 20px;
+    }
+
+    .register-button,
+    .unregister-button,
+    .delete-button {
+        width: 100%;
+    }
+
+    .event-image {
+        width: 150px;
+        height: 120px;
+    }
+}

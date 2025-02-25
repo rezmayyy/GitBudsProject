@@ -1,11 +1,13 @@
 
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from './Firebase';
 import UserContext from './UserContext';
 import '../styles/create-post.css';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 
 
@@ -210,10 +212,12 @@ function CreatePost() {
             title: articleTitle,
             body: articleBody,
             author: user.displayName,
-            timestamp: Timestamp.now(),
+            timestamp: serverTimestamp(),
+            lastUpdated: serverTimestamp(),
             status: "pending"
         };
 
+        
         try {
             //upload file to firebase and get url
             const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
@@ -236,6 +240,17 @@ function CreatePost() {
         }
     };
 
+    const modules = {
+        toolbar: [
+            [{ 'header': [3, 4, 5, 6, false] }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'align': [] }],
+            ['link', 'image'],
+            ['clean']
+        ],
+    }
 
 
     //diplay content based on selected tab
@@ -385,12 +400,13 @@ function CreatePost() {
                                 </div>
                             )}
                             <label>Add article body</label>
-                            <textarea 
-                                placeholder="Article Body" 
+                            <ReactQuill
                                 value={articleBody}
-                                onChange={(e) => setArticleBody(e.target.value)}
-                                required
-                            ></textarea>
+                                onChange={setArticleBody} //update article body
+                                modules={modules}
+                                theme="snow"
+                                className="quill-textarea"
+                            />
                             <label>Add post tags</label>
                             <input type="text" placeholder="Tags (comma separated)" />
 

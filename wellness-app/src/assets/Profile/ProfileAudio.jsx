@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
-import '../../styles/Audio.css';
+import styles from '../../styles/Audio.css';
+import UserContext from '../UserContext';
 
 function ProfileAudio() {
     const [UserAudio, setUserAudio] = useState([]);
-    const { username } = useParams(); // Get the dynamic username from the URL
+    const { user } = useContext(UserContext); // Get the dynamic username from the URL
 
     useEffect(() => {
         const fetchUserAudio = async () => {
             const q = query(
                 collection(db, 'content-posts'),
                 where('type', '==', 'audio'), 
-                where('author', '==', username),
+                where('author', '==', user.displayName),
                 orderBy('timestamp', 'desc'),
             );
 
@@ -33,7 +34,7 @@ function ProfileAudio() {
     }, []);
 
     return (
-        <div className="userAudio">
+        <div className="audio">
             <div className="audio-list">
                 {UserAudio.length > 0 ? (
                     UserAudio.map(audio => (
