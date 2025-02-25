@@ -17,16 +17,12 @@ User Profiles & Subscriptions
     Clicking profile icons (discussion board/home) should lead to usernames, not user IDs.
     Quick-link usernames to profiles on videos, articles, and audio.
     Add a support option on users' profile pages.
+    Add an option to edit your own about section
 
 Payments & Memberships
 
     Integrate Stripe for payments.
     Create a membership page, linked from home as a sub-link or in the account page.
-
-Account Page Updates
-Frontend Updates:
-
-    Add options to delete account, change privacy settings, and manage payments.
 
 Backend Updates:
 
@@ -34,13 +30,8 @@ Backend Updates:
     Backend functionality for new account options (privacy settings, payments, account deletion).
 
 Content & Moderation
-
-    Make videos appear only if approved (home, search, explore, profile).
-    Create an Admin/Mod page for viewing pending videos.
-    Add an option to auto-approve all videos (toggle).
     Ensure posts are flagged for search (check if tags are missing on the upload page).
     Implement view tracking for videos.
-    Add like functionality for videos.
 
 Discussion Board Revamp
 
@@ -49,16 +40,10 @@ Discussion Board Revamp
 Explore & Search Improvements
 
     Explore page: Feature trending videos/articles or preset groupings like "Most Popular Meditation."
-    Search page:
-        Delete unused filters.
-        Clean up unused tags.
-        Populate frontend with data from the database.
-        Improve search algorithm.
 
 UI/UX & Styling Fixes
 
     Fix the hamburger menu not showing up on all resolutions.
-    Clean up CSS for better use of window space (use flex scaling).
     Update video descriptions to support new lines.
     Home page should link to content pages.
     Every reference to a content post should have a thumbnail/text link to the actual content page instead of directly playing the video/audio/article.
@@ -70,8 +55,3 @@ Courses & Learn Page
         Auto-generated from top-viewed content?
         Created by content creators and locked behind a paywall?
         Manually created by Gigi’s team?
-
-Removals & Cleanups
-
-    Delete the blog page.
-    Remove all references to status in the users collection (repeated for emphasis).

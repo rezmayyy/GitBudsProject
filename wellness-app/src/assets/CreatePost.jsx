@@ -8,8 +8,7 @@ import UserContext from './UserContext';
 import '../styles/create-post.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-
-
+import { doc, getDoc } from 'firebase/firestore';
 
 function CreatePost() {
 
@@ -82,163 +81,171 @@ function CreatePost() {
 
 
 
-    //submission handling
-    const handleVideoSubmit = async (e) => {
-        e.preventDefault();
-
-        if(!user){
-            alert('Must be logged in to submit a video post')
+    const getAutoApproveStatus = async () => {
+        try {
+          const settingsRef = doc(db, 'adminSettings', 'uploadRules');
+          const settingsSnap = await getDoc(settingsRef);
+          if (settingsSnap.exists()) {
+            return settingsSnap.data().AutoApprove || false;
+          }
+        } catch (error) {
+          console.error('Error getting autoApprove status:', error);
         }
-        
+        return false; // Default to false if there's an error
+      };
+      
+      const handleVideoSubmit = async (e) => {
+        e.preventDefault();
+      
+        if (!user) {
+          alert('Must be logged in to submit a video post');
+          return;
+        }
+      
         if (!videoFile) {
-            alert('Please select a video file to upload');
-            return;
+          alert('Please select a video file to upload');
+          return;
         }
-
+      
         if (!thumbnailFile) {
-            alert('Please select a thumbnail image to upload');
-            return;
+          alert('Please select a thumbnail image to upload');
+          return;
         }
-
+      
+        const autoApprove = await getAutoApproveStatus();
+      
         const newVideoPost = {
-            title: videoTitle,
-            description: videoDescription,
-            author: user.displayName,
-            timestamp: Timestamp.now(),
-            status: "pending"
+          title: videoTitle,
+          description: videoDescription,
+          author: user.displayName,
+          timestamp: Timestamp.now(),
+          status: autoApprove ? 'approved' : 'pending',
         };
-
+      
         try {
-            //upload file to firebase and get url
-            const videoURL = await uploadFileToStorage(videoFile, 'video-uploads');
-            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-            
-            const docRef = await addDoc(collection(db, 'content-posts'), {
-                ...newVideoPost,
-                fileURL: videoURL,
-                thumbnailURL: thumbnailURL,
-                type: 'video'
-            });
-            //alert('Video posted successfully!'); //testing
-
-            //navigate to content page
-            navigate(`/content/${docRef.id}`)
-
-            //reset fields
-            setVideoTitle('');
-            setVideoFile(null);
-            setThumbnailFile(null);
-            setVideoDescription('');
+          const videoURL = await uploadFileToStorage(videoFile, 'video-uploads');
+          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
+      
+          const docRef = await addDoc(collection(db, 'content-posts'), {
+            ...newVideoPost,
+            fileURL: videoURL,
+            thumbnailURL: thumbnailURL,
+            type: 'video',
+          });
+      
+          navigate(`/content/${docRef.id}`);
+      
+          setVideoTitle('');
+          setVideoFile(null);
+          setThumbnailFile(null);
+          setVideoDescription('');
         } catch (error) {
-            console.log('Error adding video post: ', error);
+          console.error('Error adding video post:', error);
         }
-    };
-
-    const handleAudioSubmit = async (e) => {
+      };
+      
+      const handleAudioSubmit = async (e) => {
         e.preventDefault();
-
-        if(!user){
-            alert('Must be logged in to submit an audio post')
+      
+        if (!user) {
+          alert('Must be logged in to submit an audio post');
+          return;
         }
-        
+      
         if (!audioFile) {
-            alert('Please select an audio file to upload');
-            return;
+          alert('Please select an audio file to upload');
+          return;
         }
-
+      
         if (!thumbnailFile) {
-            alert('Please select a thumbnail image to upload');
-            return;
+          alert('Please select a thumbnail image to upload');
+          return;
         }
-
+      
+        const autoApprove = await getAutoApproveStatus();
+      
         const newAudioPost = {
-            title: audioTitle,
-            description: audioDescription,
-            author: user.displayName,
-            timestamp: Timestamp.now(),
-            status: "pending"
+          title: audioTitle,
+          description: audioDescription,
+          author: user.displayName,
+          timestamp: Timestamp.now(),
+          status: autoApprove ? 'approved' : 'pending',
         };
-
+      
         try {
-            //upload file to firebase and get url
-            const audioURL = await uploadFileToStorage(audioFile, 'audio-uploads');
-            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-
-            console.log("audio URL:", audioURL);    //testing
-            console.log("thumbnail URL:", thumbnailURL);    //testing
-            
-            const docRef = await addDoc(collection(db, 'content-posts'), {
-                ...newAudioPost,
-                fileURL: audioURL,
-                thumbnailURL: thumbnailURL,
-                type: 'audio'
-            });
-            //alert('Audio posted successfully!');
-
-            //navigate to content page
-            navigate(`/content/${docRef.id}`)
-
-            //reset fields
-            setAudioTitle('');
-            setAudioFile(null);
-            setThumbnailFile(null);
-            setAudioDescription('');
+          const audioURL = await uploadFileToStorage(audioFile, 'audio-uploads');
+          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
+      
+          const docRef = await addDoc(collection(db, 'content-posts'), {
+            ...newAudioPost,
+            fileURL: audioURL,
+            thumbnailURL: thumbnailURL,
+            type: 'audio',
+          });
+      
+          navigate(`/content/${docRef.id}`);
+      
+          setAudioTitle('');
+          setAudioFile(null);
+          setThumbnailFile(null);
+          setAudioDescription('');
         } catch (error) {
-            console.log('Error adding audio post: ', error);
+          console.error('Error adding audio post:', error);
         }
-    }
-
-    const handleArticleSubmit = async (e) => {
+      };
+      
+      const handleArticleSubmit = async (e) => {
         e.preventDefault();
-        
-        if(!user){
-            alert('Must be logged in to submit an article')
+      
+        if (!user) {
+          alert('Must be logged in to submit an article');
+          return;
         }
-
+      
         if (!articleTitle) {
-            alert('Please enter article title to upload');
-            return;
+          alert('Please enter article title to upload');
+          return;
         }
+      
         if (!thumbnailFile) {
-            alert('Please select a thumbnail image to upload');
-            return;
+          alert('Please select a thumbnail image to upload');
+          return;
         }
+      
         if (!articleBody) {
-            alert('Please enter article body to upload');
-            return;
+          alert('Please enter article body to upload');
+          return;
         }
-
+      
+        const autoApprove = await getAutoApproveStatus();
+      
         const newArticlePost = {
             title: articleTitle,
             body: articleBody,
             author: user.displayName,
             timestamp: serverTimestamp(),
             lastUpdated: serverTimestamp(),
-            status: "pending"
+            status: autoApprove? "approved" : "pending"
         };
-
-        
+      
         try {
-            //upload file to firebase and get url
-            const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-            const docRef = await addDoc(collection(db, 'content-posts'), {
-                ...newArticlePost,
-                thumbnailURL: thumbnailURL,
-                type: 'article'
-            });
-            //alert('Article posted successfully!');
-
-            //navigate to content page
-            navigate(`/content/${docRef.id}`)
-
-            //reset fields
-            setArticleTitle('');
-            setThumbnailFile(null);
-            setArticleBody('');
+          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
+      
+          const docRef = await addDoc(collection(db, 'content-posts'), {
+            ...newArticlePost,
+            thumbnailURL: thumbnailURL,
+            type: 'article',
+          });
+      
+          navigate(`/content/${docRef.id}`);
+      
+          setArticleTitle('');
+          setThumbnailFile(null);
+          setArticleBody('');
         } catch (error) {
-            console.log('Error adding article post: ', error);
+          console.error('Error adding article post:', error);
         }
-    };
+      };      
 
     const modules = {
         toolbar: [
