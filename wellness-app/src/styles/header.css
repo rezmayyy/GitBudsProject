@@ -28,6 +28,8 @@ header {
     justify-content: space-between;
 }
 
+
+
 .brand-container {
     display: flex;
     align-items: center;
@@ -44,6 +46,27 @@ h1 {
     height: auto;
     padding-right: 0.75rem;
 }
+
+/* RIGHT SECTION: Profile & Hamburger */
+.right-section {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Profile Picture */
+.profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid white;
+}
+
 
 nav {
     display: flex;
@@ -73,7 +96,9 @@ nav {
     padding: 0;
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-grow: 1;
+    font-size: 0.9rem;  /* Reduce font size for better fit */
 }
 
 .auth-buttons {
@@ -86,11 +111,11 @@ nav {
 .auth-button, .menu-link {
     background-color: var(--auth-button-bg);
     color: black;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.5rem; /* Increased padding for uniform size */
     border-radius: 5px;
     text-decoration: none;
     transition: background-color 0.3s ease;
-    font-family: 'Montserrat';
+    font-family: 'Montserrat', sans-serif;
     color: var(--menu-text-color);
     border: 1px solid #333;
 }
@@ -124,6 +149,16 @@ a:hover {
 .nav-links a:hover {
     text-decoration: underline;
 }
+
+
+/* Add More Space Between Sidebar Auth Buttons */
+.hamburger-auth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increased spacing between buttons */
+    margin-top: 20px;
+}
+
 /* For screens wider than 768px */
 @media (min-width: 769px) {
     .nav-links,
@@ -131,7 +166,7 @@ a:hover {
         display: flex;
     }
     .hamburger-container {
-        display: none;
+        display: flex;
     }
 }
 
@@ -150,90 +185,3 @@ a:hover {
     }
 }
 
-
-.hamburger-button {
-    font-size: 24px;
-    padding: 8px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    color: var(--menu-icon-color);
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.hamburger-button:hover {
-    background-color: var(--menu-hover-bg);
-    transform: scale(1.1);
-    border-radius: 4px;
-}
-
-.menu-content {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-    position: absolute;
-    top: 50px;
-    right: 0;
-    background-color: var(--menu-item-bg);
-    min-width: 200px;
-    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 1;
-    border-radius: 8px;
-    padding: 16px;
-}
-
-.menu-content.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-.hamburger-nav-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.hamburger-nav-links a {
-    text-decoration: none;
-    color: var(--menu-text-color);
-    font-family: 'Montserrat', sans-serif;
-    padding: 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-.hamburger-nav-links a:hover {
-    background-color: var(--menu-item-hover-bg);
-}
-
-.hamburger-auth-buttons {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-}
-
-.hamburger-auth-buttons .menu-link {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    text-align: center;
-    background-color: var(--auth-button-bg);
-    color: black;
-    margin-top: 5px;
-    border-radius: 5px;
-}
-
-.hamburger-auth-buttons .menu-link:hover {
-    background-color: var(--auth-button-hover-bg);
-    color: black;
-}
-
-.hamburger-button img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-}
