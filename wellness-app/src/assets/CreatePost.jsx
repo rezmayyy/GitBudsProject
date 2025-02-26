@@ -1,473 +1,357 @@
-
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, Timestamp, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from './Firebase';
 import UserContext from './UserContext';
 import '../styles/create-post.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { doc, getDoc } from 'firebase/firestore';
+import DOMPurify from "dompurify";
 
 function CreatePost() {
-
-    const [activeTab, setActiveTab] = useState('video'); //default tab
-
-    const [videoTitle, setVideoTitle] = useState('');
-    const [videoFile, setVideoFile] = useState(null);
-    const [videoDescription, setVideoDescription] = useState('');
-    const [videoPreview, setVideoPreview] = useState('');
-    
-    const [audioTitle, setAudioTitle] = useState('');
-    const [audioFile, setAudioFile] = useState(null);
-    const [audioDescription, setAudioDescription] = useState('');
-    const [audioPreview, setAudioPreview] = useState('');
-
-    const [thumbnailFile, setThumbnailFile] = useState(null);
-    const [thumbnailPreview, setThumbnailPreview] = useState('');
-
-    const [articleTitle, setArticleTitle] = useState('');
-    const [articleBody, setArticleBody] = useState('');
-
-
-    const MAX_VID_SIZE = 300 * 1024 * 1024; //300 MB
-    const MAX_AUD_SIZE = 10 * 1024 * 1024; //10 MB
-    const MAX_IMG_SIZE = 10 * 1024 * 1024; //10 MB
-
+    const [activeTab, setActiveTab] = useState('video'); // Default tab
     const { user } = useContext(UserContext);
+    const navigate = useNavigate(); 
+    const quillRef = useRef(null);
+    const [quillInstance, setQuillInstance] = useState(null); // Track when Quill is ready 
+
+    const MAX_FILE_SIZES = {
+        video: 300 * 1024 * 1024, // 300 MB
+        audio: 10 * 1024 * 1024,  // 10 MB
+        image: 10 * 1024 * 1024   // 10 MB
+    };
+
+    // Generalized state management
+    const [postData, setPostData] = useState({
+        title: '',
+        description: '',
+        body: '',
+    });
+
+    const [fileInputs, setFileInputs] = useState({
+        file: null,
+        thumbnail: null,
+        previewFile: '',
+        previewThumbnail: ''
+    });
+
+    // Handles input field changes
+    const handleInputChange = (e) => {
+        setPostData({ ...postData, [e.target.name]: e.target.value });
+    };
+    /*
+    to add file extensions, add the extension, mime type, and byte signature (magic bytes), of the files to the first constants of this function
+    */
+    const validateFile = async (file, type) => {
+        if (!file) return false;
     
-    const navigate = useNavigate();
-
-
-    const handleFileChange = (event, maxSize, type) => {
-        const file = event.target.files[0];
-        if (file && file.size <= maxSize) { //set file state
-            if (event.target.accept.startsWith('video/')) {
-                setVideoFile(file);
-                setVideoPreview(URL.createObjectURL(file)); //preview
-            } else if (event.target.accept.startsWith('audio/')){
-                setAudioFile(file);
-                setAudioPreview(URL.createObjectURL(file));
-            }else if (event.target.accept.startsWith('image/')){
-                setThumbnailFile(file);
-                setThumbnailPreview(URL.createObjectURL(file)); //preview
-            }
-
-        } else {
-            alert(`File size exceeds the allowed limit of ${maxSize / 1024 / 1024} MB.`);
+        const allowedExtensions = {
+            video: ["mp4"],
+            audio: ["mp3", "wav"],
+            image: ["jpg", "jpeg", "png", "bmp"]
+        };
+    
+        const allowedMimeTypes = {
+            video: ["video/mp4"],
+            audio: ["audio/mpeg", "audio/wav"],
+            image: ["image/jpeg", "image/png"]
+        };
+    
+        const validSignatures = {
+            "mp4": [["00", "00", "00"], ["66", "74", "79", "70"]], // MP4 (varied headers)
+            "mp3": [["49", "44", "33"]], // MP3 (ID3 header)
+            "wav": [["52", "49", "46", "46"]], // WAV
+            "jpg": [["ff", "d8", "ff", "e0"], ["ff", "d8", "ff", "e1"]], // JPEG (multiple valid headers)
+            "jpeg": [["ff", "d8", "ff", "e0"], ["ff", "d8", "ff", "e1"]],
+            "png": [["89", "50", "4e", "47"]] // PNG
+        };
+    
+        // Validate size
+        if (file.size > MAX_FILE_SIZES[type]) {
+            alert(`File exceeds ${MAX_FILE_SIZES[type] / 1024 / 1024}MB limit.`);
+            return false;
         }
+    
+        // Validate extension
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        if (!allowedExtensions[type].includes(fileExtension)) {
+            alert("Invalid file extension.");
+            return false;
+        }
+    
+        // Validate MIME type
+        if (!allowedMimeTypes[type].includes(file.type)) {
+            alert("Invalid file type.");
+            return false;
+        }
+    
+        // Validate file signature (Magic Bytes)
+        const buffer = await file.arrayBuffer();
+        const uint8Array = new Uint8Array(buffer);
+        const fileSignature = Array.from(uint8Array.slice(0, 12), (byte) => byte.toString(16).padStart(2, "0"));
 
-    }
+        const validSigs = validSignatures[fileExtension] || [];
+        const isValid = validSigs.some(sig => fileSignature.slice(0, sig.length).join(" ") === sig.join(" "));
 
+        if (!isValid) {
+            alert("Invalid file signature. Possible spoofed file.");
+            return false;
+        }
+        
+        return true;
+    };    
 
-    //upload file to firebase
+    const handleFileChange = async (event, type) => {
+        const file = event.target.files[0];
+        if (!file) return;
+    
+        // Validate file before proceeding
+        const isValid = await validateFile(file, type);
+        if (!isValid) return;
+    
+        setFileInputs((prev) => ({
+            ...prev,
+            [type === "image" ? "thumbnail" : "file"]: file,
+            [type === "image" ? "previewThumbnail" : "previewFile"]: URL.createObjectURL(file)
+        }));
+    };
+    
+
+    // Upload file to Firebase Storage
     const uploadFileToStorage = async (file, folder) => {
-
         if (!file) return null;
-
         try {
             const storage = getStorage();
             const storageRef = ref(storage, `${folder}/${file.name}`);
-            await uploadBytes(storageRef, file); //upload
-            return await getDownloadURL(storageRef); //get the url
-        }catch(error){
-            console.error('Error uploading the file: ', error);
+            await uploadBytes(storageRef, file);
+            return await getDownloadURL(storageRef);
+        } catch (error) {
+            console.error('Error uploading file:', error);
             return null;
         }
-        
-        
-    }
+    };
 
-
-
+    // Get auto-approve setting
     const getAutoApproveStatus = async () => {
         try {
-          const settingsRef = doc(db, 'adminSettings', 'uploadRules');
-          const settingsSnap = await getDoc(settingsRef);
-          if (settingsSnap.exists()) {
-            return settingsSnap.data().AutoApprove || false;
-          }
+            const settingsRef = doc(db, 'adminSettings', 'uploadRules');
+            const settingsSnap = await getDoc(settingsRef);
+            return settingsSnap.exists() ? settingsSnap.data().AutoApprove : false;
         } catch (error) {
-          console.error('Error getting autoApprove status:', error);
+            console.error('Error getting auto-approve status:', error);
+            return false;
         }
-        return false; // Default to false if there's an error
-      };
-      
-      const handleVideoSubmit = async (e) => {
+    };
+
+    const getKeywords = (title, description, author) => {
+        if (!title || !description || !author) return [];
+    
+        // Convert text to lowercase and split into words
+        const tokenize = (text) => text.toLowerCase().match(/\b\w+\b/g) || [];
+    
+        // Common stop words to filter out
+        const stopWords = new Set([
+            "the", "is", "and", "to", "a", "of", "in", "that", "it", "on", "for", "with", "as", "was", "at", "by",
+            "an", "be", "this", "which", "or", "from", "but", "not", "are", "were", "can", "will", "has", "had", "have"
+        ]);
+    
+        // Get words from each field
+        const words = [
+            ...tokenize(title),
+            ...tokenize(description),
+            ...tokenize(author)
+        ].filter(word => !stopWords.has(word)); // Remove stop words
+    
+        return Array.from(new Set(words)); // Remove duplicates
+    };
+    
+
+    // Unified form submission handler
+    const handleSubmit = async (e) => {
         e.preventDefault();
-      
+    
         if (!user) {
-          alert('Must be logged in to submit a video post');
-          return;
+            alert('You must be logged in to submit a post.');
+            return;
         }
-      
-        if (!videoFile) {
-          alert('Please select a video file to upload');
-          return;
+    
+        if (!postData.title || (activeTab === 'article' && !postData.body)) {
+            alert('Please complete all required fields.');
+            return;
         }
-      
-        if (!thumbnailFile) {
-          alert('Please select a thumbnail image to upload');
-          return;
+    
+        // Skip thumbnail check if it's an article
+        if (activeTab !== 'article' && !fileInputs.thumbnail) {
+            alert('Please select a thumbnail image.');
+            return;
         }
-      
+    
+        if (['video', 'audio'].includes(activeTab) && !fileInputs.file) {
+            alert(`Please select a ${activeTab} file.`);
+            return;
+        }
+    
         const autoApprove = await getAutoApproveStatus();
-      
-        const newVideoPost = {
-          title: videoTitle,
-          description: videoDescription,
-          author: user.displayName,
-          timestamp: Timestamp.now(),
-          status: autoApprove ? 'approved' : 'pending',
-        };
-      
-        try {
-          const videoURL = await uploadFileToStorage(videoFile, 'video-uploads');
-          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-      
-          const docRef = await addDoc(collection(db, 'content-posts'), {
-            ...newVideoPost,
-            fileURL: videoURL,
-            thumbnailURL: thumbnailURL,
-            type: 'video',
-          });
-      
-          navigate(`/content/${docRef.id}`);
-      
-          setVideoTitle('');
-          setVideoFile(null);
-          setThumbnailFile(null);
-          setVideoDescription('');
-        } catch (error) {
-          console.error('Error adding video post:', error);
-        }
-      };
-      
-      const handleAudioSubmit = async (e) => {
-        e.preventDefault();
-      
-        if (!user) {
-          alert('Must be logged in to submit an audio post');
-          return;
-        }
-      
-        if (!audioFile) {
-          alert('Please select an audio file to upload');
-          return;
-        }
-      
-        if (!thumbnailFile) {
-          alert('Please select a thumbnail image to upload');
-          return;
-        }
-      
-        const autoApprove = await getAutoApproveStatus();
-      
-        const newAudioPost = {
-          title: audioTitle,
-          description: audioDescription,
-          author: user.displayName,
-          timestamp: Timestamp.now(),
-          status: autoApprove ? 'approved' : 'pending',
-        };
-      
-        try {
-          const audioURL = await uploadFileToStorage(audioFile, 'audio-uploads');
-          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-      
-          const docRef = await addDoc(collection(db, 'content-posts'), {
-            ...newAudioPost,
-            fileURL: audioURL,
-            thumbnailURL: thumbnailURL,
-            type: 'audio',
-          });
-      
-          navigate(`/content/${docRef.id}`);
-      
-          setAudioTitle('');
-          setAudioFile(null);
-          setThumbnailFile(null);
-          setAudioDescription('');
-        } catch (error) {
-          console.error('Error adding audio post:', error);
-        }
-      };
-      
-      const handleArticleSubmit = async (e) => {
-        e.preventDefault();
-      
-        if (!user) {
-          alert('Must be logged in to submit an article');
-          return;
-        }
-      
-        if (!articleTitle) {
-          alert('Please enter article title to upload');
-          return;
-        }
-      
-        if (!thumbnailFile) {
-          alert('Please select a thumbnail image to upload');
-          return;
-        }
-      
-        if (!articleBody) {
-          alert('Please enter article body to upload');
-          return;
-        }
-      
-        const autoApprove = await getAutoApproveStatus();
-      
-        const newArticlePost = {
-            title: articleTitle,
-            body: articleBody,
+        const cleanBody = DOMPurify.sanitize(postData.body);
+        const keywords = getKeywords(postData.title, postData.description, user.displayName);
+    
+        const newPost = {
+            title: postData.title,
+            description: postData.description,
+            body: cleanBody,
             author: user.displayName,
             timestamp: serverTimestamp(),
             lastUpdated: serverTimestamp(),
-            status: autoApprove? "approved" : "pending"
+            status: autoApprove ? "approved" : "pending",
+            type: activeTab,
+            keywords
         };
-      
+    
         try {
-          const thumbnailURL = await uploadFileToStorage(thumbnailFile, 'thumbnails');
-      
-          const docRef = await addDoc(collection(db, 'content-posts'), {
-            ...newArticlePost,
-            thumbnailURL: thumbnailURL,
-            type: 'article',
-          });
-      
-          navigate(`/content/${docRef.id}`);
-      
-          setArticleTitle('');
-          setThumbnailFile(null);
-          setArticleBody('');
+            const fileURL = fileInputs.file ? await uploadFileToStorage(fileInputs.file, `${activeTab}-uploads`) : null;
+            const thumbnailURL = activeTab !== 'article' ? await uploadFileToStorage(fileInputs.thumbnail, 'thumbnails') : null;
+    
+            const docRef = await addDoc(collection(db, 'content-posts'), {
+                ...newPost,
+                fileURL,
+                thumbnailURL
+            });
+    
+            navigate(`/content/${docRef.id}`);
+            setPostData({ title: '', description: '', body: '' });
+            setFileInputs({ file: null, thumbnail: null, previewFile: '', previewThumbnail: '' });
         } catch (error) {
-          console.error('Error adding article post:', error);
+            console.error('Error adding post:', error);
         }
-      };      
+    };    
 
     const modules = {
-        toolbar: [
-            [{ 'header': [3, 4, 5, 6, false] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'align': [] }],
-            ['link', 'image'],
-            ['clean']
-        ],
-    }
-
-
-    //diplay content based on selected tab
-    const renderTabContent = () => {
-
-        //switch between video, audio, and article
-        switch (activeTab) {
-            case 'video':
-                return (
-                    <div className="video-content">
-                        <h2>Post a Video</h2>
-                        <form className="video-form" onSubmit={handleVideoSubmit}>
-                            <label>Video title</label>
-                            <input className="content-input"
-                                type="text"
-                                placeholder="Video Title"
-                                value={videoTitle}
-                                onChange={(e) => setVideoTitle(e.target.value)}
-                                required />
-                            <label>Choose video file <small>(Max file size: {MAX_VID_SIZE / 1024 / 1024} MB</small>)</label>
-                            
-                            <input className="content-input"
-                                type="file"
-                                accept="video/*"
-                                required
-                                onChange={(e) => handleFileChange(e, MAX_VID_SIZE, 'video')}
-                            />
-                            {/* video file preview */}
-                            {videoPreview && (
-                                <div className="preview-container">
-                                    <video controls width="300">
-                                        <source src={videoPreview} type="video/mp4" />
-                                        Your browser does not support the video tag
-                                    </video>
-                                </div>
-                            )}
-                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
-                            <input className="content-input"
-                                type="file" 
-                                accept="image/*" 
-                                placeholder="Cover Image" 
-                                required
-                                onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
-                            />
-                            {/* thumbnail file preview */}
-                            {thumbnailPreview && (
-                                <div className="preview-container">
-                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
-                                </div>
-                            )}
-                            <label>Add post description</label>
-                            <textarea className="content-textarea"
-                                placeholder="Video Description"
-                                value={videoDescription}
-                                onChange={(e) => setVideoDescription(e.target.value)}
-                            ></textarea>
-                            <label>Add post tags</label>
-                            <input className="content-input" type="text" placeholder="Tags (comma separated)" />
-                            <button className="tab-button" type="submit">Submit Video</button>
-                        </form>
-                    </div>
-                );
-            case 'audio':
-                return (
-                    <div className="audio-content" >
-                        <h2>Post an Audio</h2>
-                        <form className="audio-form" onSubmit={handleAudioSubmit}>
-                            <label>Audio title</label>
-                            <input className="content-input"
-                                type="text" 
-                                placeholder="Audio Title"
-                                value={audioTitle} 
-                                required
-                                onChange={(e) => setAudioTitle(e.target.value)}
-                                
-                            />
-                            <label>Choose audio file (<small>Max file size: {MAX_AUD_SIZE / 1024 / 1024} MB</small>)</label>
-                            <input className="content-input"
-                                type="file"
-                                accept="audio/*"
-                                required
-                                onChange={(e) => handleFileChange(e, MAX_AUD_SIZE, 'audio', setAudioFile)}
-                            />
-                            
-                            {/* audio file preview */}
-                            {audioPreview && (
-                                <div className="preview-container">
-                                    <audio controls width="300">
-                                        <source src={audioPreview} type="audio/mp4" />
-                                        Your browser does not support the audio tag
-                                    </audio>
-                                </div>
-                            )}
-
-                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
-                            <input className="content-input"
-                                type="file" 
-                                accept="image/*" 
-                                placeholder="Cover Image" 
-                                required
-                                onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
-                            />
-                            
-                            {/* thumbnail file preview */}
-                            {thumbnailPreview && (
-                                <div className="preview-container">
-                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
-                                </div>
-                            )}
-                            <label>Add post description</label>
-                            <textarea className="content-textarea"
-                                placeholder="Audio Description"
-                                value={audioDescription} onChange={(e) => setAudioDescription(e.target.value)}
-                            ></textarea>
-                            <label>Add post tags</label>
-                            <input className="content-input" type="text" placeholder="Tags (comma separated)" />
-                            <button className="tab-button" type="submit">Submit Audio</button>
-                        </form>
-                    </div>
-                );
-            case 'article':
-                return (
-                    <div className="article-content">
-                        <h2>Post an Article</h2>
-                        <form className="article-form" onSubmit={handleArticleSubmit}>
-                            <label>Article title</label>
-                            <input 
-                                type="text" 
-                                placeholder="Article Title"
-                                value={articleTitle} 
-                                onChange={(e) => setArticleTitle(e.target.value)}
-                                required
-
-                            />
-                            <label>Choose thumbnail image (<small>Max file size: {MAX_IMG_SIZE / 1024 / 1024} MB</small>)</label>
-                            <input className="content-input"
-                                type="file" 
-                                accept="image/*" 
-                                placeholder="Cover Image" 
-                                required
-                                onChange={(e) => handleFileChange(e, MAX_IMG_SIZE, 'image', setThumbnailFile)}
-                            />
-                            {/* thumbnail file preview */}
-                            {thumbnailPreview && (
-                                <div className="preview-container">
-                                    <img src={thumbnailPreview} alt="Thumbnail" width="300" />
-                                </div>
-                            )}
-                            <label>Add article body</label>
-                            <ReactQuill
-                                value={articleBody}
-                                onChange={setArticleBody} //update article body
-                                modules={modules}
-                                theme="snow"
-                                className="quill-textarea"
-                            />
-                            <label>Add post tags</label>
-                            <input type="text" placeholder="Tags (comma separated)" />
-
-                            <button className="tab-button" type="submit">Submit Article</button>
-                        </form>
-                    </div>
-                );
-            default:
-                return null;
-
+        toolbar: {
+            container: [
+                [{ 'header': [3, 4, 5, 6, false] }],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'align': [] }],
+                ['link', 'image'],
+                ['clean']
+            ],
         }
-
-
+    };
+    //Quill is the tool used for writing articles, its a more robust text field and allows image uploads. these image uploads get validated by this function
+    const handleQuillImageUpload = (quillRef) => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/jpeg, image/png, image/bmp");
+        input.click();
+    
+        input.onchange = async () => {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+    
+                // Validate the image
+                const isValid = await validateFile(file, "image");
+                if (!isValid) return;
+    
+                // Upload and get image URL
+                const imageUrl = await uploadFileToStorage(file, "article-images");
+                if (!imageUrl) {
+                    alert("Image upload failed.");
+                    return;
+                }
+    
+                setPostData((prev) => ({
+                    ...prev,
+                    body: prev.body + `<img src="${imageUrl}" alt="Uploaded Image"/>`
+                }));
+            }
+        };
     };
 
+    // Modify toolbar AFTER Quill is ready
+    useEffect(() => {
+        if (quillInstance) {
+            const toolbar = quillInstance.getModule("toolbar");
+            if (toolbar) {
+                toolbar.addHandler("image", handleQuillImageUpload);
+            }
+        }
+    }, [quillInstance]); // Runs only after Quill is initialized
+    
 
+    // Render form content based on active tab
+    const renderForm = () => (
+        <form className={`${activeTab}-form`} onSubmit={handleSubmit}>
+            <label>Title</label>
+            <input type="text" name="title" value={postData.title} onChange={handleInputChange} required />
+    
+            {activeTab !== 'article' && (
+                <>
+                    <label>Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)</label>
+                    <input type="file" accept={`${activeTab}/*`} onChange={(e) => handleFileChange(e, activeTab)} required />
+                    {fileInputs.previewFile && (activeTab === 'video' ? (
+                        <video controls width="300">
+                            <source src={fileInputs.previewFile} type="video/mp4" />
+                        </video>
+                    ) : (
+                        <audio controls>
+                            <source src={fileInputs.previewFile} type="audio/mpeg" />
+                        </audio>
+                    ))}
+                </>
+            )}
+    
+            {/* Only show thumbnail upload if NOT posting an article */}
+            {activeTab !== 'article' && (
+                <>
+                    <label>Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)</label>
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'image')} required />
+                    {fileInputs.previewThumbnail && <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />}
+                </>
+            )}
+    
+            {activeTab === 'article' ? (
+                <>
+                    <label>Article Body</label>
+                    <ReactQuill
+                        ref={quillRef}
+                        value={postData.body}
+                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
+                        modules={modules}
+                        theme="snow"
+                        onChangeSelection={() => {
+                            if (!quillInstance && quillRef.current) {
+                                setQuillInstance(quillRef.current.getEditor()); // Set instance only once
+                            }
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    <label>Description</label>
+                    <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
+                </>
+            )}
+    
+            <button className="tab-button" type="submit">
+                Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </button>
+        </form>
+    );
 
-
-
-    /* Page Layout */
     return (
-
         <div>
             <div className="tabs">
-                {/* if clicked on video tab, show video post form */}
-                <button onClick={() =>
-                    setActiveTab('video')
-                } className={`tab-button ${activeTab === 'video' ? 'active' : 'video'}`}>
-                    Post Video
-                </button>
-
-                {/* if clicked on audio tab, show audio post form */}
-                <button
-                    onClick={() => setActiveTab('audio')
-                    } className={`tab-button ${activeTab === 'audio' ? 'active' : 'audio'}`}>
-                    Post Audio
-                </button>
-
-                {/* if clicked on article tab, show article post form */}
-                <button onClick={() =>
-                    setActiveTab('article')
-                } className={`tab-button ${activeTab === 'article' ? 'active' : 'article'}`}>
-                    Post Article
-                </button>
-
+                {['video', 'audio', 'article'].map((type) => (
+                    <button key={type} onClick={() => setActiveTab(type)} className={`tab-button ${activeTab === type ? 'active' : ''}`}>
+                        Post {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                ))}
             </div>
 
-            <div className="tab-content">
-                {renderTabContent()}
-            </div>
-
-
+            <div className="tab-content">{renderForm()}</div>
         </div>
-
     );
 }
 
