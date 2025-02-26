@@ -13,15 +13,17 @@ function SearchResults() {
   const [activeDropdown, setActiveDropdown] = useState(null);
   // State for the filter categories (video, audio, article)
   const [categories] = useState(['video', 'audio', 'article']);
-  // State for the currently selected category (default is "video").
+  // State for the currently selected category
   // When empty, no category filtering is applied.
-  const [selectedCategory, setSelectedCategory] = useState('video');
+  const [selectedCategory, setSelectedCategory] = useState('');
   // State for posts returned by the search algorithm
   const [posts, setPosts] = useState([]);
   // State for loading status
   const [loading, setLoading] = useState(true);
 
   const { user } = useContext(UserContext);
+  const [sortMethod, setSortMethod] = useState('date'); // Default sorting method
+
 
   // Toggle dropdown visibility for the category filter
   const toggleDropdown = (dropdown) => {
@@ -34,7 +36,7 @@ function SearchResults() {
       setLoading(true);
       try {
         // Use the URL query as the search string.
-        const results = await searchPostsByKeywords(urlQuery);
+        const results = await searchPostsByKeywords(urlQuery, sortMethod);
         // Filter the results by type if a category is selected.
         const filteredResults = selectedCategory
           ? results.filter(post => post.type === selectedCategory)
@@ -46,7 +48,7 @@ function SearchResults() {
       setLoading(false);
     }
     fetchPosts();
-  }, [urlQuery, selectedCategory]);
+  }, [urlQuery, selectedCategory, sortMethod]);
 
   return (
     <div className={styles.pageContainer}>
@@ -88,13 +90,27 @@ function SearchResults() {
 
       {/* Main Content Area */}
       <main className={styles.mainContent}>
-        <div className={styles.sortingModule}>
-          <h3>Sort By:</h3>
-          <button className={styles.sortButton}>Date</button>
-          <button className={styles.sortButton}>Rating</button>
-          <button className={styles.sortButton}>Views</button>
-        </div>
-
+      <div className={styles.sortingModule}>
+        <h3>Sort By:</h3>
+        <button 
+          className={`${styles.sortButton} ${sortMethod === 'date' ? styles.activeSort : ''}`} 
+          onClick={() => setSortMethod('date')}
+        >
+          Date
+        </button>
+        <button 
+          className={`${styles.sortButton} ${sortMethod === 'rating' ? styles.activeSort : ''}`} 
+          onClick={() => setSortMethod('rating')}
+        >
+          Rating
+        </button>
+        <button 
+          className={`${styles.sortButton} ${sortMethod === 'views' ? styles.activeSort : ''}`} 
+          onClick={() => setSortMethod('views')}
+        >
+          Views
+        </button>
+      </div>
         <div className={styles.postsContainer}>
           {loading ? (
             <p>Loading posts...</p>

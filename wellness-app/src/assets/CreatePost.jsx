@@ -14,12 +14,19 @@ function CreatePost() {
     const { user } = useContext(UserContext);
     const navigate = useNavigate(); 
     const quillRef = useRef(null);
-    const [quillInstance, setQuillInstance] = useState(null); // Track when Quill is ready 
+    const [quillInstance, setQuillInstance] = useState(null); // Track when Quill is ready
+    const [showNotification, setShowNotification] = useState(false); // Track upload notification 
 
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
-        audio: 10 * 1024 * 1024,  // 10 MB
+        audio: 100 * 1024 * 1024,  // 100 MB
         image: 10 * 1024 * 1024   // 10 MB
+    };
+
+    // Function to show "Uploading" notification
+    const showUploadingNotification = () => {
+        setShowNotification(true);
+        setTimeout(() => setShowNotification(false), 6000); // Hide after 6 seconds
     };
 
     // Generalized state management
@@ -191,7 +198,8 @@ function CreatePost() {
             alert(`Please select a ${activeTab} file.`);
             return;
         }
-    
+        // Show upload notification
+        showUploadingNotification();
         const autoApprove = await getAutoApproveStatus();
         const cleanBody = DOMPurify.sanitize(postData.body);
         const keywords = getKeywords(postData.title, postData.description, user.displayName);
@@ -211,7 +219,7 @@ function CreatePost() {
         try {
             const fileURL = fileInputs.file ? await uploadFileToStorage(fileInputs.file, `${activeTab}-uploads`) : null;
             const thumbnailURL = activeTab !== 'article' ? await uploadFileToStorage(fileInputs.thumbnail, 'thumbnails') : null;
-    
+
             const docRef = await addDoc(collection(db, 'content-posts'), {
                 ...newPost,
                 fileURL,
@@ -351,6 +359,8 @@ function CreatePost() {
             </div>
 
             <div className="tab-content">{renderForm()}</div>
+            {/* Uploading Notification */}
+            {showNotification && <div className="upload-notification">Uploading...</div>}
         </div>
     );
 }
