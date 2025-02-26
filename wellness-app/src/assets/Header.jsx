@@ -240,6 +240,7 @@ function Header() {
                       closeMenu={closeMenu}
                     />
 <<<<<<< HEAD
+<<<<<<< HEAD
                     {/* Navigation links */}
                     <ul className="nav-links">
 <<<<<<< HEAD
@@ -303,6 +304,8 @@ function Header() {
                     {/* Conditional rendering for hamburger button */}
 =======
 >>>>>>> 420933a (SCRUM-207, SCRUM-208, SCRUM-209: Integrated UI and Sidebar Enhancements)
+=======
+>>>>>>> 65fd0678275fd629adf288d986c3306d051d3b2e
                     <button
                       className={styles.menuLink}
                       onClick={() => {
