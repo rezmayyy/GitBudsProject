@@ -144,8 +144,8 @@ function CreatePost() {
         }
     };
 
-    const getKeywords = (title, description, author) => {
-        if (!title || !description || !author) return [];
+    const getKeywords = (title = "", description = "", author = "") => {
+        if (!title && !description && !author) return [];
     
         // Convert text to lowercase and split into words
         const tokenize = (text) => text.toLowerCase().match(/\b\w+\b/g) || [];
