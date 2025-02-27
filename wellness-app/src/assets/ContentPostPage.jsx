@@ -355,7 +355,7 @@ const ContentPostPage = () => {
                             </button>
                         )}
                         
-                        <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
+                        <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
                         
                     </div>
 
@@ -396,7 +396,7 @@ const ContentPostPage = () => {
                         
                         
                             <div className="d-flex align-items-center justify-content-between">
-                            <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6> {/* will need to add author field to the db */}
+                            <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6> {/* will need to add author field to the db */}
                                 <div className="d-flex align-items-center gap-2">
                                     <button className="btn btn-light" onClick={handleLike}>
                                         <i className="bi bi-hand-thumbs-up"></i> {likes.length}
