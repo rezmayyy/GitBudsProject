@@ -29,7 +29,7 @@ function ContentSection({ id, title, content }) {
                         <Link to={`/content/${item.id}`}>
                             <img src={item.thumbnailURL || logo} alt={item.title} />
                             <h3>{item.title}</h3>
-                            <div><Link to={`/publicprofile/${uid || item.author}`}>{item.author}</Link></div>
+                            <div><Link to={`/profile/${item.author}`}>{item.author}</Link></div>
                         </Link>
                     </div>
 );})} 

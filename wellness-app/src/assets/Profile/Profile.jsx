@@ -19,6 +19,27 @@ const Profile = () => {
   const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Adjust the regex as needed; here we assume UIDs are at least 20 alphanumeric characters.
+    if (username && /^[A-Za-z0-9]{20,}$/.test(username)) {
+      const fetchUserById = async () => {
+        try {
+          const userRef = doc(db, 'users', username);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const newDisplayName = userData.displayName;
+            // Redirect to URL with displayName instead of UID
+            navigate(`/profile/${newDisplayName}`, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error fetching user by UID:', error);
+        }
+      };
+      fetchUserById();
+    }
+  }, [username, navigate]);
+
   // STATE: Visited user's data and document ID
   const [profileData, setProfileData] = useState(null);
   const [viewedUserId, setViewedUserId] = useState(null);
