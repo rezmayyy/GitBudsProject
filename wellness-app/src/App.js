@@ -9,7 +9,6 @@ import Login from './assets/Auth/Login';
 import Signup from './assets/Auth/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile/Profile';
-import PublicProfile from './assets/Profile/PublicProfile';
 import AccountSettings from './assets/Account';
 import TOS from './assets/TOS';
 import PrivacyPolicy from './assets/PrivacyPolicy';
@@ -52,9 +51,7 @@ function App() {
 
             {/* Profile routes */}
             <Route path="/profile" element={<Profile />} />
-            <Route path="/profile/:uid" element={<Profile />} />
-            {/* Public profile route for viewing other users */}
-            <Route path="/publicprofile/:userId" element={<PublicProfile />} />
+            <Route path="/profile/:username" element={<Profile />} />
 
             {/* Main pages */}
             <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />

@@ -269,7 +269,7 @@ const ContentPostPage = () => {
                             </button>
                         )}
                         
-                        <h6 className="card-subtitle text-muted"> By: <Link to={`/publicprofile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
+                        <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
                         </div>
 
                         {/* author section */}

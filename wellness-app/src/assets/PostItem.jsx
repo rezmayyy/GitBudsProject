@@ -30,12 +30,8 @@ const PostItem = ({ post, preview }) => {
     fetchUserProfilePic();
   }, [post.profilePicUrl, post.userId]);
 
-  const goToUserProfile = (clickedUserId) => {
-  if (user && clickedUserId === user.uid) {
-    navigate(`/profile/${user.uid}`);
-  } else {
-    navigate(`/publicprofile/${clickedUserId}`);
-  }
+  const goToUserProfile = (clickedUser) => {
+    navigate(`/profile/${clickedUser}`);
 };
 
   
