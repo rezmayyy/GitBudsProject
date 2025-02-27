@@ -141,7 +141,7 @@ const PostItem = ({ post, preview }) => {
           src={profilePicUrl} 
           alt="Profile"
           className="profile-pic"
-          onClick={() => goToUserProfile(post.userId)}
+          onClick={() => goToUserProfile(post.userName)}
           style={{
             cursor: 'pointer',
             borderRadius: '50%',
@@ -151,7 +151,7 @@ const PostItem = ({ post, preview }) => {
           }}
           onError={(e) => { e.target.src = dummyPic; }}
         />
-        <p onClick={() => goToUserProfile(post.userId)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+        <p onClick={() => goToUserProfile(post.userName)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
           {post.userName || 'Anonymous'}
         </p>
         <span>{formatDate(post.timestamp)}</span>
@@ -176,7 +176,7 @@ const PostItem = ({ post, preview }) => {
                   src={reply.profilePicUrl || dummyPic}
                   alt="Reply Profile"
                   className="reply-profile-pic"
-                  onClick={() => goToUserProfile(reply.userId)}
+                  onClick={() => goToUserProfile(reply.userName)}
                   style={{
                     cursor: 'pointer',
                     borderRadius: '50%',
@@ -186,7 +186,7 @@ const PostItem = ({ post, preview }) => {
                   }}
                   onError={(e) => { e.target.src = dummyPic; }}
                 />
-                <p onClick={() => goToUserProfile(reply.userId)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
+                <p onClick={() => goToUserProfile(reply.userName)} style={{ cursor: 'pointer', fontWeight: 'bold' }}>
                   {reply.userName || 'Anonymous'}
                 </p>
                 <span>{formatDate(reply.timestamp)}</span>
