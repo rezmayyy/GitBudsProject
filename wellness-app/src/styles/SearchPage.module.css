@@ -151,6 +151,11 @@
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
     background: linear-gradient(45deg, #ff9a9e, #fcb69f);
   }
+  .sortButton.activeSort {
+    background-color: blue;
+    color: white;
+    font-weight: bold;
+  }
   
   /* Posts Container */
   .postsContainer {
