@@ -1,44 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
-
-.audio {
-    font-family: 'Poppins', sans-serif;
+.audio-container {
+    width: 100%;
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    border-radius: 10px;
 }
 
-.audio-list {
+.audio-container h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.audio-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; 
+    gap: 15px;
     justify-content: center;
-    background-color: rgb(240, 240, 240);
-    padding: 5px;
-    border-radius: 10px;
+    overflow-y: auto; /* Enables scroll if necessary */
+    max-height: 500px; /* Adjust as needed */
 }
 
-.audio-item {
-    width: calc(50% - 10px);
+.audio-card {
+    width: 250px; /* Adjust card width */
+    padding: 10px;
     background-color: white;
+    border: 1px solid #ddd;
     border-radius: 10px;
-    padding-left: 10px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.audio-item h3 {
-    margin: 5px 0;
-    font-size: 1em;
-    font-weight: 400; /* Thinner font */
-    word-wrap: break-word;
+.audio-title {
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    color: #007bff;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.audio-title:hover {
     text-decoration: underline;
 }
 
-.audio-item audio {
-    width: 50%; 
-    height: 200px; 
-    max-height: 240px; 
-    border-radius: 10px;
+.audio-thumbnail {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 5px;
 }
 
-@media (max-width: 900px) {
-    .audio-item {
-        width: calc(100% - 20px); /* Stack audio vertically on smaller screens */
-    }
+.no-thumbnail {
+    width: 100%;
+    height: 140px;
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #555;
+    border-radius: 5px;
+}
+
+.audio-player {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.audio-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-top: 5px;
+    color: #333;
 }

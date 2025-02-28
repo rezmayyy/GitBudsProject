@@ -1,178 +1,335 @@
-/* Profile Page Container */
-.profilePage {
-    max-width: 700px;
+/* ==========================================================================
+   PROFILE PAGE CONTAINER & GENERAL LAYOUT
+   ========================================================================== */
+   .profilePage {
+    max-width: 1400px;
     width: 80%;
-    margin: 3em auto;
-    padding: 2.5em;
+    margin: 2em auto;
+    padding: 1em;
     background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
     text-align: center; /* Center content */
-}
-
-/* Profile Banner */
-.profileBanner {
-    height: 200px; /* Adjusted height for better appearance */
+  }
+  
+  /* Profile Banner and Profile Picture */
+  .profileBanner {
+    height: 200px;
     background-color: #f0f0f0;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     margin-bottom: 40px;
-    /* Increased margin to separate from navigation */
-}
-
-/* Profile Picture */
-.profileImageWrapper {
+  }
+  
+  .profileImageWrapper {
     position: absolute;
     bottom: -40px;
-    /* Adjusted for better spacing */
-    width: 100px; /* Smaller profile image */
+    width: 100px;
     height: 100px;
     border-radius: 50%;
     overflow: hidden;
     border: 3px solid #ddd;
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.profileImage {
+  }
+  
+  .profileImage {
     width: 100%;
     height: 100%;
     object-fit: cover;
-}
-
-/* Profile Header */
-.profileHeader {
-    margin-top: 60px; /* Adjusted to align with profile image */
+  }
+  
+  /* Profile Header */
+  .profileHeader {
+    margin-top: 60px;
     margin-bottom: 2em;
-}
-
-.profileHeader h2 {
+  }
+  
+  .profileHeader h2 {
     font-size: 2em;
     margin: 0.5em 0;
     color: #222;
-}
-
-/* Buttons */
-.profileButton {
-    margin-top: 1.5em;
-    padding: 0.8em 1.5em;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 8px;
-    color: white;
+  }
+  
+  /* ==========================================================================
+     BUTTONS & NAVIGATION
+     ========================================================================== */
+  /* Generic Button Styles */
+  .profileButton,
+  .subscribe-button,
+  .diaryButton,
+  .navButton,
+  .subNavButton,
+  .editButton,
+  .banButton {
     cursor: pointer;
+    border: none;
+    border-radius: 8px;
     transition: background-color 0.3s ease;
-    border: none;
-    background-color: #007bff; /* Default button color */
-    margin-bottom: 1em; /* Spacing for multiple buttons */
-}
-
-.profileButton:hover {
-    background-color: #0056b3; /* Hover state color */
-}
-
-/* Subscribe Button */
-.subscribe-button {
-    background-color: #007bff;
-    padding: 0.7em 1.5em;
-    border: none;
-    border-radius: 8px;
-    color: white;
+  }
+  
+  /* Profile Button (e.g. Change Picture, Save Changes) */
+  .profileButton {
     font-weight: 600;
-    cursor: pointer;
-    margin: 10px;
-    transition: background-color 0.3s;
-}
-
-.subscribe-button:hover {
-    background-color: #0056b3;
-}
-
-.subscribed {
-    background-color: #f87171; /* Different color for subscribed state */
-}
-
-.subscribed:hover {
-    background-color: #ef4444; /* Hover state for unsubscribe */
-}
-
-/* Diary Button */
-.diaryButton {
+    margin: 1em;              /* Adds spacing around the button */
+    padding: 0.7em 1.5em;
+    color: white;
     background-color: #007bff;
-    border: none;
+  }
+  
+  .profileButton:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Subscribe Button */
+  .subscribe-button {
+    font-weight: 600;
+    margin: 1em;              /* Adds spacing around the button */
+    padding: 0.7em 1.5em;
+    color: white;
+    background-color: #007bff;
+  }
+  
+  .subscribe-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .subscribed {
+    background-color: #f87171;
+  }
+  
+  .subscribed:hover {
+    background-color: #ef4444;
+  }
+  
+  /* BAN BUTTON (New) */
+  .banButton {
+    font-weight: 600;
+    margin: 1em;
+    padding: 0.7em 1.5em;  
+    background-color: #dc3545;  /* Red color */
+    color: #fff;
+  }
+  
+  .banButton:hover {
+    background-color: #c82333;
+  }
+  
+  /* Diary Button */
+  .diaryButton {
+    background-color: #007bff;
     padding: 8px 15px;
-    cursor: pointer;
+    color: white;
+    margin-right: 10px;
+  }
+  
+  .diaryButton:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Navigation Links */
+  .navLinks {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  
+  .navButton {
+    background-color: #007bff;
+    padding: 8px 15px;
     color: white;
     margin-right: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.diaryButton:hover {
+  }
+  
+  .navButton:hover {
     background-color: #0056b3;
-}
-
-/* Navigation Links */
-.navLinks {
+  }
+  
+  /* Sub Navigation (inside posts section) */
+  .subNavLinks {
     display: flex;
     justify-content: center;
     margin-top: 10px;
-    margin-bottom: 10px;
-}
-
-.navButton {
-    background-color: #007bff;
-    border: none;
-    padding: 8px 15px;
-    cursor: pointer;
-    color: white;
-    margin-right: 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.navButton:hover {
-    background-color: #0056b3;
-}
-
-/* Content Area */
-.contentArea {
-    background-color: #f9fafb;
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-}
-
-.subNavLinks {
-    display: flex;
-    justify-content: center;
-}
-
-.subNavButton {
+  }
+  
+  .subNavButton {
     background-color: #ff0800;
-    border: none;
     padding: 5px;
-    cursor: pointer;
     color: white;
     margin: 10px;
     border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.subNavButton:hover {
+  }
+  
+  .subNavButton:hover {
     background-color: #b30000;
-}
-
-.active {
-    font-weight: bold;
-}
-
-/* Success Message */
-.message {
+  }
+  
+  /* Edit Button (for About/Contact) */
+  .editButton {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .editButton:hover {
+    background-color: #0056b3;
+  }
+  
+  /* ==========================================================================
+     CONTENT AREAS & SECTIONS
+     ========================================================================== */
+  /* Main Content Area */
+  .contentArea {
+    background-color: #f9fafb;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* About & Contact Container */
+  .aboutContactContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2em;
+  }
+  
+  .aboutSection,
+  .contactSection {
+    width: 48%;
+    background-color: #f9fafb;
+    padding: 1em;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Posts Section */
+  .postsSection {
+    margin-top: 20px;
+    width: 100%;
+  }
+  
+  /* Container for About edit fields */
+  .editAboutContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* vertical spacing between label/inputs */
+    margin-top: 1rem;
+  }
+  
+  /* Container for Contact edit fields */
+  .editContactContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  /* Each row that holds a contact input + Remove button */
+  .contactFieldRow {
+    display: flex;
+    gap: 0.5rem; /* spacing between input and remove button */
+    align-items: center;
+  }
+  
+  /* A generic text field style */
+  .textField {
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%; /* let it fill available space */
+  }
+  
+  /* Row for Save & Cancel buttons, to separate them from inputs */
+  .buttonRow {
+    display: flex;
+    gap: 1rem; /* spacing between Save and Cancel */
+    margin-top: 0.5rem;
+  }
+  
+  /* Example styling for the remove & add field buttons */
+  .removeButton,
+  .addFieldButton {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .removeButton:hover,
+  .addFieldButton:hover {
+    background-color: #b02a37;
+  }
+  
+  /* Save/Cancel Button for About/Contact forms */
+  .saveButton {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .saveButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .cancelButton {
+    background-color: #6c757d;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .cancelButton:hover {
+    background-color: #545b62;
+  }
+  
+  /* (Optional) if you want a label style for "Bio" / "Interests" */
+  .fieldLabel {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* ==========================================================================
+     MESSAGES & MISCELLANEOUS
+     ========================================================================== */
+  .message {
     text-align: center;
     margin-top: 1em;
     font-size: 1rem;
     color: #10b981;
     font-weight: 500;
-}
+  }
+
+  /* ===============================
+   Services Module (Healer Services)
+   =============================== */
+.servicesModule {
+    background-color: #f9fafb;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Optional: Style the title within the services module */
+  .servicesModule h3 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  

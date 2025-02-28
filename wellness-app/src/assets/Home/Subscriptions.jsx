@@ -61,7 +61,7 @@ function Subscriptions() {
           <li key={sub.id} className="subscription-item">
             <div 
               className="sub-info-wrapper" 
-              onClick={() => navigate(`/publicprofile/${sub.id}`)}
+              onClick={() => navigate(`/profile/${sub.id}`)}
               style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
             >
               <img

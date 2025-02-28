@@ -1,150 +1,177 @@
+// Profile.jsx
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
-import { doc, getDoc, setDoc, Timestamp, deleteDoc } from 'firebase/firestore';
+import { 
+  doc, getDoc, setDoc, Timestamp, deleteDoc, 
+  collection, query, where, getDocs 
+} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
-import ProfileVideos from './ProfileVideos';
-import ProfileAudio from './ProfileAudio';
-import ProfileArticles from './ProfileArticles';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-
-// Connect to emulator (only use this for local development)
-connectFunctionsEmulator(functions, "localhost", 5001);
+import HealerServices from './healerServices'; // New module for healers
 
 const Profile = () => {
   const { user } = useContext(UserContext);
-  const { uid} = useParams();
+  const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
-  const [profileData, setProfileData] = useState({
-    email: '',
-    displayName: '',
-    bio: '',
-    interests: '',
-    profilePictureUrl: ''
-  });
 
-  const [tempProfileData, setTempProfileData] = useState(profileData);
-  const [profilePictureFile, setProfilePictureFile] = useState(null);
-  const [activeTab, setActiveTab] = useState('posts'); // set default tab state to posts
-  const [activeSubTab, setActiveSubTab] = useState('videos'); // set default sub-tab state to videos
-  const [reason, setReason] = useState(''); // State for report reason
+  useEffect(() => {
+    // Adjust the regex as needed; here we assume UIDs are at least 20 alphanumeric characters.
+    if (username && /^[A-Za-z0-9]{20,}$/.test(username)) {
+      const fetchUserById = async () => {
+        try {
+          const userRef = doc(db, 'users', username);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            const newDisplayName = userData.displayName;
+            // Redirect to URL with displayName instead of UID
+            navigate(`/profile/${newDisplayName}`, { replace: true });
+          }
+        } catch (error) {
+          console.error('Error fetching user by UID:', error);
+        }
+      };
+      fetchUserById();
+    }
+  }, [username, navigate]);
+
+  // STATE: Visited user's data and document ID
+  const [profileData, setProfileData] = useState(null);
+  const [viewedUserId, setViewedUserId] = useState(null);
+  const [visitedUserDoc, setVisitedUserDoc] = useState(null);
+
+  // STATE: UI flags and messages
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
   const [message, setMessage] = useState('');
-  const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
-  const [viewedUserId, setViewedUserId] = useState(null);
 
-  // Fetch profile data and check user role
+  // STATE: Editing About
+  const [editingAbout, setEditingAbout] = useState(false);
+  const [newBio, setNewBio] = useState('');
+  const [newInterests, setNewInterests] = useState('');
+
+  // STATE: Editing Contact (contacts array)
+  const [editingContact, setEditingContact] = useState(false);
+  const [contacts, setContacts] = useState([]);
+
+  // --- 1. Fetch the visited user's document based on username ---
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-
-      let targetUid;
-      if (!uid) {
-        targetUid = user.uid;
-        setIsCurrentUser(true);
-      } else {
-        targetUid = uid;
-        setIsCurrentUser(uid === user.uid);
-      }
-
-      const docRef = doc(db, 'users', targetUid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const userData = docSnap.data();
-        setProfileData(userData);
-        setTempProfileData(userData);
-        setProfilePicturePreview(userData.profilePicUrl || dummyPic);
-        setViewedUserId(targetUid);
-      } else {
-        console.log("User not found");
-        setIsCurrentUser(false);
-      }
-  };
-
-    const checkSubscription = async () => {
-      if (user && viewedUserId && viewedUserId !== user.uid) {
-        const subscriptionRef = doc(db, `users/${user.uid}/subscriptions`, viewedUserId);
-        const docSnap = await getDoc(subscriptionRef);
-        setIsSubscribed(docSnap.exists());
-      }
-    };
-
-    const checkUserRole = async () => {
-      if (user) {
-        const currentUserRef = doc(db, 'users', user.uid);
-        const currentUserSnap = await getDoc(currentUserRef);
-        if (currentUserSnap.exists()) {
-          const currentUserData = currentUserSnap.data();
-          setIsAdminOrModerator(currentUserData.role === 'admin' || currentUserData.role === 'moderator');
+    const fetchVisitedUser = async () => {
+      if (!username) return;
+      try {
+        const usersRef = collection(db, 'users');
+        const q = query(usersRef, where('displayName', '==', username));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          // Assume displayName is unique; use the first document.
+          const userDoc = querySnapshot.docs[0];
+          const visitedData = { ...userDoc.data(), id: userDoc.id };
+          setViewedUserId(userDoc.id);
+          setVisitedUserDoc(visitedData);
+          setProfileData(visitedData);
+          setProfilePicturePreview(visitedData.profilePicUrl || dummyPic);
+          // Initialize editing fields
+          setNewBio(visitedData.bio || '');
+          setNewInterests(visitedData.interests || '');
+          setContacts(visitedData.contacts || []);
+        } else {
+          console.error("No user found with displayName:", username);
+          setMessage("User not found.");
         }
+      } catch (error) {
+        console.error("Error fetching visited user:", error);
+        setMessage("Error fetching user data.");
       }
     };
+    fetchVisitedUser();
+  }, [username]);
 
-    fetchProfile();
-    checkSubscription();
-    checkUserRole();
-  }, [user, uid, viewedUserId]);
-
+  // --- 2. When viewedUserId is available, check if this is the current user's profile and fetch subscription/role info ---
   useEffect(() => {
-    if (!uid && user?.displayName) {
-      navigate(`/profile/${user.uid}`);
-    }
-  }, [user, uid, navigate]);
+    if (viewedUserId && user) {
+      setIsCurrentUser(viewedUserId === user.uid);
 
+      const checkSubscription = async () => {
+        if (user && viewedUserId && viewedUserId !== user.uid) {
+          const subscriptionRef = doc(db, `users/${user.uid}/subscriptions`, viewedUserId);
+          const subSnap = await getDoc(subscriptionRef);
+          setIsSubscribed(subSnap.exists());
+        }
+      };
+
+      const checkUserRole = async () => {
+        if (user) {
+          const currentUserRef = doc(db, 'users', user.uid);
+          const currentUserSnap = await getDoc(currentUserRef);
+          if (currentUserSnap.exists()) {
+            const currentUserData = currentUserSnap.data();
+            setIsAdminOrModerator(currentUserData.role === 'admin' || currentUserData.role === 'moderator');
+          }
+        }
+      };
+
+      checkSubscription();
+      checkUserRole();
+    }
+  }, [viewedUserId, user]);
+
+  // --- 3. Redirect to current user's profile if no username is provided ---
+  useEffect(() => {
+    if (!username && user?.displayName) {
+      navigate(`/profile/${user.displayName}`);
+    }
+  }, [user, username, navigate]);
+
+  // --- 4. Do not render Profile UI until profileData is loaded ---
+  if (!profileData) {
+    return <div>Loading profile...</div>;
+  }
+
+  // --- 5. Profile Picture Change Handling (for current user) ---
   const handleProfilePictureChange = (e) => {
     if (e.target.files[0]) {
       const file = e.target.files[0];
       setProfilePictureFile(file);
-      setProfilePicturePreview(URL.createObjectURL(file)); // Create a preview URL
+      setProfilePicturePreview(URL.createObjectURL(file));
     }
   };
-  
-  // Save profile updates to Firestore and Storage
+
+  // --- 6. Save Profile Updates (for current user) ---
   const handleSave = async () => {
     try {
       const docRef = doc(db, 'users', user.uid);
-      await setDoc(docRef, tempProfileData, { merge: true });
-  
-      // Handle profile picture upload
+      await setDoc(docRef, profileData, { merge: true });
       if (profilePictureFile) {
         const profilePictureRef = ref(storage, `profile_pics/${user.uid}/${profilePictureFile.name}`);
         await uploadBytes(profilePictureRef, profilePictureFile);
         const profilePicUrl = await getDownloadURL(profilePictureRef);
         await setDoc(docRef, { profilePicUrl }, { merge: true });
-        setProfileData((prev) => ({ ...prev, profilePicUrl }));
+        setProfileData(prev => ({ ...prev, profilePicUrl }));
       }
-  
-      setProfileData(tempProfileData);
       setMessage('Profile updated successfully!');
-  
-      // Reload page after successful update
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
       console.error('Error updating profile:', error);
       setMessage('Failed to update profile. Try again later.');
     }
   };
 
+  // --- 7. Subscription Handling ---
   const handleSubscribe = async () => {
     try {
       if (isSubscribed) {
-        // Unsubscribe logic
         await deleteDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId));
         await deleteDoc(doc(db, `users/${viewedUserId}/subscribers`, user.uid));
         setIsSubscribed(false);
       } else {
-        // Subscribe logic
         await setDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId), {
           userID: user.uid,
           timestamp: Timestamp.now(),
@@ -160,145 +187,265 @@ const Profile = () => {
     }
   };
 
-  // Handle reports
+  // --- 8. Report, Ban, and Unban Functions ---
   const handleReport = async () => {
     const reason = prompt('Enter a reason for the report:');
     if (!reason) return;
-
     const reportUser = httpsCallable(functions, 'reportUser');
-
     try {
-      const result = await reportUser({ userId: viewedUserId, reason: reason });
+      const result = await reportUser({ userId: viewedUserId, reason });
       alert(result.data.message);
     } catch (error) {
       console.error('Error reporting user:', error);
-      alert('Failed to report the user. Please try again. (Server functions require firebase blaze)');
-    }
-  }
-
-  // Handle banning a user
-  const handleBanUser = async () => {
-    const duration = prompt('Enter ban duration in days:');
-    if (!duration) return;
-
-    const reason = prompt('Enter a reason for the ban:');
-    if (!reason) return;
-
-    const banUser = httpsCallable(functions, 'banUser');
-
-    try {
-      const result = await banUser({ userId: viewedUserId, duration: parseInt(duration), reason: reason });
-      alert(result.data.message);
-    } catch (error) {
-      console.error('Error banning user:', error);
-      alert('Failed to ban the user. Please try again. (Server functions require firebase blaze)');
+      alert('Failed to report the user.');
     }
   };
 
-  // Handle unbanning a user
+  const handleBanUser = async () => {
+    const duration = prompt('Enter ban duration in days:');
+    if (!duration) return;
+    const reason = prompt('Enter a reason for the ban:');
+    if (!reason) return;
+    const banUser = httpsCallable(functions, 'banUser');
+    try {
+      const result = await banUser({ userId: viewedUserId, duration: parseInt(duration), reason });
+      alert(result.data.message);
+    } catch (error) {
+      console.error('Error banning user:', error);
+      alert('Failed to ban the user.');
+    }
+  };
+
   const handleUnbanUser = async () => {
     const unbanUser = httpsCallable(functions, 'unbanUser');
-
     try {
       const result = await unbanUser({ userId: viewedUserId });
       alert(result.data.message);
     } catch (error) {
       console.error('Error unbanning user:', error);
-      alert('Failed to unban the user. Please try again. (Server functions require firebase blaze)');
+      alert('Failed to unban the user.');
     }
   };
 
-  const handleMainTabClick = (tab) => {
-    setActiveTab(tab);
-    if (tab !== 'posts') {
-      setActiveSubTab(activeSubTab); // remember state of active sub tab
-    }
-  };
-
+  // --- 9. Render the Profile Page ---
   return (
     <div className={styles.profilePage}>
+      {/* Profile Banner and Picture */}
       <div className={styles.profileBanner}>
         <div className={styles.profileImageWrapper}>
           <img
-            src={profilePicturePreview || profileData.profilePictureUrl || dummyPic}
+            src={profilePicturePreview || profileData.profilePicUrl || dummyPic}
             alt={`${profileData.displayName || 'User'}'s profile`}
             className={styles.profileImage}
           />
         </div>
-        {/* Show profile picture change button only if it's the current user's profile */}
-          {isCurrentUser && (
-            <>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleProfilePictureChange}
-                style={{ display: 'none' }}
-                id="profilePicUpload"
-              />
-              <button 
-                className={styles.profileButton} 
-                onClick={() => document.getElementById('profilePicUpload').click()}
-              >
-                Change Profile Picture
+        {isCurrentUser && (
+          <>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePictureChange}
+              style={{ display: 'none' }}
+              id="profilePicUpload"
+            />
+            <button className={styles.profileButton} onClick={() => document.getElementById('profilePicUpload').click()}>
+              Change Profile Picture
+            </button>
+            {profilePictureFile && (
+              <button className={styles.profileButton} onClick={handleSave}>
+                Save Changes
               </button>
-              {profilePictureFile && (
-                <button className={styles.profileButton} onClick={handleSave}>
-                  Save Changes
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Profile Header */}
+      <div className={styles.profileHeader}>
+        <h2>{profileData.displayName || 'User Profile'}</h2>
+        {isCurrentUser ? (
+          <button className="diaryButton" onClick={() => navigate('/profile/diary')}>
+            View My Diary
+          </button>
+        ) : (
+          <>
+            {user ? (
+              <button className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} onClick={handleSubscribe}>
+                {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+              </button>
+            ) : (
+              <p className="login-message">Please log in to subscribe.</p>
+            )}
+          </>
+        )}
+        {isAdminOrModerator && !isCurrentUser && (
+          <button onClick={handleBanUser} className={styles.banButton}>
+            Ban User
+          </button>
+        )}
+      </div>
+
+      {/* About & Contact Sections (always visible, side by side) */}
+      <div className={styles.aboutContactContainer}>
+        {/* About Section */}
+        <div className={styles.aboutSection}>
+          <h3>About</h3>
+          {isCurrentUser && editingAbout ? (
+            <div className={styles.editAboutContainer}>
+              <label className={styles.fieldLabel} htmlFor="bioInput">Bio</label>
+              <input
+                id="bioInput"
+                type="text"
+                value={newBio}
+                onChange={(e) => setNewBio(e.target.value)}
+                placeholder="Enter your bio"
+                className={styles.textField}
+              />
+              <label className={styles.fieldLabel} htmlFor="interestsInput">Interests</label>
+              <input
+                id="interestsInput"
+                type="text"
+                value={newInterests}
+                onChange={(e) => setNewInterests(e.target.value)}
+                placeholder="Enter your interests (comma separated)"
+                className={styles.textField}
+              />
+              <div className={styles.buttonRow}>
+                <button
+                  onClick={async () => {
+                    const docRef = doc(db, 'users', user.uid);
+                    await setDoc(docRef, { bio: newBio, interests: newInterests }, { merge: true });
+                    setProfileData((prev) => ({ ...prev, bio: newBio, interests: newInterests }));
+                    setEditingAbout(false);
+                  }}
+                  className={styles.saveButton}
+                >
+                  Save About
+                </button>
+                <button onClick={() => setEditingAbout(false)} className={styles.cancelButton}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p>{profileData.bio || "No bio available."}</p>
+              <p>
+                <strong>Interests:</strong> {profileData.interests || "None listed."}
+              </p>
+              {isCurrentUser && (
+                <button
+                  className={styles.editButton}
+                  onClick={() => {
+                    setNewBio(profileData.bio || "");
+                    setNewInterests(profileData.interests || "");
+                    setEditingAbout(true);
+                  }}
+                >
+                  Edit About
                 </button>
               )}
             </>
           )}
+        </div>
+
+        {/* Contact Section */}
+        <div className={styles.contactSection}>
+          <h3>Contact</h3>
+          {isCurrentUser && editingContact ? (
+            <div className={styles.editContactContainer}>
+              {contacts.map((contact, index) => (
+                <div key={index} className={styles.contactFieldRow}>
+                  <input
+                    type="text"
+                    value={contact}
+                    onChange={(e) => {
+                      const newContacts = [...contacts];
+                      newContacts[index] = e.target.value;
+                      setContacts(newContacts);
+                    }}
+                    placeholder="Enter contact info"
+                    className={styles.textField}
+                  />
+                  <button
+                    onClick={() => {
+                      const newContacts = contacts.filter((_, i) => i !== index);
+                      setContacts(newContacts);
+                    }}
+                    className={styles.removeButton}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button onClick={() => setContacts([...contacts, ""])} className={styles.addFieldButton}>
+                Add Field
+              </button>
+              <div className={styles.buttonRow}>
+                <button
+                  onClick={async () => {
+                    const docRef = doc(db, 'users', user.uid);
+                    await setDoc(docRef, { contacts: contacts }, { merge: true });
+                    setProfileData((prev) => ({ ...prev, contacts }));
+                    setEditingContact(false);
+                  }}
+                  className={styles.saveButton}
+                >
+                  Save Contact
+                </button>
+                <button onClick={() => setEditingContact(false)} className={styles.cancelButton}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {profileData.contacts && profileData.contacts.length > 0 ? (
+                <ul>
+                  {profileData.contacts.map((contact, index) => (
+                    <li key={index}>
+                      {/^https?:\/\//.test(contact) ? (
+                        <a href={contact} target="_blank" rel="noopener noreferrer">
+                          {contact}
+                        </a>
+                      ) : (
+                        contact
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No contact information available.</p>
+              )}
+              {isCurrentUser && (
+                <button
+                  className={styles.editButton}
+                  onClick={() => {
+                    setContacts(profileData.contacts || []);
+                    setEditingContact(true);
+                  }}
+                >
+                  Edit Contact
+                </button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      <div className={styles.profileHeader}>
-        <h2>{profileData.displayName || 'User Profile'}</h2>
-
-        {/* Button for adding a new diary entry */}
-        {isCurrentUser && (
-          <button className="diaryButton" onClick={() => navigate('/profile/diary')}>View My Diary</button>
-        )}
-
-        {!isCurrentUser && user ? (
-          <button
-            className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`}
-            onClick={handleSubscribe}
-          >
-            {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
-          </button>
-        ) : !isCurrentUser && (
-          <p className="login-message">Please log in to subscribe.</p>
-        )}
-
-        {/* Admin/Moderator-specific actions */}
-        {isAdminOrModerator && !isCurrentUser && (
-          <button onClick={handleBanUser} className={styles.profileButton}>Ban User</button>
-        )}
+      {/* Posts Section */}
+      <div className={styles.postsSection}>
+        <h3>Posts</h3>
+        <ProfilePosts username={profileData.displayName} />
       </div>
 
-      <div className={styles.navLinks}>
-        <button onClick={() => handleMainTabClick('posts')} className={`${styles.navButton} ${activeTab === 'posts' ? styles.active : ''}`}>Posts</button>
-        <button onClick={() => handleMainTabClick('about')} className={`${styles.navButton} ${activeTab === 'about' ? styles.active : ''}`}>About</button>
-        <button onClick={() => handleMainTabClick('contact')} className={`${styles.navButton} ${activeTab === 'contact' ? styles.active : ''}`}>Contact</button>
-      </div>
-
-      <div className={styles.contentArea}>
-        {activeTab === 'posts' && (
-          <div className={styles.subNavLinks}>
-            <button onClick={() => setActiveSubTab('videos')} className={`${styles.subNavButton} ${activeSubTab === 'videos' ? styles.active : ''}`}>Videos</button>
-            <button onClick={() => setActiveSubTab('audio')} className={`${styles.subNavButton} ${activeSubTab === 'audio' ? styles.active : ''}`}>Audio</button>
-            <button onClick={() => setActiveSubTab('articles')} className={`${styles.subNavButton} ${activeSubTab === 'articles' ? styles.active : ''}`}>Articles</button>
-          </div>
-        )}
-
-        {activeTab === 'posts' && (
-          activeSubTab === 'videos' ? <ProfileVideos /> :
-          activeSubTab === 'audio' ? <ProfileAudio /> :
-          activeSubTab === 'articles' ? <ProfileArticles /> :
-          <></>
-        )}
-        {activeTab === 'about' && <p>About Content</p>}
-        {activeTab === 'contact' && <p>Contact Content</p>}
-      </div>
+      {/* Services Module: Only display if visited user's role is "healer" */}
+      {visitedUserDoc && visitedUserDoc.role === 'healer' && (
+        <div className={styles.servicesModule}>
+          <h3>Services</h3>
+          <HealerServices />
+        </div>
+      )}
 
       {message && <p className="message">{message}</p>}
     </div>
