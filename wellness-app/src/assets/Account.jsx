@@ -8,6 +8,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from '../styles/profile.module.css';
 import dummyPic from "./dummyPic.jpeg";
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
+import HealerApplicationForm from './ApplyForHealer/HealerApplicationForm';
+
 
 function Account() {
     const { user } = useContext(UserContext);
@@ -138,9 +140,9 @@ function Account() {
         setEditMode(false);
     };
 
-    const handleApplication = () => {
-        // TODO
-    };
+    // const handleApplication = () => {
+    //     // TODO
+    // };
 
         const handleDeletion = async (e) => {
         e.preventDefault();
@@ -291,15 +293,7 @@ function Account() {
             case 'applyToBeAHealer':
                 return (
                     <div className="apply-tab">
-                        <h3>Apply To Be A Healer</h3>
-                        <form className="apply-form" onSubmit={handleApplication}>
-                            <textarea
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
-                                required
-                            />
-                            <button className={styles.profileButton} type="submit">Apply</button>
-                        </form>
+                        <HealerApplicationForm />
                     </div>
                 );
             case 'deleteAccount':

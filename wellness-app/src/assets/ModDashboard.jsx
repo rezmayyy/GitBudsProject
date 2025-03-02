@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ManageUsers from './ManageUsers';
 import ManagePosts from './ManagePosts';
 import TicketList from './Ticket/TicketList';
+import ManageHealerApplications from './ManageHealerApplications';
 import styles from '../styles/ModDashboard.module.css';
 
 const ModDashboard = () => {
@@ -29,6 +30,13 @@ const ModDashboard = () => {
         >
           Manage Tickets
         </button>
+        <button
+          className={`${styles.sidebarButton} ${selectedTab === 'manageHealers' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('manageHealers')}
+        >
+          Manage Healer Applications
+        </button>
+        
       </div>
 
       {/* Main content area */}
@@ -36,6 +44,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageUsers' && <ManageUsers />}
         {selectedTab === 'managePosts' && <ManagePosts />}
         {selectedTab === 'manageTickets' && <TicketList />}
+        {selectedTab === 'manageHealers' && <ManageHealerApplications />}
       </div>
     </div>
   );
