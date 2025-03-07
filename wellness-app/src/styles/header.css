@@ -23,8 +23,11 @@
     padding: 0.75rem 1.5rem;
     width: 100%;
     box-sizing: border-box;
-    position: relative;
-    z-index: 100;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    z-index: 1000; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header-container {
@@ -372,5 +375,21 @@ a.brand-title:focus {
     .logo {
         width: 32px;
         height: 32px;
+    }
+}
+/* Add significantly more padding to account for possible miscalculations or additional elements */
+body {
+    padding-top: 130px; /* Increased from 85px to give more space */
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 110px; /* Increased from 72px */
+    }
+}
+
+@media (max-width: 580px) {
+    body {
+        padding-top: 90px; /* Increased from 55px */
     }
 }

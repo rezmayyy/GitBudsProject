@@ -138,6 +138,7 @@ function Header() {
                             <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
                             <li><Link to="/discussion">Discussion Board</Link></li>
                             <li><Link to="/create">Create</Link></li>
+                            <li><Link to="/account">Account</Link></li>
                         </ul>
                     </nav>
                 </div>
@@ -190,11 +191,7 @@ function Header() {
                         <p className={styles.username}>{user.displayName || 'User'}</p>
                     </div>
                 )}
-                {/* Primary Action Button */}
-                <Link to="/signup" className={styles.primaryMenuLink} onClick={closeMenu}>
-                    Find a Healer
-                </Link>
-
+              
                 {/* Conditionally render nav links only on mobile */}
                 {isMobile && (
                     <ul className={styles.hamburgerNavLinks}>
