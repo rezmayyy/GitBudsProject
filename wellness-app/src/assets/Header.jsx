@@ -149,7 +149,7 @@ function Header() {
                     {!user && (
                         <div className="auth-buttons">
                             <Link to="/login" className="auth-button">Log In</Link>
-                            <Link to="/signup" className="signup-button">Find a Healer</Link>
+                            <Link to="/signup" className="auth-button">Sign Up</Link>
                         </div>
                     )}
 

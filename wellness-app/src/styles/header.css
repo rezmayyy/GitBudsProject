@@ -166,7 +166,6 @@ a.brand-title:focus {
     justify-content: flex-end;
     position: relative;
     z-index: 102;
-    /* Make sure this is higher than other elements */
 }
 
 .auth-buttons {
@@ -192,31 +191,6 @@ a.brand-title:focus {
     background-color: var(--auth-button-hover-bg);
     text-decoration: none;
 }
-
-/* Add your new signup button styles here */
-.signup-button {
-    background: linear-gradient(45deg, #694e8d, #8a4fa8);
-    color: white;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
-    padding: 0.6rem 1.5rem;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(138, 79, 168, 0.25);
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
-    white-space: nowrap;
-}
-
-.signup-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(138, 79, 168, 0.4);
-    text-decoration: none;
-}
-
 
 .profile-container,
 .mobile-profile-container {
@@ -377,19 +351,19 @@ a.brand-title:focus {
         height: 32px;
     }
 }
-/* Add significantly more padding to account for possible miscalculations or additional elements */
+
 body {
-    padding-top: 130px; /* Increased from 85px to give more space */
+    padding-top: 130px; 
 }
 
 @media (max-width: 768px) {
     body {
-        padding-top: 110px; /* Increased from 72px */
+        padding-top: 110px; 
     }
 }
 
 @media (max-width: 580px) {
     body {
-        padding-top: 90px; /* Increased from 55px */
+        padding-top: 90px; 
     }
 }
