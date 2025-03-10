@@ -29,6 +29,7 @@ import ExplorePage from './assets/Explore/ExplorePage';
 import EventsPage from './assets/Events/EventsPage';
 import EventDetailsPage from './assets/Events/EventDetailsPage';
 import CreateEventPage from './assets/Events/CreateEventPage';
+import DirectoryPage from './assets/Directory/DirectoryPage';
 import About from './assets/About';
 import Contact from './assets/Contact';
 import Payment from './assets/Payment';
@@ -69,6 +70,7 @@ function App() {
             <Route path="/account" element={<Account />} />
             <Route path="/profile/diary" element={<DiaryPage />} />
             <Route path="/profile/diary/editor" element={<DiaryEditor />} />
+            <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/events" element={<EventsPage/>} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />

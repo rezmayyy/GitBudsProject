@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { db } from '../Firebase';
-import { collection, query, where, getDocs, addDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
 import UserContext from '../UserContext';
 import './ApplyForHealer.css';
 
@@ -74,16 +74,30 @@ function HealerApplicationForm() {
                 }
             }
 
-            // Submit a new application
+            // Fetch the user's profile picture URL from the users collection
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            let profilePicUrl = null;
+            if (userDoc.exists()) {
+                const userData = userDoc.data();
+                profilePicUrl = userData.profilePicUrl;
+            }
+
+            // Submit a new healer application with profilePicUrl
             const healerApplication = {
                 ...formData,
                 userId: user.uid,
                 displayName: user.displayName,
+                profilePicUrl: profilePicUrl, // Include the profilePicUrl
                 status: 'pending',
                 createdAt: Timestamp.now()
             };
 
+            // Add the application to the 'healerApplications' collection
             await addDoc(collection(db, 'healerApplications'), healerApplication);
+
+            // Reset form data and alert success
             setFormData({ firstName: '', lastName: '', title: '', location: '', healingTags: [] });
             alert('Application submitted successfully!');
         } catch (error) {
