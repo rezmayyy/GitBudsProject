@@ -29,7 +29,7 @@ const ManageHealerApplications = () => {
                 // ✅ Check if user is already in the healers collection
                 const healerSnapshot = await getDoc(healerRef);
                 if (!healerSnapshot.exists()) {
-                    // ✅ Add approved healer to the healers collection with timestamp
+                    // ✅ Add approved healer to the healers collection with profilePicUrl and timestamp
                     await setDoc(healerRef, {
                         userId: app.userId,
                         firstName: app.firstName,
@@ -38,6 +38,8 @@ const ManageHealerApplications = () => {
                         location: app.location,
                         healingTags: app.healingTags,
                         displayName: app.displayName,
+                        displayNameLowercase: app.displayName.toLowerCase(),
+                        profilePicUrl: app.profilePicUrl,  // ✅ Store the profile picture URL
                         approvedAt: Timestamp.now(), // ✅ Store approval timestamp
                     });
 
@@ -52,7 +54,6 @@ const ManageHealerApplications = () => {
                     status: 'rejected',
                     rejectedAt: Timestamp.now() // Store rejection timestamp
                 });
-                
             }
 
             // Refresh applications list

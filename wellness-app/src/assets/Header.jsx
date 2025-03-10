@@ -110,7 +110,7 @@ function Header() {
             />
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/explore">Explore</Link></li>
+              <li><Link to="/directory">Directory</Link></li>
               <li><Link to="/learn">Learn</Link></li>
               <li><Link to="/blogs">Blogs</Link></li>
               <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
