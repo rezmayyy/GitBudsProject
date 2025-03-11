@@ -16,7 +16,7 @@ import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
 import ContentPostPage from './assets/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
-import ModView from './assets/ModDashboard';
+import ModView from './assets/Moderation/ModDashboard';
 import Support from './assets/Support';
 import Ticket from './assets/Ticket/TicketList';
 import CreateTicket from "./assets/Ticket/CreateTicket";

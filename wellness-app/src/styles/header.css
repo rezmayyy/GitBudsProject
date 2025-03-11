@@ -34,10 +34,14 @@ Header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: relative;
+
+    position: sticky;
+    top:0;
+    z-index: 10;
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
+
 }
 
 .center-section {

@@ -1,31 +1,55 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./Firebase"; // adjust path as needed
 import styles from "../styles/FAQ.module.css";
 
-const faqs = [
-  { category: "Account", question: "How do I create an account?", answer: "To create an account, click on the 'Sign Up' button on the homepage and follow the instructions." },
-  { category: "Billing", question: "How can I reset my password?", answer: "Go to the login page, click 'Forgot Password,' and follow the instructions to reset your password." },
-  { category: "General", question: "Is TribeWell free to use?", answer: "Yes! TribeWell has a free tier, but some premium content may require a subscription." },
-  { category: "Support", question: "How do I contact support?", answer: "You can reach us at support@tribewell.com or create a support ticket from this page." },
-];
-
 export default function FAQ() {
+  const [faqs, setFaqs] = useState([]);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
   const [openIndex, setOpenIndex] = useState(null);
 
+  // Fetch FAQ data from Firestore on mount
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        // Get the FAQ document from adminSettings collection
+        const faqDocRef = doc(db, "adminSettings", "FAQ");
+        const faqDocSnap = await getDoc(faqDocRef);
+        if (faqDocSnap.exists()) {
+          const data = faqDocSnap.data();
+          // Assuming the document has two fields: Questions and Answers (both arrays)
+          const questions = data.Questions || [];
+          const answers = data.Answers || [];
+          // Zip the questions and answers together (use the length of the shorter array)
+          const faqsData = questions.map((q, i) => ({
+            question: q,
+            answer: answers[i] || ""
+          }));
+          setFaqs(faqsData);
+        } else {
+          console.error("No FAQ document found in adminSettings.");
+        }
+      } catch (error) {
+        console.error("Error fetching FAQs:", error);
+      }
+    };
+
+    fetchFaqs();
+  }, []);
+
+  // Toggle a FAQ item's open/closed state
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
+  // Filter FAQs by the search term
   const filteredFaqs = faqs.filter(faq =>
-    (selectedCategory === "All" || faq.category === selectedCategory) &&
     faq.question.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div id="faq-section" className={styles.faqContainer}>
       <h2 className={styles.faqTitle}>Frequently Asked Questions</h2>
-
       <input
         type="text"
         placeholder="Search FAQs..."
@@ -34,23 +58,24 @@ export default function FAQ() {
         className={styles.faqSearch}
       />
 
-      <select onChange={(e) => setSelectedCategory(e.target.value)} className={styles.faqFilter}>
-        <option value="All">All Categories</option>
-        <option value="Account">Account</option>
-        <option value="Billing">Billing</option>
-        <option value="General">General</option>
-        <option value="Support">Support</option>
-      </select>
-
       <div className={styles.faqList}>
         {filteredFaqs.length > 0 ? (
           filteredFaqs.map((faq, index) => (
-            <div key={index} className={`${styles.faqItem} ${openIndex === index ? styles.open : ""}`}>
-              <button className={styles.faqQuestion} onClick={() => toggleFAQ(index)}>
+            <div
+              key={index}
+              className={`${styles.faqItem} ${openIndex === index ? styles.open : ""}`}
+            >
+              <button
+                className={styles.faqQuestion}
+                onClick={() => toggleFAQ(index)}
+              >
                 {faq.question}
                 <span>{openIndex === index ? "▲" : "▼"}</span>
               </button>
-              <p className={styles.faqAnswer} style={{ display: openIndex === index ? "block" : "none" }}>
+              <p
+                className={styles.faqAnswer}
+                style={{ display: openIndex === index ? "block" : "none" }}
+              >
                 {faq.answer}
               </p>
             </div>

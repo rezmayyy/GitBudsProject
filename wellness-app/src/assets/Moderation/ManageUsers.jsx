@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
-import { db, functions } from './Firebase'; // Adjust the path as needed
+import { db, functions } from '../Firebase'; // Adjust the path as needed
 import { httpsCallable } from 'firebase/functions';
-import styles from '../styles/ModDashboard.module.css';
+import styles from '../../styles/ModDashboard.module.css';
 
 const ManageUsers = () => {
   const [searchQuery, setSearchQuery] = useState('');
