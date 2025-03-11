@@ -3,6 +3,7 @@ import ManageUsers from './ManageUsers';
 import ManagePosts from './ManagePosts';
 import TicketList from '../Ticket/TicketList';
 import ManageFAQ from './ManageFAQ';
+import ManageTOS from './ManageTOS';
 import ManageHealerApplications from './ManageHealerApplications';
 import UserContext from '../UserContext';
 import styles from '../../styles/ModDashboard.module.css';
@@ -51,6 +52,12 @@ const ModDashboard = () => {
             >
               Edit FAQ
             </button>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageTOS' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageTOS')}
+            >
+              Edit TOS
+            </button>
           </>
         )}
       </div>
@@ -62,6 +69,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageTickets' && <TicketList />}
         {selectedTab === 'manageHealers' && isAdmin && <ManageHealerApplications />}
         {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}
+        {selectedTab === 'manageTOS' && isAdmin && <ManageTOS />}
       </div>
     </div>
   );

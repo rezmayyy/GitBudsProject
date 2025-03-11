@@ -3,9 +3,9 @@
 ======================================================= */
 .dashboardContainer {
   display: flex;
-  height: 100vh;
   background: #f8f9fa;
   font-family: Arial, sans-serif;
+  height: 100vh;
 }
 .contentWrapper {
   flex-grow: 1;
@@ -13,8 +13,8 @@
   justify-content: center;  /* Ensures the container is centered horizontally */
   align-items: flex-start;  /* Align items to the top rather than center vertically */
   padding: 20px;
-  overflow: hidden;
   width: 100%;
+  overflow-y: auto;
 }
 
 /* =======================================================
