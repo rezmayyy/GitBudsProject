@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { db } from './Firebase'; // Adjust the import path as needed
-import styles from '../styles/ModDashboard.module.css';
+import { db } from '../Firebase'; // Adjust the import path as needed
+import styles from '../../styles/ModDashboard.module.css';
 
 const ManagePosts = () => {
   const [pendingPosts, setPendingPosts] = useState([]); // Stores the list of posts with 'pending' status
@@ -168,8 +168,8 @@ const ManagePosts = () => {
           <button onClick={toggleAutoApprove} className={styles.toggleButton}>
             Toggle AutoApprove ({autoApprove ? 'Enabled' : 'Disabled'})
           </button>
-          <button onClick={() => setViewMode('pending')}>View Pending Posts</button>
-          <button onClick={() => setViewMode('rejected')}>View Rejected Posts</button>
+          <button onClick={() => setViewMode('pending')} className={styles.toggleButton}>View Pending Posts</button>
+          <button onClick={() => setViewMode('rejected')} className={styles.toggleButton}>View Rejected Posts</button>
         </div>
       )}
       <div className={styles.postsWrapper}>

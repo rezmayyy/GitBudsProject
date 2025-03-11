@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { db } from './Firebase'; 
+import { db } from '../Firebase'; 
 import { collection, query, where, getDocs, updateDoc, deleteDoc, doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 
 const ManageHealerApplications = () => {

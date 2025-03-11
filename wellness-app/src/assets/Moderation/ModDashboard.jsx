@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import ManageUsers from './ManageUsers';
 import ManagePosts from './ManagePosts';
-import TicketList from './Ticket/TicketList';
+import TicketList from '../Ticket/TicketList';
+import ManageFAQ from './ManageFAQ';
 import ManageHealerApplications from './ManageHealerApplications';
-import styles from '../styles/ModDashboard.module.css';
+import UserContext from '../UserContext';
+import styles from '../../styles/ModDashboard.module.css';
 
 const ModDashboard = () => {
+  const { user } = useContext(UserContext);
   const [selectedTab, setSelectedTab] = useState('manageUsers');
+
+  // Helper: check if current user is admin
+  const isAdmin = user && user.role === 'admin';
 
   return (
     <div className={styles.dashboardContainer}>
@@ -30,13 +36,23 @@ const ModDashboard = () => {
         >
           Manage Tickets
         </button>
-        <button
-          className={`${styles.sidebarButton} ${selectedTab === 'manageHealers' ? styles.active : ''}`}
-          onClick={() => setSelectedTab('manageHealers')}
-        >
-          Manage Healer Applications
-        </button>
-        
+        {/* Only show these tabs if the current user is an admin */}
+        {isAdmin && (
+          <>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageHealers' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageHealers')}
+            >
+              Manage Healer Applications
+            </button>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageFAQ' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageFAQ')}
+            >
+              Edit FAQ
+            </button>
+          </>
+        )}
       </div>
 
       {/* Main content area */}
@@ -44,7 +60,8 @@ const ModDashboard = () => {
         {selectedTab === 'manageUsers' && <ManageUsers />}
         {selectedTab === 'managePosts' && <ManagePosts />}
         {selectedTab === 'manageTickets' && <TicketList />}
-        {selectedTab === 'manageHealers' && <ManageHealerApplications />}
+        {selectedTab === 'manageHealers' && isAdmin && <ManageHealerApplications />}
+        {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}
       </div>
     </div>
   );
