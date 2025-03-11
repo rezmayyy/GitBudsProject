@@ -10,158 +10,232 @@ import { doc, setDoc } from "firebase/firestore";
 import dummyPic from "./dummyPic.jpeg";
 
 function Header() {
-    const { user } = useContext(UserContext);
-    const navigate = useNavigate();
-    const [searchTerm, setSearchTerm] = useState("");
-    const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef(null);
-    const hamburgerRef = useRef(null);
-    const [profilePic, setProfilePic] = useState(dummyPic);
+  const { user } = useContext(UserContext);
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+  const triggerRef = useRef(null);
+  const [profilePic, setProfilePic] = useState(dummyPic);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-    useEffect(() => {
-        if (user?.profilePicUrl) {
-            const img = new Image();
-            img.src = user.profilePicUrl;
-            img.onload = () => setProfilePic(user.profilePicUrl);
-            img.onerror = () => setProfilePic(dummyPic);
-        }
-    }, [user?.profilePicUrl]);
-
-    const toggleMenu = () => setMenuOpen((prev) => !prev);
-    const closeMenu = () => setMenuOpen(false);
-
-    const handleProfileClick = (event) => {
-        if (!user) {
-            event.preventDefault();
-            navigate("/login");
-        }
+  // Handle window resize and set mobile state
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) {
+        closeMenu();
+      }
     };
 
-    useEffect(() => {
-        if (!user) closeMenu();
-    }, [user]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (
-                menuOpen &&
-                menuRef.current &&
-                !menuRef.current.contains(event.target) &&
-                hamburgerRef.current &&
-                !hamburgerRef.current.contains(event.target)
-            ) {
-                closeMenu();
-            }
-        };
-        document.addEventListener("mouseup", handleClickOutside);
-        return () => document.removeEventListener("mouseup", handleClickOutside);
-    }, [menuOpen]);
+  useEffect(() => {
+    if (user?.profilePicUrl) {
+      const img = new Image();
+      img.src = user.profilePicUrl;
+      img.onload = () => setProfilePic(user.profilePicUrl);
+      img.onerror = () => setProfilePic(dummyPic);
+    }
+  }, [user?.profilePicUrl]);
 
-    const handleKeyPress = (event) => {
-        if (event.key === "Enter") {
-            navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
-        }
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+  const closeMenu = () => setMenuOpen(false);
+
+  const handleProfileClick = (event) => {
+    if (!user) {
+      event.preventDefault();
+      navigate("/login");
+    }
+  };
+
+  useEffect(() => {
+    if (!user) closeMenu();
+  }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target)
+      ) {
+        closeMenu();
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
 
-    const handleUserDocument = async () => {
-        if (user) {
-            const userRef = doc(db, "users", user.uid);
-            const userData = { email: user.email, displayName: user.displayName };
-            try {
-                await setDoc(userRef, userData, { merge: true });
-            } catch (error) {
-                console.error("Error creating/updating user document:", error);
-            }
-        }
-    };
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
+    }
+  };
 
-    const setUserRole = async (role) => {
-        if (user) {
-            try {
-                const userRef = doc(db, "users", user.uid);
-                await setDoc(userRef, { role }, { merge: true });
-            } catch (error) {
-                console.error("Error updating user role:", error);
-            }
-        }
-    };
+  const handleUserDocument = async () => {
+    if (user) {
+      const userRef = doc(db, "users", user.uid);
+      const userData = { email: user.email, displayName: user.displayName };
+      try {
+        await setDoc(userRef, userData, { merge: true });
+        closeMenu();
+      } catch (error) {
+        console.error("Error creating/updating user document:", error);
+      }
+    }
+  };
 
-    return (
-      <header>
+  const setUserRole = async (role) => {
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        await setDoc(userRef, { role }, { merge: true });
+        closeMenu();
+      } catch (error) {
+        console.error("Error updating user role:", error);
+      }
+    }
+  };
+
+  return (
+    <header className="responsive-header">
+      <div className="header-container">
+        {/* Left - Logo and Title */}
         <div className="brand-container">
-          <Link to="/">
+          <Link to="/" className="logo-link">
             <img src={logo} alt="TribeWell Logo" className="logo" />
           </Link>
           <Link to="/" className="brand-title">
-            <Link style={{textDecoration: 'none'}} to="/">
-                    <h1 style={{align: 'center', color: 'white'}}>TribeWell</h1>
-                </Link>
+            <h1 className="site-title">TribeWell</h1>
           </Link>
         </div>
-        <nav>
-          <div className="nav-center">
+
+        {/* Center - Desktop navigation and search */}
+        <div className="center-section">
+          {/* Search Bar */}
+          <div className="search-container">
             <input
               type="text"
               placeholder="Search..."
-              className="search-bar"
+              className="search-bar rounded-search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={handleKeyPress}
             />
+          </div>
+
+          {/* Nav Links */}
+          <nav className="main-nav">
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/directory">Directory</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/blogs">Blogs</Link></li>
               <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
               <li><Link to="/discussion">Discussion Board</Link></li>
               <li><Link to="/create-post">Create</Link></li>
-              <li><Link to="/account">Account</Link></li>
             </ul>
-          </div>
-          <div className="auth-buttons">
-            {!user && (
-              <>
-                <Link to="/login" className="auth-button">Log In</Link>
-                <Link to="/signup" className="auth-button">Sign Up</Link>
-              </>
-            )}
-          </div>
-          <div className={styles.hamburgerContainer}>
-            <button ref={hamburgerRef} onClick={toggleMenu} className={styles.hamburgerButton}>☰</button>
-            {user && <img src={profilePic} alt="Profile" className={styles.profilePicture} onClick={toggleMenu} />}
-            <div ref={menuRef} className={`${styles.menuContent} ${menuOpen ? styles.active : ""}`}>
-              <button className={styles.closeButton} onClick={closeMenu}>✖</button>
-              <ul className={styles.hamburgerNavLinks}>
-                <li><Link to="/" onClick={closeMenu}>Home</Link></li>
-                <li><Link to="/explore" onClick={closeMenu}>Explore</Link></li>
-                <li><Link to="/contact" onClick={closeMenu}>Contact</Link></li>
-                <li><Link to="/blogs" onClick={closeMenu}>Blogs</Link></li>
-                <li><Link to="/discussion" onClick={closeMenu}>Discussion Board</Link></li>
-                <li><Link to="/create-post" onClick={closeMenu}>Create</Link></li>
-                <li><Link to="/account" onClick={closeMenu}>Account</Link></li>
-              </ul>
-              <div className={styles.hamburgerAuthButtons}>
-                {user ? (
-                  <>
-                    <Link to="/account" className={styles.menuLink} onClick={closeMenu}>{user.displayName}</Link>
-                    <Signout className={styles.menuLink} closeMenu={closeMenu} />
-                    <button className={styles.menuLink} onClick={() => { handleUserDocument(); closeMenu(); }}>Create/Update User Document</button>
-                    <button className={styles.menuLink} onClick={() => { setUserRole("admin"); closeMenu(); }}>Set as Admin</button>
-                    <button className={styles.menuLink} onClick={() => { setUserRole("normal"); closeMenu(); }}>Set as Normal</button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" className={styles.menuLink} onClick={closeMenu}>Log In</Link>
-                    <Link to="/signup" className={styles.menuLink} onClick={closeMenu}>Sign Up</Link>
-                  </>
-                )}
-              </div>
+          </nav>
+        </div>
+
+        {/* Right - Auth Buttons or Profile */}
+        <div className="right-section">
+          {/* Auth Buttons (when not logged in) */}
+          {!user && (
+            <div className="auth-buttons">
+              <Link to="/login" className="auth-button">Log In</Link>
+              <Link to="/signup" className="auth-button">Sign Up</Link>
             </div>
+          )}
+
+          {/* Mobile Menu Toggle (for mobile view) */}
+          {isMobile && (
+            <button
+              ref={triggerRef}
+              onClick={toggleMenu}
+              className={`${styles.hamburgerButton} ${user ? 'hide-button' : ''}`}
+              aria-label="Menu"
+            >
+              ☰
+            </button>
+          )}
+
+          {/* Profile Picture (when logged in) */}
+          {user && (
+            <div className="profile-container" onClick={toggleMenu} ref={triggerRef}>
+              <img src={profilePic} alt="Profile" className="profile-pic" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Overlay when menu is open */}
+      {menuOpen && <div className={styles.overlay} onClick={closeMenu}></div>}
+
+      {/* Sidebar Menu */}
+      <div
+        ref={menuRef}
+        className={`${styles.menuContent} ${menuOpen ? styles.active : ""}`}
+        style={{ right: menuOpen ? '0' : '-300px' }}
+      >
+        <button className={styles.closeButton} onClick={closeMenu} aria-label="Close menu">✖</button>
+
+        {user && (
+          <div className={styles.userInfo}>
+            <img src={profilePic} alt="Profile" className={styles.sidebarProfilePic} />
+            <p className={styles.username}>{user.displayName || 'User'}</p>
           </div>
-        </nav>
-      </header>
-    );
+        )}
+
+        {/* Conditionally render nav links only on mobile */}
+        {isMobile && (
+          <ul className={styles.hamburgerNavLinks}>
+            <li><Link to="/" onClick={closeMenu}>Home</Link></li>
+            <li><Link to="/explore" onClick={closeMenu}>Explore</Link></li>
+            <li><Link to="/blogs" onClick={closeMenu}>Blogs</Link></li>
+            <li><Link to="/discussion" onClick={closeMenu}>Discussion Board</Link></li>
+            <li><Link to="/create" onClick={closeMenu}>Create</Link></li>
+            <li><Link to="/profile" onClick={closeMenu}>Profile</Link></li>
+          </ul>
+        )}
+
+        <div className={styles.hamburgerAuthButtons}>
+          {user ? (
+            <>
+              <Signout className={styles.menuLink} closeMenu={closeMenu} />
+              <Link to="/account" className={styles.menuLink} onClick={closeMenu}>Account Settings</Link>
+
+
+              <button className={styles.menuLink} onClick={() => { handleUserDocument(); closeMenu(); }}>
+                Update User Document
+              </button>
+              <button className={styles.menuLink} onClick={() => { setUserRole("admin"); closeMenu(); }}>
+                Set as Admin
+              </button>
+              <button className={styles.menuLink} onClick={() => { setUserRole("normal"); closeMenu(); }}>
+                Set as Normal
+              </button>
+              {(user?.role === "admin" || user?.role === "moderator") && (
+                <Link to="/modview" className={styles.menuLink} onClick={closeMenu}>
+                  ModView Dashboard
+                </Link>
+              )}
+
+            </>
+          ) : (
+            <>
+              <Link to="/login" className={styles.menuLink} onClick={closeMenu}>Log In</Link>
+              <Link to="/signup" className={styles.menuLink} onClick={closeMenu}>Sign Up</Link>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
 }
 
 export default Header;
