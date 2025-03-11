@@ -33,6 +33,7 @@ import DirectoryPage from './assets/Directory/DirectoryPage';
 import About from './assets/About';
 import Contact from './assets/Contact';
 import Payment from './assets/Payment';
+import BlogsPage from './assets/Blogs/BlogsPage';
 
 
 function App() {
@@ -78,6 +79,8 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/payment" element={<Payment />} />
+            <Route path="/blogs" element={<BlogsPage />} />
+
         </Routes>
         <Footer />
       </Router>
