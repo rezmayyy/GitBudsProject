@@ -1,56 +1,98 @@
-/* Support.module.css */
+/* support.module.css */
 .supportPage {
-    padding: 20px;
+    position: relative;
+    padding: 40px;
     width: 80%;
-    background-color: #f4f4f4; /* Light grey background for contrast */
-    color: #333; /* Dark text for readability */
-    font-family: Arial, sans-serif;
-    max-width: 1000px; /* Limit the width for better readability */
-    margin: 0 auto; /* Center the content */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-}
-
-.supportTitle {
-    color: #0056b3; /* Dark blue color for the main heading */
-}
-
-.supportSectionTitle {
-    color: #007bff; /* Medium blue color for section headings */
-}
-
-.supportList {
-    list-style-type: none; /* Remove default list styling */
-    padding: 0; /* Remove default padding */
-}
-
-.supportListItem {
-    margin: 10px 0; /* Space between list items */
-    padding: 10px; /* Padding for list items */
-    background-color: #fff; /* White background for list items */
-    border: 1px solid #ddd; /* Light border around list items */
-    border-radius: 5px; /* Rounded corners for list items */
-    transition: background-color 0.3s; /* Smooth background change on hover */
-}
-
-.supportLink {
-    color: #0056b3; /* Blue color for links */
-    text-decoration: none; /* Remove underline */
-}
-
-.supportLink:hover {
-    text-decoration: underline; /* Underline on hover for better visibility */
-}
-
-.contactInfo {
-    margin-top: 20px; /* Space above contact info section */
-    padding: 10px; /* Padding for contact info section */
-    background-color: #fff; /* White background for contact info */
-    border: 1px solid #ddd; /* Light border around contact info */
-    border-radius: 5px; /* Rounded corners for contact info */
-}
-/* Smooth scrolling effect */
-html {
-    scroll-behavior: smooth;
-}
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    color: #333;
+    font-family: 'Lato', sans-serif; /* Sans-serif for body text */
+    max-width: 1000px;
+    margin: 40px auto;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    border: 2px solid #f8c8dc; /* Soft pastel border */
+    overflow: hidden;
+  }
+  
+  /* Optionally, the running fox in the background:
+  .supportPage::before {
+    content: "";
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: url('https://example.com/fox.png') no-repeat center center;
+    background-size: contain;
+    bottom: 10px;
+    left: -50px;
+    animation: foxRun 10s linear infinite;
+    opacity: 0.7;
+    z-index: 0;
+  }
+  
+  @keyframes foxRun {
+    0%   { transform: translateX(0) translateY(0); }
+    50%  { transform: translateX(900px) translateY(-20px); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+  */
+  
+  .supportTitle {
+    color: #6c63ff; /* Pastel purple for main heading */
+    font-family: 'Playfair Display', serif; /* Elegant serif for headings */
+    font-size: 32px;
+    margin-bottom: 20px;
+    position: relative;
+    text-align: center; /* center the main heading if desired */
+    z-index: 1;
+  }
+  
+  .supportSectionTitle {
+    color: #6c63ff; /* Same pastel purple for subheadings */
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .supportList {
+    list-style: none;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .supportListItem {
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #f8c8dc;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  .supportListItem:hover {
+    background-color: rgba(248, 200, 220, 0.2);
+  }
+  
+  .supportLink {
+    color: #6c63ff; /* Pastel purple links */
+    text-decoration: none;
+    font-weight: 600;
+  }
+  
+  .supportLink:hover {
+    text-decoration: underline;
+  }
+  
+  .contactInfo {
+    margin-top: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid #f8c8dc;
+    border-radius: 10px;
+    position: relative;
+    z-index: 1;
+  }
   

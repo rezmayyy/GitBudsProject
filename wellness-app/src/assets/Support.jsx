@@ -42,7 +42,7 @@ function Support() {
                 </p>
             </div>
 
-            {/* Ensure FAQ is included at the bottom */}
+            {/* Include FAQ at the bottom */}
             <FAQ />
         </div>
     );

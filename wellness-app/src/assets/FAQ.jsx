@@ -1,5 +1,5 @@
 import { useState } from "react";
-import styles from "../styles/FAQ.module.css"; // Import styles
+import styles from "../styles/FAQ.module.css";
 
 const faqs = [
   { category: "Account", question: "How do I create an account?", answer: "To create an account, click on the 'Sign Up' button on the homepage and follow the instructions." },
@@ -26,7 +26,6 @@ export default function FAQ() {
     <div id="faq-section" className={styles.faqContainer}>
       <h2 className={styles.faqTitle}>Frequently Asked Questions</h2>
 
-      {/* Search Bar */}
       <input
         type="text"
         placeholder="Search FAQs..."
@@ -35,7 +34,6 @@ export default function FAQ() {
         className={styles.faqSearch}
       />
 
-      {/* Category Filter */}
       <select onChange={(e) => setSelectedCategory(e.target.value)} className={styles.faqFilter}>
         <option value="All">All Categories</option>
         <option value="Account">Account</option>
@@ -44,7 +42,6 @@ export default function FAQ() {
         <option value="Support">Support</option>
       </select>
 
-      {/* FAQ List */}
       <div className={styles.faqList}>
         {filteredFaqs.length > 0 ? (
           filteredFaqs.map((faq, index) => (

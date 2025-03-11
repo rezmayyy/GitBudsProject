@@ -1,88 +1,135 @@
+/* FAQ.module.css */
 .faqContainer {
+  position: relative;
   max-width: 700px;
-  margin: 20px auto;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 2px solid #f8c8dc; /* Soft pastel border */
+  overflow: hidden;
 }
+
+/* 
+Optionally include a running fox animation:
+.faqContainer::before {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: url('https://example.com/fox.png') no-repeat center center;
+  background-size: contain;
+  top: 10px;
+  left: -50px;
+  animation: foxRun 8s linear infinite;
+  opacity: 0.7;
+  z-index: 0;
+}
+
+@keyframes foxRun {
+  0%   { transform: translateX(0) translateY(0); }
+  50%  { transform: translateX(800px) translateY(20px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+*/
 
 .faqTitle {
   text-align: center;
-  font-size: 24px;
-  color: #0056b3;
-  margin-bottom: 15px;
+  font-size: 28px;
+  margin-bottom: 20px;
+  font-family: 'Playfair Display', serif; /* Elegant serif for headings */
+  color: #6c63ff; /* Pastel purple heading text */
+  position: relative;
+  z-index: 1;
 }
 
+/* Search & Filter Inputs */
 .faqSearch,
 .faqFilter {
   width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-  border-radius: 4px;
+  padding: 10px;
+  margin: 15px 0;
+  border-radius: 8px;
   border: 1px solid #ccc;
+  font-size: 16px;
+  font-family: 'Lato', sans-serif; /* Sans-serif for body text */
+  position: relative;
+  z-index: 1;
 }
 
+/* FAQ List Container */
 .faqList {
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
+/* Individual FAQ Item */
 .faqItem {
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
+  margin-bottom: 15px;
   transition: background-color 0.3s;
+  position: relative;
+  z-index: 1;
 }
 
-.faqItem:hover {
-  background-color: #f9f9f9; /* Light gray background on hover */
-}
-
+/* FAQ Question Button */
 .faqQuestion {
   width: 100%;
   text-align: left;
   font-size: 18px;
   font-weight: bold;
   border: none;
-  background: none;
+  background: #6c63ff;  /* Pastel purple */
+  color: #fff;          /* White text for contrast */
   cursor: pointer;
-  padding: 10px;
+  padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-family: 'Lato', sans-serif;
+  border-radius: 10px;
+  position: relative;
+  z-index: 1;
 }
 
 .faqQuestion span {
-  font-size: 14px;
-}
-
-.faqAnswer {
-  margin-top: 8px;
   font-size: 16px;
-  color: #333;
-  padding: 10px;
-  background: #f8f8f8;
-  border-radius: 5px;
-  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+  color: #fff; /* Arrow color */
 }
 
-/* Smooth transition for showing FAQ answers */
+/* FAQ Answer Container */
 .faqAnswer {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #333; /* Dark text for readability */
+  font-family: 'Lato', sans-serif;
+  padding: 15px;
+  background: rgba(248, 248, 248, 0.8);
+  border-radius: 10px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: max-height 0.3s ease-in-out, opacity 0.3s;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease-in-out, opacity 0.3s;
   opacity: 0;
+  position: relative;
+  z-index: 1;
 }
 
+/* FAQ Item in Open State */
 .faqItem.open .faqAnswer {
-  max-height: 500px; /* Enough space for text */
+  max-height: 500px;
   opacity: 1;
 }
 
-/* No Results Message */
+/* No Results Text */
 .noResults {
   text-align: center;
-  font-size: 16px;
+  font-size: 18px;
   color: #777;
-  margin-top: 10px;
+  margin-top: 20px;
+  position: relative;
+  z-index: 1;
 }

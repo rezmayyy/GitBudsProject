@@ -31,7 +31,6 @@ import EventDetailsPage from './assets/Events/EventDetailsPage';
 import CreateEventPage from './assets/Events/CreateEventPage';
 import DirectoryPage from './assets/Directory/DirectoryPage';
 import About from './assets/About';
-import Contact from './assets/Contact';
 import Payment from './assets/Payment';
 
 
@@ -63,7 +62,7 @@ function App() {
             <Route path="/tos" element={<TOS />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
-            <Route path="/support" element={<Support />} />
+            <Route path="/contact" element={<Support />} />
             <Route path="/ticket" element={<Ticket />} />
             <Route path="/create-ticket" element={<CreateTicket />} />
             <Route path="/search" element={<SearchResults />} />
@@ -76,7 +75,6 @@ function App() {
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
             <Route path="/create-event" element={<CreateEventPage />} />
             <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
             <Route path="/payment" element={<Payment />} />
         </Routes>
         <Footer />

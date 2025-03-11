@@ -111,7 +111,7 @@ function Header() {
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/directory">Directory</Link></li>
-              <li><Link to="/learn">Learn</Link></li>
+              <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/blogs">Blogs</Link></li>
               <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
               <li><Link to="/discussion">Discussion Board</Link></li>
@@ -135,7 +135,7 @@ function Header() {
               <ul className={styles.hamburgerNavLinks}>
                 <li><Link to="/" onClick={closeMenu}>Home</Link></li>
                 <li><Link to="/explore" onClick={closeMenu}>Explore</Link></li>
-                <li><Link to="/learn" onClick={closeMenu}>Learn</Link></li>
+                <li><Link to="/contact" onClick={closeMenu}>Contact</Link></li>
                 <li><Link to="/blogs" onClick={closeMenu}>Blogs</Link></li>
                 <li><Link to="/discussion" onClick={closeMenu}>Discussion Board</Link></li>
                 <li><Link to="/create-post" onClick={closeMenu}>Create</Link></li>
