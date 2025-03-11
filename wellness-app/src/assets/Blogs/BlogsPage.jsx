@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getFirestore, collection, getDocs, query, where, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import {db, auth} from "../Firebase"
+import { getFirestore, collection, getDocs, query, where, startAfter, startAt, limit } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Container, Row, Col, Nav } from "react-bootstrap";
@@ -23,6 +24,11 @@ const BlogsPage = () => {
     const [articlePosts, setArticlePosts] = useState([]);
     const [visibleArticlePosts, setVisibleArticlePosts] = useState(10);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [lastVisible, setLastVisible] = useState(null);
+    const [firstVisible, setFirstVisible] = useState(null);
+
+    const postsPerPage = 10;
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -30,29 +36,38 @@ const BlogsPage = () => {
             try {
                 const postsRef = collection(db, 'content-posts');
                 let q; 
-                
-                
-                
 
+                //filtering by category
                 if(activeCategoryTab === "All categories"){
                     q = query(
                         postsRef,
                         where('status', '==', 'approved'),
+                        
+                        limit(postsPerPage)
                     );
                 }else if(activeCategoryTab === "Articles"){
                     q = query(
                         postsRef,
                         where('status', '==', 'approved'),
-                        where('type', '==', 'article')
+                        where('type', '==', 'article'),
+                        
+                        limit(postsPerPage)
                     );
                 }else if(activeCategoryTab === "Videos"){
                     q = query(
                         postsRef,
                         where('status', '==', 'approved'),
-                        where('type', '==', 'video')
+                        where('type', '==', 'video'),
+                        
+                        limit(postsPerPage)
                     );
                 }
 
+                if(currentPage > 1 && lastVisible){
+                    q = query(q, startAfter(lastVisible)); //start from where last page ended
+                }else if(currentPage < 1 && firstVisible){
+                    q = query(q, startAt(firstVisible)); 
+                }
 
                 const querySnapshot = await getDocs(q);
                 const fetchedPosts = querySnapshot.docs.map(doc => {
@@ -68,7 +83,10 @@ const BlogsPage = () => {
                         type: data.type
                     }
                 });
+                console.log("Fetched posts:", fetchedPosts);
                 setArticlePosts(fetchedPosts);
+                setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
+                setFirstVisible(querySnapshot.docs[0]);
             } catch (error) {
                 console.error("Error fetching articles:", error)
             }
@@ -76,7 +94,24 @@ const BlogsPage = () => {
         };
         fetchPosts();
 
-    }, [activeCategoryTab]);
+    }, [activeCategoryTab, currentPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeCategoryTab])
+
+    const nextPage = () => {
+        if(articlePosts.length === postsPerPage){
+            setCurrentPage(prevPage => prevPage + 1);
+        }
+        
+    };
+
+    const prevPage = () => {
+        if(currentPage > 1){
+            setCurrentPage(prevPage => prevPage - 1);
+        }
+    }
 
     return (
         <Container className="my-5">
@@ -176,7 +211,7 @@ const BlogsPage = () => {
                         {articlePosts.slice(0, visibleArticlePosts).map(post => (
 
                             <Col md={12}>
-                                <Card className="mb-4 border-0 hover-card" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
+                                <Card className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
                                     <Row className="g-0">
                                         <Col md={4}>
                                             <Card.Img src={post.thumbnail} alt={post.title} 
@@ -213,6 +248,17 @@ const BlogsPage = () => {
                             
                         ))}
                     </Row>
+
+                    <div className="d-flex justify-content-between mt-4">
+                        <Button onClick={prevPage} variant="primary" disabled={currentPage === 1}>
+                            Prev
+                        </Button>
+                        <span data-testid="page">Page {currentPage}</span>
+                        <Button onClick={nextPage} variant="primary" disabled={articlePosts.length < postsPerPage}>
+                            Next
+                        </Button>
+
+                    </div>
 
                 </Col>
             </Row>
