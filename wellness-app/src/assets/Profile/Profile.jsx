@@ -1,3 +1,4 @@
+// Profile.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
@@ -167,10 +168,12 @@ const Profile = () => {
   const handleSubscribe = async () => {
     try {
       if (isSubscribed) {
+        // Unsubscribe
         await deleteDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId));
         await deleteDoc(doc(db, `users/${viewedUserId}/subscribers`, user.uid));
         setIsSubscribed(false);
       } else {
+        // Subscribe
         await setDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId), {
           userID: user.uid,
           timestamp: Timestamp.now(),
@@ -290,7 +293,14 @@ const Profile = () => {
         ) : (
           <>
             {user ? (
-              <button className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} onClick={handleSubscribe}>
+              <button
+                className={
+                  isSubscribed
+                    ? `${styles.subscribeButton} ${styles.subscribed}`
+                    : styles.subscribeButton
+                }
+                onClick={handleSubscribe}
+              >
                 {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
               </button>
             ) : (
