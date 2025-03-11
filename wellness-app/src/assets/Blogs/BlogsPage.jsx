@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import {db, auth} from "../Firebase"
 import { getFirestore, collection, getDocs, query, where, startAfter, startAt, limit } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -252,7 +253,7 @@ const BlogsPage = () => {
                         <Button onClick={prevPage} variant="primary" disabled={currentPage === 1}>
                             Prev
                         </Button>
-                        <span>Page {currentPage}</span>
+                        <span data-testid="page">Page {currentPage}</span>
                         <Button onClick={nextPage} variant="primary" disabled={articlePosts.length < postsPerPage}>
                             Next
                         </Button>
