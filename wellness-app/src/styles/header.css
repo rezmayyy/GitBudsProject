@@ -14,7 +14,7 @@
     --menu-item-hover-bg: #ececec;
 }
 
-.responsive-header {
+Header {
     background: linear-gradient(to right,
             var(--brand-gradient-start),
             var(--brand-gradient-middle),
