@@ -1,11 +1,11 @@
 // Profile.jsx
 import React, { useState, useContext, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
-import { 
-  doc, getDoc, setDoc, Timestamp, deleteDoc, 
-  collection, query, where, getDocs 
+import {
+  doc, getDoc, setDoc, Timestamp, deleteDoc,
+  collection, query, where, getDocs
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { httpsCallable } from 'firebase/functions';
@@ -19,8 +19,33 @@ const Profile = () => {
   const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
 
+  // Manages whether the dropdown is open or closed
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Visited user's data & doc ID
+  const [profileData, setProfileData] = useState(null);
+  const [viewedUserId, setViewedUserId] = useState(null);
+  const [visitedUserDoc, setVisitedUserDoc] = useState(null);
+
+  // UI flags & messages
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
+  const [message, setMessage] = useState('');
+  const [profilePictureFile, setProfilePictureFile] = useState(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
+
+  // Editing About
+  const [editingAbout, setEditingAbout] = useState(false);
+  const [newBio, setNewBio] = useState('');
+  const [newInterests, setNewInterests] = useState('');
+
+  // Editing Contact
+  const [editingContact, setEditingContact] = useState(false);
+  const [contacts, setContacts] = useState([]);
+
+  // 1. If user typed a UID in the URL, redirect to the displayName-based URL
   useEffect(() => {
-    // Adjust the regex as needed; here we assume UIDs are at least 20 alphanumeric characters.
     if (username && /^[A-Za-z0-9]{20,}$/.test(username)) {
       const fetchUserById = async () => {
         try {
@@ -29,7 +54,6 @@ const Profile = () => {
           if (userSnap.exists()) {
             const userData = userSnap.data();
             const newDisplayName = userData.displayName;
-            // Redirect to URL with displayName instead of UID
             navigate(`/profile/${newDisplayName}`, { replace: true });
           }
         } catch (error) {
@@ -40,29 +64,7 @@ const Profile = () => {
     }
   }, [username, navigate]);
 
-  // STATE: Visited user's data and document ID
-  const [profileData, setProfileData] = useState(null);
-  const [viewedUserId, setViewedUserId] = useState(null);
-  const [visitedUserDoc, setVisitedUserDoc] = useState(null);
-
-  // STATE: UI flags and messages
-  const [isCurrentUser, setIsCurrentUser] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [isAdminOrModerator, setIsAdminOrModerator] = useState(false);
-  const [message, setMessage] = useState('');
-  const [profilePictureFile, setProfilePictureFile] = useState(null);
-  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
-
-  // STATE: Editing About
-  const [editingAbout, setEditingAbout] = useState(false);
-  const [newBio, setNewBio] = useState('');
-  const [newInterests, setNewInterests] = useState('');
-
-  // STATE: Editing Contact (contacts array)
-  const [editingContact, setEditingContact] = useState(false);
-  const [contacts, setContacts] = useState([]);
-
-  // --- 1. Fetch the visited user's document based on username ---
+  // 2. Fetch visited user's document based on username
   useEffect(() => {
     const fetchVisitedUser = async () => {
       if (!username) return;
@@ -71,7 +73,6 @@ const Profile = () => {
         const q = query(usersRef, where('displayName', '==', username));
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
-          // Assume displayName is unique; use the first document.
           const userDoc = querySnapshot.docs[0];
           const visitedData = { ...userDoc.data(), id: userDoc.id };
           setViewedUserId(userDoc.id);
@@ -94,7 +95,7 @@ const Profile = () => {
     fetchVisitedUser();
   }, [username]);
 
-  // --- 2. When viewedUserId is available, check if this is the current user's profile and fetch subscription/role info ---
+  // 3. Check if this is the current user's profile and fetch subscription/role info
   useEffect(() => {
     if (viewedUserId && user) {
       setIsCurrentUser(viewedUserId === user.uid);
@@ -123,19 +124,19 @@ const Profile = () => {
     }
   }, [viewedUserId, user]);
 
-  // --- 3. Redirect to current user's profile if no username is provided ---
+  // 4. If no username is provided, redirect to current user's profile
   useEffect(() => {
     if (!username && user?.displayName) {
       navigate(`/profile/${user.displayName}`);
     }
   }, [user, username, navigate]);
 
-  // --- 4. Do not render Profile UI until profileData is loaded ---
+  // 5. Don't render until profileData is loaded
   if (!profileData) {
     return <div>Loading profile...</div>;
   }
 
-  // --- 5. Profile Picture Change Handling (for current user) ---
+  // 6. Profile Picture Handling
   const handleProfilePictureChange = (e) => {
     if (e.target.files[0]) {
       const file = e.target.files[0];
@@ -144,7 +145,6 @@ const Profile = () => {
     }
   };
 
-  // --- 6. Save Profile Updates (for current user) ---
   const handleSave = async () => {
     try {
       const docRef = doc(db, 'users', user.uid);
@@ -164,14 +164,16 @@ const Profile = () => {
     }
   };
 
-  // --- 7. Subscription Handling ---
+  // 7. Subscription Handling
   const handleSubscribe = async () => {
     try {
       if (isSubscribed) {
+        // Unsubscribe
         await deleteDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId));
         await deleteDoc(doc(db, `users/${viewedUserId}/subscribers`, user.uid));
         setIsSubscribed(false);
       } else {
+        // Subscribe
         await setDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId), {
           userID: user.uid,
           timestamp: Timestamp.now(),
@@ -187,7 +189,7 @@ const Profile = () => {
     }
   };
 
-  // --- 8. Report, Ban, and Unban Functions ---
+  // 8. Report, Ban, and Unban
   const handleReport = async () => {
     const reason = prompt('Enter a reason for the report:');
     if (!reason) return;
@@ -227,11 +229,35 @@ const Profile = () => {
     }
   };
 
-  // --- 9. Render the Profile Page ---
+  // 9. Render the Profile Page
   return (
     <div className={styles.profilePage}>
       {/* Profile Banner and Picture */}
       <div className={styles.profileBanner}>
+        {isCurrentUser && (
+          <div className={styles.dropdownContainer}>
+            <button
+              className={styles.dropdownButton}
+              onClick={() => setDropdownOpen(prev => !prev)}
+            >
+              ⋮
+            </button>
+            {dropdownOpen && (
+              <div className={styles.dropdownMenu}>
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => {
+                    document.getElementById('profilePicUpload').click();
+                    setDropdownOpen(false);
+                  }}
+                >
+                  Change Profile Picture
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className={styles.profileImageWrapper}>
           <img
             src={profilePicturePreview || profileData.profilePicUrl || dummyPic}
@@ -239,38 +265,42 @@ const Profile = () => {
             className={styles.profileImage}
           />
         </div>
-        {isCurrentUser && (
-          <>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleProfilePictureChange}
-              style={{ display: 'none' }}
-              id="profilePicUpload"
-            />
-            <button className={styles.profileButton} onClick={() => document.getElementById('profilePicUpload').click()}>
-              Change Profile Picture
-            </button>
-            {profilePictureFile && (
-              <button className={styles.profileButton} onClick={handleSave}>
-                Save Changes
-              </button>
-            )}
-          </>
+        
+        {/* Show "Save Changes" if a new file has been chosen */}
+        {isCurrentUser && profilePictureFile && (
+          <button className={styles.profileButton} onClick={handleSave}>
+            Save Changes
+          </button>
         )}
+
+        {/* Hidden file input */}
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleProfilePictureChange}
+          style={{ display: 'none' }}
+          id="profilePicUpload"
+        />
       </div>
 
       {/* Profile Header */}
       <div className={styles.profileHeader}>
         <h2>{profileData.displayName || 'User Profile'}</h2>
         {isCurrentUser ? (
-          <button className="diaryButton" onClick={() => navigate('/profile/diary')}>
+          <button className={styles.diaryButton} onClick={() => navigate('/profile/diary')}>
             View My Diary
           </button>
         ) : (
           <>
             {user ? (
-              <button className={`subscribe-button ${isSubscribed ? 'subscribed' : ''}`} onClick={handleSubscribe}>
+              <button
+                className={
+                  isSubscribed
+                    ? `${styles.subscribeButton} ${styles.subscribed}`
+                    : styles.subscribeButton
+                }
+                onClick={handleSubscribe}
+              >
                 {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
               </button>
             ) : (
@@ -285,7 +315,7 @@ const Profile = () => {
         )}
       </div>
 
-      {/* About & Contact Sections (always visible, side by side) */}
+      {/* About & Contact Sections */}
       <div className={styles.aboutContactContainer}>
         {/* About Section */}
         <div className={styles.aboutSection}>
@@ -401,7 +431,7 @@ const Profile = () => {
           ) : (
             <>
               {profileData.contacts && profileData.contacts.length > 0 ? (
-                <ul>
+                <ul className={styles.contactList}>
                   {profileData.contacts.map((contact, index) => (
                     <li key={index}>
                       {/^https?:\/\//.test(contact) ? (
@@ -439,7 +469,7 @@ const Profile = () => {
         <ProfilePosts username={profileData.displayName} />
       </div>
 
-      {/* Services Module: Only display if visited user's role is "healer" */}
+      {/* Services Module (for healers) */}
       {visitedUserDoc && visitedUserDoc.role === 'healer' && (
         <div className={styles.servicesModule}>
           <h3>Services</h3>
