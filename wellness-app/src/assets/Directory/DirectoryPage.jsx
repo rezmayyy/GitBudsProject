@@ -1,5 +1,6 @@
 import HealerList from "./HealerList";
 import './DirectoryPage.css';
+import { Link } from 'react-router-dom';
 
 function DirectoryPage() {
     return (
@@ -7,27 +8,23 @@ function DirectoryPage() {
             <div className="banner">
                 <h1>Find The Perfect Healer</h1>
                 <p>Find a healer who resonates with your cultural and spiritual values.</p>
-                <a className="join-button" href="/account">Join as a healer for free</a>
+                <Link to="/account"><button>Join as a healer for free</button></Link>
             </div>
 
             <div className="nav-link-container">
                 <h2>How it works</h2><br/><br/>
                 <div className="nav-link-wrapper">
                     <div className="nav-link">
-                        <a href="/search">
+                        <Link to="/search"><button>Search</button></Link>
                             <div className="nav-link-content">
-                                <h3>Search</h3>
                                 <p>Discover healers that match your needs.</p>
                             </div>
-                        </a>
                     </div>
                     <div className="nav-link">
-                        <a href="/explore">
+                        <Link to="/explore"><button>Explore</button></Link>
                             <div className="nav-link-content">
-                                <h3>Explore</h3>
                                 <p>Explore various healing practices from different cultures</p>
                             </div>
-                        </a>
                     </div>
                 </div>
             </div>
