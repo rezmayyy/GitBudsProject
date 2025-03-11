@@ -1,126 +1,109 @@
-/* Container for the entire ProfilePosts module */
+/* Container for the entire posts area */
 .profilePostsContainer {
-    width: 100%;
-    padding: 10px;
-    background-color: #f8f9fa; /* Light gray background */
-    border-radius: 10px;
-    margin-top: 20px;
-  }
-  
-  /* Tabs for filtering by post type */
-  .filterTabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-  
-  .filterButton {
-    padding: 8px 16px;
-    border: none;
-    background-color: #ddd;
-    color: #333;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .filterButton:hover,
-  .filterButton.active {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  /* Grid layout for post cards */
-  .postsGrid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    justify-content: center;
-    overflow-y: auto;
-    max-height: 500px; /* Adjust as needed */
-  }
-  
-  /* Individual post card styling */
-  .postCard {
-    width: 250px;
-    padding: 10px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Title styling */
-  .postTitle {
-    font-size: 16px;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .postTitle a {
-    text-decoration: none;
-    color: #007bff;
-  }
-  
-  .postTitle a:hover {
-    text-decoration: underline;
-  }
-  
-  /* Thumbnail styling for videos and audio */
-  .postThumbnail {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 5px;
-  }
-  
-  /* Placeholder if no thumbnail */
-  .noThumbnail {
-    width: 100%;
-    height: 140px;
-    background-color: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    color: #555;
-    border-radius: 5px;
-  }
-  
-  /* Preview styling for articles */
-  .articlePreview {
-    font-size: 14px;
-    color: #333;
-    margin: 10px 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  
-  /* Post stats (likes and views) */
-  .postStats {
-    display: flex;
-    justify-content: space-around;
-    font-size: 14px;
-    margin-top: 5px;
-    color: #333;
-  }
-  
-  /* Author link styling */
-  .postAuthor {
-    font-size: 14px;
-    margin-top: 5px;
-    color: #007bff;
-  }
-  
-  .postAuthor a {
-    text-decoration: none;
-    color: inherit;
-  }
-  
-  .postAuthor a:hover {
-    text-decoration: underline;
-  }
-  
+  margin: 2em auto;
+  padding: 1em;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(10px);
+}
+
+/* Filter tabs container */
+.filterTabs {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  margin-bottom: 1.5em;
+}
+
+/* Individual filter buttons */
+.filterButton {
+  background-color: #6c63ff;
+  color: #fff;
+  padding: 0.8em 1.5em;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  font-family: 'Lato', sans-serif;
+}
+
+.filterButton:hover {
+  background-color: #5750d3;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(87, 80, 211, 0.6);
+}
+
+/* Active filter state */
+.active {
+  background-color: #4b41d1;
+  box-shadow: 0 6px 18px rgba(75, 65, 209, 0.7);
+}
+
+/* Grid layout for posts */
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2em;
+}
+
+/* Individual post card styling */
+.postCard {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 1.5em;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(8px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.postCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 40px rgba(31, 38, 135, 0.5);
+}
+
+/* Post title styling */
+.postTitle {
+  font-size: 1.5em;
+  margin-bottom: 0.8em;
+  color: #333;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Thumbnail styling */
+.postThumbnail {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 1em;
+}
+
+/* Fallback for missing thumbnail */
+.noThumbnail {
+  width: 100%;
+  height: 180px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 1.1em;
+}
+
+/* Article preview for text-based posts */
+.articlePreview {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1em;
+  text-align: left;
+}
+
+/* Post statistics styling */
+.postStats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9em;
+  color: #777;
+  margin-top: 1em;
+}
