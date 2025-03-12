@@ -33,7 +33,7 @@ import DirectoryPage from './assets/Directory/DirectoryPage';
 import About from './assets/About';
 import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
-
+import Resources from './assets/Resources';
 
 function App() {
   // Manages posts and replies
@@ -78,7 +78,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/blogs" element={<BlogsPage />} />
-
+            <Route path="/resources" element={<Resources />} />
         </Routes>
         <Footer />
       </Router>

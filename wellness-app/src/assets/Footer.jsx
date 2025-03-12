@@ -9,6 +9,7 @@ function Footer(){
       <ul className="nav-links">
         <li><Link to="/about">About</Link></li>
         <li><Link to="/contact">Contact</Link></li>
+        <li><Link to="/resources">Resources</Link></li>
         <li><Link to="/payment">Payment Options</Link></li>
         <li><Link to="/privacy">Privacy Policy</Link></li>
         <li><Link to="/tos">Terms Of Service</Link></li>
