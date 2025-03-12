@@ -1,11 +1,10 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import UserContext from './UserContext';
 import { db, storage, functions} from './Firebase'; // Import Firebase functions
 import { doc, getDoc, setDoc, Timestamp, deleteDoc} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import styles from '../styles/profile.module.css';
+import styles from '../styles/account.css';
 import dummyPic from "./dummyPic.jpeg";
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import HealerApplicationForm from './ApplyForHealer/HealerApplicationForm';
@@ -191,137 +190,141 @@ function Account() {
         switch (activeTab) {
             case 'changeDisplayName':
                 return (
-                    <div className="name-tag">
+                    <div className="form-box">
                         <h3>Change Display Name</h3>
-                        <form className="name-form" onSubmit={handleDisplayNameChange}>
+                        <form onSubmit={handleDisplayNameChange}>
                             <p>Please enter a new display name.</p>
-                            <input
-                                type="text"
-                                placeholder="New Display Name"
-                                value={displayName}
-                                onChange={(e) => setDisplayName(e.target.value)}
-                                required
-                            />
-                            <FaUser className="icon" />
-                            <button className={styles.profileButton} type="submit">Change Display Name</button>
+                            <div className='input-box'>
+                                <input
+                                    type="text"
+                                    placeholder="New Display Name"
+                                    value={displayName}
+                                    onChange={(e) => setDisplayName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit">Change Display Name</button>
                         </form>
                     </div>
                 );
             case 'changeProfilePicture':
                 return (
-                    <div className="picture-tab">
+                    <div className="form-box">
                         <h3>Change Profile Picture</h3>
-                        <form className="picture-form" onSubmit={handleProfilePictureChange}>
+                        <form onSubmit={handleProfilePictureChange}>
                             <p>Please upload a profile picture.</p>
-                            <input
-                                type="file"
-                                placeholder="Upload File"
-                                value={profilePictureFile}
-                                onChange={(e) => setProfilePictureFile(e.target.value)}
-                                required
-                            />
-                            <button className={styles.profileButton} type="submit">Change Profile Picture</button>
+                            <div className='input-box'>
+                                <input
+                                    type="file"
+                                    placeholder="Upload File"
+                                    value={profilePictureFile}
+                                    onChange={(e) => setProfilePictureFile(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit">Change Profile Picture</button>
                         </form>
                     </div>
                 );
             case 'changeEmailAddress':
                 return (
-                    <div className="email-tab">
+                    <div className="form-box">
                         <h3>Change Email Address</h3>
-                        <form className="email-form" onSubmit={handleEmailChange}>
-                            <input
-                                type="email"
-                                placeholder="Current Email"
-                                value={email}
-                                onChange={(e) => checkEmail(e.target.value)}
-                                required
-                            />
-                            <FaEnvelope className="icon" />
-                            <input
-                                type="email"
-                                placeholder="New Email"
-                                value={email}
-                                onChange={(e) => checkNewEmail(e.target.value)}
-                                required
-                            />
-                            <FaEnvelope className="icon" />
-                        </form>
-                    </div>
+                            <form onSubmit={handleEmailChange}>
+                                <p>Please type your current and new email addresses.</p>
+                                <div className='input-box'>
+                                    <input
+                                        type="email"
+                                        placeholder="Current Email"
+                                        value={email}
+                                        onChange={(e) => checkEmail(e.target.value)}
+                                        required
+                                    />
+                                    <input
+                                        type="email"
+                                        placeholder="New Email"
+                                        value={email}
+                                        onChange={(e) => checkNewEmail(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <button type="submit">Change Email Address</button>
+                            </form>
+                        </div>
                 );
             case 'changePassword':
                 return (
-                    <div className="pw-tab">
+                    <div className="form-box">
                         <h3>Change Password</h3>
                         <form className="pw-form" onSubmit={handlePasswordChange}>
-                            <input
-                                type="password"
-                                placeholder="Current Password"
-                                value={currentPassword}
-                                onChange={(e) => {
-                                    setCurrentPassword(e.target.value);
-                                    checkPassword();
-                                }}
-                                required
-                            />
-                            <FaLock className="icon" />
-                            <input
-                                type="password"
-                                placeholder="New Password"
-                                value={newPassword}
-                                onChange={(e) => {
-                                    setNewPassword(e.target.value);
-                                    checkNewPassword();
-                                }}
-                                required
-                            />
-                            <FaLock className="icon" />
-                            <input
-                                type="password"
-                                placeholder="Confirm New Password"
-                                value={confirmPassword}
-                                onChange={(e) => {
-                                    setConfirmPassword(e.target.value);
-                                    confirmNewPassword();
-                                }}
-                                required
-                            />
-                            <FaLock className="icon" />
-                            <button className={styles.profileButton} type="submit">Change Password</button>
+                            <div className='input-box'>
+                                <input
+                                    type="password"
+                                    placeholder="Current Password"
+                                    value={currentPassword}
+                                    onChange={(e) => {
+                                        setCurrentPassword(e.target.value);
+                                        checkPassword();
+                                    }}
+                                    required
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="New Password"
+                                    value={newPassword}
+                                    onChange={(e) => {
+                                        setNewPassword(e.target.value);
+                                        checkNewPassword();
+                                    }}
+                                    required
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Confirm New Password"
+                                    value={confirmPassword}
+                                    onChange={(e) => {
+                                        setConfirmPassword(e.target.value);
+                                        confirmNewPassword();
+                                    }}
+                                    required
+                                />
+                            </div>
+                            <button type="submit">Change Password</button>
                         </form>
                     </div>
                 );
             case 'applyToBeAHealer':
                 return (
-                    <div className="apply-tab">
+                    <div className="form-box">
                         <HealerApplicationForm />
                     </div>
                 );
             case 'deleteAccount':
                 return (
-                    <div className="delete-tab">
-                    <h3>Delete Account</h3>
-                    <form className="delete-form" onSubmit={handleDeletion}>
-                        <p>Warning: This action cannot be undone.</p>
-                        <button className={styles.profileButton} type="submit">Delete Account</button>
-                    </form>
-                    
-                    {showDeleteConfirm && (
-                        <div className={styles.popup}>
-                            <div className={styles.popupContent}>
-                                <h4>Are you sure you want to delete your account?</h4>
-                                <p>This action cannot be undone.</p>
-                                <div className={styles.popupButtons}>
-                                    <button onClick={confirmDeletion} className={styles.deleteButton}>
-                                        Yes, Delete Account
-                                    </button>
-                                    <button onClick={() => setShowDeleteConfirm(false)} className={styles.cancelButton}>
-                                        Cancel
-                                    </button>
+                    <div className="form-box">
+                        <h3>Delete Account</h3>
+                        <form className="delete-form" onSubmit={handleDeletion}>
+                            <p>Warning: This action cannot be undone.</p>
+                            <button className={styles.profileButton} type="submit">Delete Account</button>
+                        </form>
+                        
+                        {showDeleteConfirm && (
+                            <div className={styles.popup}>
+                                <div className={styles.popupContent}>
+                                    <h4>Are you sure you want to delete your account?</h4>
+                                    <p>This action cannot be undone.</p>
+                                    <div className={styles.popupButtons}>
+                                        <button onClick={confirmDeletion} className={styles.deleteButton}>
+                                            Yes, Delete Account
+                                        </button>
+                                        <button onClick={() => setShowDeleteConfirm(false)} className={styles.cancelButton}>
+                                            Cancel
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
                 );
             default:
                 return null;
@@ -329,13 +332,16 @@ function Account() {
     };
 
     return (
-        <div className={styles.accountPage}>
+        <div className="wrapper">
             <div className="tabs">
                 <button onClick={() => setActiveTab('changeDisplayName')} className={`tab-button ${activeTab === 'changeDisplayName' ? 'active' : ''}`}>
                     Change Display Name
                 </button>
                 <button onClick={() => setActiveTab('changeProfilePicture')} className={`tab-button ${activeTab === 'changeProfilePicture' ? 'active' : ''}`}>
                     Change Profile Picture
+                </button>
+                <button onClick={() => setActiveTab('changeEmailAddress')} className={`tab-button ${activeTab === 'changeEmailAddress' ? 'active' : ''}`}>
+                    Change Email Address
                 </button>
                 <button onClick={() => setActiveTab('changePassword')} className={`tab-button ${activeTab === 'changePassword' ? 'active' : ''}`}>
                     Change Password
