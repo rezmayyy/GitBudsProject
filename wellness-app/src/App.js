@@ -14,7 +14,7 @@ import TOS from './assets/TOS';
 import PrivacyPolicy from './assets/PrivacyPolicy';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
 import CreatePost from './assets/CreatePost';
-import ContentPostPage from './assets/ContentPostPage';
+import ContentPostPage from './assets/ContentPostPage/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/Moderation/ModDashboard';
 import Support from './assets/Support';
