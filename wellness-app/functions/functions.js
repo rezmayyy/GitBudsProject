@@ -1,7 +1,16 @@
 const admin = require('firebase-admin');
 const functions = require('firebase-functions');
+const { onSchedule } = require('firebase-functions/v2/scheduler');
+require('dotenv').config();
 
-admin.initializeApp();
+if (process.env.NODE_ENV !== 'production') {
+  const serviceAccount = require(process.env.TRIBEWELL_KEY);
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+} else {
+  admin.initializeApp();
+}
 const db = admin.firestore();
 
 // Function to ban a user by disabling their account and setting an unban date
@@ -72,7 +81,7 @@ exports.unbanUser = functions.https.onCall(async (data, context) => {
 });
 
 // Function to automatically unban users when the unban date is reached
-exports.unbanUsers = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+exports.unbanUsers = onSchedule('every 24 hours', async (event) => {
   try {
     const now = admin.firestore.Timestamp.now();
     
@@ -101,31 +110,57 @@ exports.unbanUsers = functions.pubsub.schedule('every 24 hours').onRun(async (co
   }
 });
 
-// Function to handle user creation
-exports.handleUserSignup = async (user) => {
-  const {uid, email, displayName} = user;
-
-  // Validate incoming user data
-  if (!uid || !email) {
-    throw new Error("User ID and email are required.");
+exports.handleUserSignup = functions.https.onCall(async (data, context) => {
+  const payload = data.data || data;
+  console.log("handleUserSignup received data:", payload);
+  const { email, password, displayName } = payload;
+  if (!email || !password || !displayName) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Email, password, and display name are required.'
+    );
   }
 
-  const userData = {
-    uid: uid,
-    email: email,
-    displayName: displayName || "No display name",
-    status: "active", // Default status
-    role: "normal", // Default role
-    createdAt: admin.firestore.FieldValue.serverTimestamp(), // Add timestamp
-  };
+  // Check if display name is already taken
+  const displayNameRef = db.collection("usernames").doc(displayName);
+  const displayNameDoc = await displayNameRef.get();
+  if (displayNameDoc.exists) {
+    throw new functions.https.HttpsError(
+      'already-exists',
+      'Display name is already taken.'
+    );
+  }
 
   try {
-    await db.collection("users").doc(uid).set(userData);
-    console.log("User added to Firestore:", uid);
+    // Create the user using the Admin SDK
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName,
+    });
+
+    // Create a custom token for client sign-in
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+
+    // Reserve the display name and create the user document atomically
+    const userRef = db.collection("users").doc(userRecord.uid);
+    await db.runTransaction(async (transaction) => {
+      transaction.set(displayNameRef, { uid: userRecord.uid });
+      transaction.set(userRef, {
+        uid: userRecord.uid,
+        email,
+        displayName,
+        status: "active",
+        role: "normal",
+      });
+    });
+
+    return { message: "User signed up successfully", token: customToken, uid: userRecord.uid };
   } catch (error) {
-    console.error("Error adding user to Firestore:", error);
+    console.error("Error signing up user:", error);
+    throw new functions.https.HttpsError("internal", error.message);
   }
-};
+});
 
 exports.reportUser = async (user) => {
   const { userId, reason } = data;
