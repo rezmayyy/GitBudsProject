@@ -1,0 +1,39 @@
+.formContainer {
+    padding: 30px;
+    background-color: #e7f2fb; /* Light pastel blue */
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 800px; /* Increased from 600px to 800px */
+    margin: 20px auto;
+}
+
+
+.formContainer input,
+.formContainer textarea {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    transition: border-color 0.3s ease;
+}
+
+.formContainer input:focus,
+.formContainer textarea:focus {
+    border-color: #b39ddb; /* Pastel purple focus */
+}
+
+.formContainer button {
+    background-color: #b39ddb; /* Primary pastel purple */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.formContainer button:hover {
+    background-color: #9575cd;
+}

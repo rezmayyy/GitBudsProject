@@ -1,0 +1,279 @@
+/* TicketList.module.css */
+
+/* Container Styles */
+.ticketListContainer {
+    padding: 30px;
+    background-color: #f0f8ff; /* Alice Blue */
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 20px auto;
+
+    /* Remove forced scrolling or height to prevent double scroll */
+    height: auto;
+    overflow: visible;
+}
+
+/* Category Styles */
+.category {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+
+    /* Remove forced height/scroll if present */
+    height: auto;
+    overflow: visible;
+}
+
+/* Title Styles */
+.category h3 {
+    margin: 0 0 10px;
+    color: #333;
+}
+
+/* Ticket Item Styles */
+.ticketItem {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    background-color: #fff9f9; /* Subtle pastel off-white */
+    transition: transform 0.2s ease;
+}
+
+.ticketItem:hover {
+    transform: translateY(-3px);
+}
+
+/* Button Styles */
+.button,
+.viewButton,
+.refreshButton,
+.ticketViewButton,
+.backButton {
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    padding: 10px 15px;
+    transition: background-color 0.3s ease;
+}
+
+/* Back Button Styles */
+.backButton {
+    background-color: #a5d6a7; /* Pastel green */
+    color: white;
+    margin-bottom: 20px;
+}
+
+.backButton:hover {
+    background-color: #81c784;
+}
+
+/* View Button Styles */
+.viewButton {
+    background-color: #b39ddb; /* Pastel purple */
+    color: white;
+    margin-right: 10px;
+}
+
+.viewButton:hover {
+    background-color: #9575cd;
+}
+
+/* Generic Button Styles */
+.button {
+    background-color: #b39ddb;
+    color: white;
+}
+
+.button:hover {
+    background-color: #9575cd;
+}
+
+/* Ticket View Button Styles */
+.ticketViewButton {
+    margin-right: 8px;
+    background-color: #b39ddb;
+    color: white;
+}
+
+/* Refresh Button Styles */
+.refreshButton {
+    background-color: #a5d6a7;
+    color: white;
+    margin-bottom: 20px;
+}
+
+.refreshButton:hover {
+    background-color: #81c784;
+}
+
+/* Pagination Styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination button {
+    margin: 0 10px;
+    padding: 12px 20px;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.pagination button:hover {
+    background-color: #b39ddb;
+}
+
+/* Ticket View Styles */
+.ticketViewContainer {
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    background-color: #fffaf0; /* Light pastel */
+}
+
+/* Ticket Information Styling */
+.ticketInfo {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.ticketInfo p {
+    margin: 0 0 8px;
+}
+
+/* Ticket Title Styling */
+.ticketViewTitle {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.ticketSubmittedDate {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.ticketViewDescription {
+    font-size: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+/* Reply Text Area Styles */
+.replyTextArea {
+    width: 100%;
+    height: 120px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    resize: vertical;
+}
+
+/* Reply Form Styles */
+.replyForm {
+    display: flex;
+    flex-direction: column;
+}
+
+.replyForm textarea,
+.replyForm input {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+}
+
+.replyForm button[type="submit"] {
+    padding: 12px;
+    border: none;
+    border-radius: 20px;
+    background-color: #a5d6a7;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.replyForm button[type="submit"]:hover {
+    background-color: #81c784;
+}
+
+/* Ticket Status Colors */
+.ticketStatus {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 4px 0;
+}
+
+.ticketStatus.closed {
+    color: #d9534f;
+}
+
+.ticketStatus.assigned {
+    color: #5bc0de;
+}
+
+.ticketStatus.pending {
+    color: #f0ad4e;
+}
+
+/* Ticket Variants */
+.normalTicket {
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+}
+
+.vipTicket {
+    background-color: #fff0f5; /* Light pastel pink */
+    border: 1px solid #ffccd5;
+    color: #a67c00;
+    border-radius: 12px;
+}
+
+.premiumTicket {
+    background-color: #e3f2fd; /* Light pastel blue */
+    border: 1px solid #0d47a1;
+    color: #0d47a1;
+    border-radius: 12px;
+}
+
+/* Category Tag */
+.categoryTag {
+    display: inline-block;
+    margin-top: 5px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 12px;
+    background-color: #f0e6f6;
+}
+
+/* New Ticket Button */
+.newTicketButton {
+    background-color: #b39ddb;
+    color: white;
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.newTicketButton:hover {
+    background-color: #9575cd;
+}

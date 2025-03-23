@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 
 function TicketItem({ ticket, onView, onClaim, onClose, view, status }) {
     // Determine the class based on the category

@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 
 function TicketFilters({ currentView, setView }) {
     return (

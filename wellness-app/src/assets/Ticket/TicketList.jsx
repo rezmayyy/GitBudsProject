@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../Firebase';
 import UserContext from '../UserContext';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 import TicketFilters from './TicketFilters';
 import TicketItem from './TicketItem';
 import ViewTicket from './ViewTicket';
