@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from './Firebase';
+import {useTags} from "./TagSystem/useTags";
+import TagSelector from './TagSystem/TagSelector';
 import UserContext from './UserContext';
 import '../styles/create-post.css';
 import ReactQuill from 'react-quill';
@@ -16,6 +18,8 @@ function CreatePost() {
     const quillRef = useRef(null);
     const [quillInstance, setQuillInstance] = useState(null); // Track when Quill is ready
     const [showNotification, setShowNotification] = useState(false); // Track upload notification 
+    const tags = useTags();
+    const [selectedTags, setSelectedTags] = useState([]);
 
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
@@ -34,6 +38,7 @@ function CreatePost() {
         title: '',
         description: '',
         body: '',
+        tags: [] //store all tags
     });
 
     const [fileInputs, setFileInputs] = useState({
@@ -198,6 +203,12 @@ function CreatePost() {
             alert(`Please select a ${activeTab} file.`);
             return;
         }
+
+        if(!postData.tags || postData.tags.length === 0){
+            alert('Please select at least one tag.');
+            return;
+        }
+
         // Show upload notification
         showUploadingNotification();
         const autoApprove = await getAutoApproveStatus();
@@ -213,7 +224,8 @@ function CreatePost() {
             lastUpdated: serverTimestamp(),
             status: autoApprove ? "approved" : "pending",
             type: activeTab,
-            keywords
+            keywords,
+            tags: postData.tags.map(tag => tag.value) //tags
         };
     
         try {
@@ -227,7 +239,7 @@ function CreatePost() {
             });
     
             navigate(`/content/${docRef.id}`);
-            setPostData({ title: '', description: '', body: '' });
+            setPostData({ title: '', description: '', body: '', tags: [] });
             setFileInputs({ file: null, thumbnail: null, previewFile: '', previewThumbnail: '' });
         } catch (error) {
             console.error('Error adding post:', error);
@@ -341,6 +353,17 @@ function CreatePost() {
                     <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
                 </>
             )}
+
+            <TagSelector 
+                selectedTags={postData.tags || []}  // Ensuring tags is an array
+                setSelectedTags={(selectedTags) => 
+                    setPostData(prevState => ({
+                        ...prevState, 
+                        tags: selectedTags
+                    }))
+                }
+            />
+            
     
             <button className="tab-button" type="submit">
                 Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
