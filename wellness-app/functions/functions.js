@@ -3,22 +3,19 @@ const functions = require('firebase-functions');
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 require('dotenv').config();
 
-if (process.env.NODE_ENV !== 'production') {
-  const serviceAccount = require(process.env.TRIBEWELL_KEY);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-  });
-} else {
-  admin.initializeApp();
-}
+const serviceAccount = require(process.env.TRIBEWELL_KEY);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 const db = admin.firestore();
+const { Timestamp } = require('firebase-admin/firestore');
 
 // Function to ban a user by disabling their account and setting an unban date
 exports.banUser = functions.https.onCall(async (data, context) => {
-  const { userId, duration, reason } = data;
-
+  const { userId, duration, reason } = data.data || data;
+  const authInfo = context.auth || data.auth;
   // Only admins and moderators can ban users
-  if (!context.auth || !(context.auth.token.role === 'admin' || context.auth.token.role === 'moderator')) {
+  if (!authInfo || !(authInfo.token.role === 'admin' || authInfo.token.role === 'moderator')) {
     throw new functions.https.HttpsError('permission-denied', 'Only admins or moderators can ban users.');
   }
 
@@ -49,10 +46,91 @@ exports.banUser = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.unbanUser = functions.https.onCall(async (data, context) => {
-  const { userId } = data;
+exports.createContentPost = functions.https.onCall(async (data, context) => {
+  // Require an authenticated user
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
+  }
 
-  if (!context.auth || !(context.auth.token.role === 'admin' || context.auth.token.role === 'moderator')) {
+  const { postData, filePath, thumbnailPath } = (data.data || data);
+  const userId = authInfo.uid;
+
+  // Basic check: ensure that filePath starts with the expected subfolder (for non-articles)
+  if (postData.type !== 'article') {
+    // Decode the file URL to extract the storage path
+    try {
+      const url = new URL(filePath);
+      const encodedPath = url.pathname.split('/o/')[1];
+      const decodedPath = decodeURIComponent(encodedPath);
+
+      const expectedFolder = `${postData.type}-uploads/${userId}/`;
+      if (!decodedPath.startsWith(expectedFolder)) {
+        throw new functions.https.HttpsError(
+          'permission-denied',
+          'Invalid file path. File must be uploaded to your designated folder.'
+        );
+      }
+
+      // Similarly, decode and verify thumbnailPath
+      const thumbUrl = new URL(thumbnailPath);
+      const thumbEncoded = thumbUrl.pathname.split('/o/')[1];
+      const decodedThumbPath = decodeURIComponent(thumbEncoded);
+      const expectedThumbFolder = `thumbnails/${userId}/`;
+      if (!decodedThumbPath.startsWith(expectedThumbFolder)) {
+        throw new functions.https.HttpsError(
+          'permission-denied',
+          'Invalid thumbnail path. Thumbnail must be uploaded to your designated folder.'
+        );
+      }
+    } catch (err) {
+      console.error("Error parsing file paths:", err);
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'Invalid file URL format.'
+      );
+    }
+  }
+
+  // Query the auto-approval setting
+  let autoApprove = false;
+  try {
+    const settingsDoc = await db.collection("adminSettings").doc("uploadRules").get();
+    if (settingsDoc.exists) {
+      autoApprove = settingsDoc.data().AutoApprove === true;
+    }
+  } catch (err) {
+    console.error("Error fetching auto-approve settings:", err);
+  }
+
+  // Build your new post object
+  const newPost = {
+    title: postData.title,
+    description: postData.description || '',
+    body: postData.body || '',
+    author: authInfo.token.name || userId,
+    type: postData.type,
+    fileURL: filePath || null,
+    thumbnailURL: thumbnailPath || null,
+    timestamp: Timestamp.now(),
+    status: autoApprove ? "approved" : "pending",
+    keywords: Array.isArray(postData.keywords) ? postData.keywords : []
+  };
+
+  try {
+    const docRef = await db.collection("content-posts").add(newPost);
+    return { message: "Post created successfully", postId: docRef.id };
+  } catch (error) {
+    console.error("Error creating post:", error);
+    throw new functions.https.HttpsError("internal", "Failed to create post.");
+  }
+});
+
+exports.unbanUser = functions.https.onCall(async (data, context) => {
+  const { userId } = data.data || data;
+  const authInfo = context.auth || data.auth;
+
+  if (!authInfo || !(authInfo.token.role === 'admin' || authInfo.token.role === 'moderator')) {
     throw new functions.https.HttpsError('permission-denied', 'Only admins or moderators can unban users.');
   }
 
@@ -84,7 +162,7 @@ exports.unbanUser = functions.https.onCall(async (data, context) => {
 exports.unbanUsers = onSchedule('every 24 hours', async (event) => {
   try {
     const now = admin.firestore.Timestamp.now();
-    
+
     const usersToUnban = await db.collection('users')
       .where('unbanDate', '<=', now)
       .get();
@@ -162,18 +240,24 @@ exports.handleUserSignup = functions.https.onCall(async (data, context) => {
   }
 });
 
-exports.reportUser = async (user) => {
-  const { userId, reason } = data;
+exports.reportUser = functions.https.onCall(async (data, context) => {
+  const { userId, reason } = data.data || data;
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in.');
+  }
   try {
-      // Create a new document in the reports sub-collection with the details
-      await db.collection('users').doc(userId).collection('reports').add({
-        reason: reason,
-        reportedBy: context.token.uid, // Store the UID of the user who reported
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      }); 
-      return { message: `User has been reported. Reason: ${reason}` };
-    } catch (error) {
-      console.error('Error reporting user:', error);
-      throw new functions.https.HttpsError('internal', 'Failed to report user.');
-    };
-};
+    await db.collection('users')
+      .doc(userId)
+      .collection('reports')
+      .add({
+        reason,
+        reportedBy: authInfo.uid,
+        timestamp: Timestamp.now(),
+      });
+    return { message: `User reported: ${reason}` };
+  } catch (error) {
+    console.error('Error reporting user:', error);
+    throw new functions.https.HttpsError('internal', 'Failed to report user.');
+  }
+});

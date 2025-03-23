@@ -8,6 +8,7 @@ import UserContext from "../UserContext";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { signInWithCustomToken } from "firebase/auth";
 
+
 function Signup() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ function Signup() {
 
   // Initialize Firebase Functions and connect to emulator if needed
   const functions = getFunctions();
-  if(process.env.USE_EMULATOR === true)
+  if(process.env.REACT_APP_USE_EMULATOR === "true")
   {
     connectFunctionsEmulator(functions, "localhost", 5001);
   }
