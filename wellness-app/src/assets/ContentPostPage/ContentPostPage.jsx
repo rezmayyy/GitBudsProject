@@ -11,7 +11,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
-
+import ReportButton from '../ReportButton/Report';
 
 const ContentPostPage = () => {
     const { postId } = useParams();
@@ -46,7 +46,7 @@ const ContentPostPage = () => {
                 setPost(postData);
                 setEditedTitle(postData.title || "");
                 setEditedDescription(postData.description || "");
-                setEditedBody(postData.body || "")
+                setEditedBody(postData.body || "");
                 setLikes(postData.likes || []);
                 setDislikes(postData.dislikes || []);
                 const id = await getUserIdByDisplayName(postData.author);
@@ -89,15 +89,11 @@ const ContentPostPage = () => {
         return <div>Page is private</div>
     }
 
-
-
-
     const handleLike = async () => {
-
         if (!currentUser) {
-            setMessage("You need to be logged in to like to a post.")
+            setMessage("You need to be logged in to like a post.");
             setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000)
+            setTimeout(() => setShowMessage(false), 3000);
             return;
         }
 
@@ -117,19 +113,17 @@ const ContentPostPage = () => {
         await updateDoc(postRef, {
             likes: updatedLikes,
             dislikes: updatedDislikes,
-        })
+        });
 
         setLikes(updatedLikes);
         setDislikes(updatedDislikes);
-    }
-
+    };
 
     const handleDislike = async () => {
-
         if (!currentUser) {
-            setMessage("You need to be logged in to dislike to a post.")
+            setMessage("You need to be logged in to dislike a post.");
             setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000)
+            setTimeout(() => setShowMessage(false), 3000);
             return;
         }
 
@@ -149,19 +143,17 @@ const ContentPostPage = () => {
         await updateDoc(postRef, {
             likes: updatedLikes,
             dislikes: updatedDislikes,
-        })
+        });
 
         setLikes(updatedLikes);
         setDislikes(updatedDislikes);
-
-    }
-
+    };
 
     const handleEdit = () => {
         if (isAuthor) {
             setIsEditing(true);
         }
-    }
+    };
 
     const handleSave = async () => {
         try {
@@ -182,12 +174,12 @@ const ContentPostPage = () => {
             setPost((prev) => ({
                 ...prev,
                 ...updatedPostData
-            }))
-            setIsEditing("");
+            }));
+            setIsEditing(false);
         } catch (error) {
             console.error("Error updating post ", error);
         }
-    }
+    };
 
     const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
     const formattedLastUpdated = post.lastUpdated && post.lastUpdated.toDate ? format(post.lastUpdated.toDate(), "PP p") : "Unknown Date";
@@ -202,16 +194,13 @@ const ContentPostPage = () => {
             ['link', 'image'],
             ['clean']
         ],
-    }
-
+    };
 
     return (
         <div className="content-page">
             <div className="container d-flex justify-content-center align-items-center" style={{ marginTop: '50px', marginBottom: '50px' }}>
                 <div className={`card ${post.type}-post`} style={{ maxWidth: '800px', width: '100%' }}>
-
-                    {/* video posts */}
-
+                    {/* VIDEO POSTS */}
                     {post.type === 'video' && (
                         <div>
                             <div className="card-header">
@@ -230,8 +219,7 @@ const ContentPostPage = () => {
                                 </button>
                             </div>
 
-
-                            {/* title and description */}
+                            {/* Title and description */}
                             <div className="card-body">
                                 {isAuthor ? (isEditing === "title" ? (
                                     <input
@@ -239,7 +227,7 @@ const ContentPostPage = () => {
                                         className="form-control mb-2"
                                         value={editedTitle}
                                         onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
+                                        onBlur={handleSave}
                                         autoFocus
                                     />
                                 ) : (
@@ -257,7 +245,6 @@ const ContentPostPage = () => {
                                         onBlur={handleSave}
                                         autoFocus
                                     />
-
                                 ) : (
                                     <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
                                 )) : (
@@ -270,10 +257,10 @@ const ContentPostPage = () => {
                                     </button>
                                 )}
 
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
+                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6>
                             </div>
 
-                            {/* author section */}
+                            {/* Author section */}
                             <div className="card-footer">
                                 <h6>About the Author</h6>
                                 <p className="text-muted">Short section about the author.</p>
@@ -281,12 +268,10 @@ const ContentPostPage = () => {
                         </div>
                     )}
 
-
-                    {/* audio posts */}
-
+                    {/* AUDIO POSTS */}
                     {post.type === 'audio' && (
                         <div>
-                            {/* thumbnail */}
+                            {/* Thumbnail */}
                             <div className="card-header">
                                 <img
                                     src={post.thumbnailURL}
@@ -296,15 +281,13 @@ const ContentPostPage = () => {
                                 />
                             </div>
 
-                            {/* audio controls */}
+                            {/* Audio controls */}
                             <div className="card-body">
                                 <audio controls className="w-100">
                                     <source src={post.fileURL} type="audio/mpeg" />
                                     Your browser does not support the audio tag.
                                 </audio>
-
                             </div>
-
 
                             <div className="card-body">
                                 <button className="btn btn-light" onClick={handleLike}>
@@ -315,17 +298,15 @@ const ContentPostPage = () => {
                                 </button>
                             </div>
 
-
-                            {/* title and description */}
+                            {/* Title and description */}
                             <div className="card-body">
-
                                 {isAuthor ? (isEditing === "title" ? (
                                     <input
                                         type="text"
                                         className="form-control mb-2"
                                         value={editedTitle}
                                         onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
+                                        onBlur={handleSave}
                                         autoFocus
                                     />
                                 ) : (
@@ -343,7 +324,6 @@ const ContentPostPage = () => {
                                         onBlur={handleSave}
                                         autoFocus
                                     />
-
                                 ) : (
                                     <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
                                 )) : (
@@ -356,11 +336,10 @@ const ContentPostPage = () => {
                                     </button>
                                 )}
 
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
-
+                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6>
                             </div>
 
-                            {/* author section */}
+                            {/* Author section */}
                             <div className="card-footer">
                                 <h6>About the Author</h6>
                                 <p className="text-muted">Short section about the author.</p>
@@ -368,19 +347,17 @@ const ContentPostPage = () => {
                         </div>
                     )}
 
-
-                    {/* article posts */}
+                    {/* ARTICLE POSTS */}
                     {post.type === 'article' && (
                         <div>
                             <div className="article-header">
-
                                 {isAuthor ? (isEditing === "title" ? (
                                     <input
                                         type="text"
                                         className="form-control mb-2"
                                         value={editedTitle}
                                         onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
+                                        onBlur={handleSave}
                                         autoFocus
                                     />
                                 ) : (
@@ -395,9 +372,8 @@ const ContentPostPage = () => {
                                     </button>
                                 )}
 
-
                                 <div className="d-flex align-items-center justify-content-between">
-                                    <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6> {/* will need to add author field to the db */}
+                                    <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6>
                                     <div className="d-flex align-items-center gap-2">
                                         <button className="btn btn-light" onClick={handleLike}>
                                             <i className="bi bi-hand-thumbs-up"></i> {likes.length}
@@ -410,7 +386,6 @@ const ContentPostPage = () => {
                             </div>
 
                             <div className="card-body">
-
                                 {post.thumbnailURL && (
                                     <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{ maxHeight: "800px", objectFit: "cover" }} />
                                 )}
@@ -434,9 +409,17 @@ const ContentPostPage = () => {
                                         Save
                                     </button>
                                 )}
-
-
                             </div>
+                        </div>
+                    )}
+
+                    {/* Report Button Footer: Only show if the current user is not the author */}
+                    {!isAuthor && (
+                        <div className="card-footer d-flex justify-content-end">
+                            <ReportButton
+                                contentUrl={window.location.href}
+                                profileUrl={`/profile/${post.author}`}
+                            />
                         </div>
                     )}
                 </div>
@@ -462,7 +445,6 @@ const ContentPostPage = () => {
             <div className='comments-section'>
                 <CommentsSection postId={post.id} currentUser={currentUser} />
             </div>
-
         </div>
     );
 };

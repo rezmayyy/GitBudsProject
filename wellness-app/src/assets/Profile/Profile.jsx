@@ -11,7 +11,8 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
-import HealerServices from './healerServices'; // New module for healers
+import HealerServices from './healerServices';
+import ReportButton from '../ReportButton/Report'; // Ensure this uses your updated Report component
 
 const Profile = () => {
   const { user } = useContext(UserContext);
@@ -43,7 +44,7 @@ const Profile = () => {
   const [editingContact, setEditingContact] = useState(false);
   const [contacts, setContacts] = useState([]);
 
-  // 1. If user typed a UID in the URL, redirect to the displayName-based URL
+  // 1. Redirect if a UID is provided in the URL
   useEffect(() => {
     if (username && /^[A-Za-z0-9]{20,}$/.test(username)) {
       const fetchUserById = async () => {
@@ -63,7 +64,7 @@ const Profile = () => {
     }
   }, [username, navigate]);
 
-  // 2. Fetch visited user's document based on username
+  // 2. Fetch visited user's document based on displayName
   useEffect(() => {
     const fetchVisitedUser = async () => {
       if (!username) return;
@@ -94,7 +95,7 @@ const Profile = () => {
     fetchVisitedUser();
   }, [username]);
 
-  // 3. Check if this is the current user's profile and fetch subscription/role info
+  // 3. Check if this is the current user's profile and get subscription/role info
   useEffect(() => {
     if (viewedUserId && user) {
       setIsCurrentUser(viewedUserId === user.uid);
@@ -123,14 +124,14 @@ const Profile = () => {
     }
   }, [viewedUserId, user]);
 
-  // 4. If no username is provided, redirect to current user's profile
+  // 4. If no username is provided, redirect to the current user's profile
   useEffect(() => {
     if (!username && user?.displayName) {
       navigate(`/profile/${user.displayName}`);
     }
   }, [user, username, navigate]);
 
-  // 5. Don't render until profileData is loaded
+  // 5. Don’t render until profileData is loaded
   if (!profileData) {
     return <div>Loading profile...</div>;
   }
@@ -188,20 +189,7 @@ const Profile = () => {
     }
   };
 
-  // 8. Report, Ban, and Unban
-  const handleReport = async () => {
-    const reason = prompt('Enter a reason for the report:');
-    if (!reason) return;
-    const reportUser = httpsCallable(functions, 'reportUser');
-    try {
-      const result = await reportUser({ userId: viewedUserId, reason });
-      alert(result.data.message);
-    } catch (error) {
-      console.error('Error reporting user:', error);
-      alert('Failed to report the user.');
-    }
-  };
-
+  // 8. Ban/Unban functions for moderators/admins
   const handleBanUser = async () => {
     const duration = prompt('Enter ban duration in days:');
     if (!duration) return;
@@ -282,9 +270,11 @@ const Profile = () => {
         />
       </div>
 
-      {/* Profile Header */}
+      {/* Profile Header: Centered profile name; Report button absolutely positioned on the right */}
       <div className={styles.profileHeader}>
         <h2>{profileData.displayName || 'User Profile'}</h2>
+        
+        {/* If it's the current user, show diary button; otherwise, show subscribe/unsubscribe */}
         {isCurrentUser ? (
           <button className={styles.diaryButton} onClick={() => navigate('/profile/diary')}>
             View My Diary
@@ -307,10 +297,22 @@ const Profile = () => {
             )}
           </>
         )}
+
         {isAdminOrModerator && !isCurrentUser && (
           <button onClick={handleBanUser} className={styles.banButton}>
             Ban User
           </button>
+        )}
+
+        {/* Absolutely positioned Report button on the right */}
+        {!isCurrentUser && (
+          <div className={styles.profileReport}>
+            <ReportButton 
+              contentUrl={window.location.href} 
+              profileUrl={window.location.href} 
+              iconOnly={true}
+            />
+          </div>
         )}
       </div>
 

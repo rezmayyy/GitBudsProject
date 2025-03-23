@@ -1,25 +1,47 @@
+// DiscussionBoard.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import UserContext from '../UserContext';
-import PostItem from '../PostItem';
 import { collection, addDoc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../Firebase';
+import ReportButton from '../ReportButton/Report';
 
-const DiscussionBoard = ({ preview }) => { 
+// Utility function to safely format a Firestore or non-Firestore timestamp
+function formatTimestamp(timestamp) {
+  if (!timestamp) return 'No date';
+
+  // If it's a Firestore Timestamp object
+  if (timestamp.toDate) {
+    return format(timestamp.toDate(), 'MMM d, yyyy h:mm a');
+  }
+
+  // Otherwise, try converting to a JavaScript Date
+  const dateVal = new Date(timestamp);
+  if (isNaN(dateVal.getTime())) {
+    return 'No date';
+  }
+  return format(dateVal, 'MMM d, yyyy h:mm a');
+}
+
+const DiscussionBoard = ({ preview }) => {
   const { user } = useContext(UserContext);
   const [newPost, setNewPost] = useState('');
   const [posts, setPosts] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch posts from Firestore
   useEffect(() => {
     const fetchPosts = async () => {
       if (!user) return;
-      
       try {
         const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
         const postsSnapshot = await getDocs(postsQuery);
-        const postsList = postsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        setPosts(postsList); 
+        const postsList = postsSnapshot.docs.map(doc => ({
+          ...doc.data(),
+          id: doc.id,
+        }));
+        setPosts(postsList);
       } catch (error) {
         console.error('Error fetching posts: ', error);
       }
@@ -27,6 +49,7 @@ const DiscussionBoard = ({ preview }) => {
     fetchPosts();
   }, [user]);
 
+  // Submit a new post
   const handlePostSubmit = async () => {
     if (!user) {
       alert('You need to log in to post!');
@@ -41,8 +64,6 @@ const DiscussionBoard = ({ preview }) => {
         userName: user.displayName || user.email,
         userId: user.uid,
         replies: [],
-        likes: 0,
-        likedByUser: false,
       };
 
       try {
@@ -55,51 +76,213 @@ const DiscussionBoard = ({ preview }) => {
     }
   };
 
-  const displayedPosts = preview ? posts.slice(0, 3) : posts; 
+  // If it's a preview, only show the first 3
+  const displayedPosts = preview ? posts.slice(0, 3) : posts;
 
   return (
-    <div className="discussion-board">
-      <h2>{preview ? 'Latest Discussions' : 'Discussion Board'}</h2>
+    <div className="discussion-board" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        {preview ? 'Latest Discussions' : 'Discussion Board'}
+      </h2>
 
+      {/* New Post Form */}
       {user && !preview && (
-        <>
+        <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
           <textarea
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             placeholder="Share your thoughts..."
-            rows="5"
+            rows="4"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              marginBottom: '0.5rem',
+            }}
           />
-          <button onClick={handlePostSubmit}>Post</button>
-        </>
+          <br />
+          <button
+            onClick={handlePostSubmit}
+            style={{
+              backgroundColor: '#6c63ff',
+              color: '#fff',
+              padding: '0.6rem 1.2rem',
+              border: 'none',
+              borderRadius: '30px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            Post
+          </button>
+        </div>
       )}
 
-      <div style={{paddingTop: '20px'}} className="posts-list">
+      <div style={{ marginTop: '1rem' }}>
         {user ? (
           displayedPosts.length > 0 ? (
-            displayedPosts.map((post) => (
-              <PostItem key={post.id} post={post} preview={preview} />
-            ))
+            displayedPosts.map((post) => {
+              const postDate = formatTimestamp(post.timestamp);
+
+              return (
+                <div
+                  key={post.id}
+                  style={{
+                    marginBottom: '1.5rem',
+                    padding: '1rem',
+                    border: '1px solid #f8c8dc',
+                    borderRadius: '10px',
+                    background: '#fffefa',
+                    boxShadow: '0 2px 5px rgba(0, 0, 0, 0.05)',
+                  }}
+                >
+                  {/* Top row: user name, date, small report icon if not author */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      <strong>{post.userName}</strong>
+                      <span style={{ color: '#888', fontSize: '0.9rem' }}>{postDate}</span>
+                    </div>
+                    {user.uid !== post.userId && (
+                      <ReportButton
+                        contentUrl={`${window.location.href}#post-${post.id}`}
+                        profileUrl={`/profile/${post.userName}`}
+                        iconOnly={true}
+                      />
+                    )}
+                  </div>
+
+                  {/* Post message */}
+                  <p style={{ margin: 0 }}>{post.message}</p>
+
+                  {/* Replies section */}
+                  {post.replies && post.replies.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: '1rem',
+                        paddingLeft: '1rem',
+                        borderLeft: '2px solid #ddd',
+                      }}
+                    >
+                      {post.replies.map((reply, index) => {
+                        const replyDate = formatTimestamp(reply.timestamp);
+
+                        return (
+                          <div
+                            key={index}
+                            style={{
+                              marginBottom: '0.75rem',
+                              padding: '0.75rem',
+                              background: '#fdfdfd',
+                              borderRadius: '8px',
+                              border: '1px solid #f0f0f0',
+                            }}
+                          >
+                            {/* Reply top row */}
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: '0.25rem',
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  gap: '1rem',
+                                  alignItems: 'center',
+                                }}
+                              >
+                                <strong>{reply.userName}</strong>
+                                <span style={{ color: '#888', fontSize: '0.8rem' }}>
+                                  {replyDate}
+                                </span>
+                              </div>
+                              {user.uid !== reply.userId && (
+                                <ReportButton
+                                  contentUrl={`${window.location.href}#post-${post.id}-reply-${index}`}
+                                  profileUrl={`/profile/${reply.userName}`}
+                                  iconOnly={true}
+                                />
+                              )}
+                            </div>
+
+                            {/* Reply message */}
+                            <p style={{ margin: 0 }}>{reply.message}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })
           ) : (
-            <p>No posts yet. Be the first to share!</p>
+            <p style={{ textAlign: 'center' }}>No posts yet. Be the first to share!</p>
           )
         ) : (
-          <div>
+          <div style={{ textAlign: 'center' }}>
             <p>You must be a member to see the discussion board.</p>
-            <div className="auth-buttons">
-              <Link to="/login" className="auth-button">Log In</Link>
-              <Link to="/signup" className="auth-button">Sign Up</Link>
+            <div style={{ marginTop: '0.5rem' }}>
+              <Link
+                to="/login"
+                style={{
+                  marginRight: '0.5rem',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '30px',
+                  backgroundColor: '#6c63ff',
+                  color: '#fff',
+                  textDecoration: 'none',
+                }}
+              >
+                Log In
+              </Link>
+              <Link
+                to="/signup"
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '30px',
+                  backgroundColor: '#6c63ff',
+                  color: '#fff',
+                  textDecoration: 'none',
+                }}
+              >
+                Sign Up
+              </Link>
             </div>
           </div>
         )}
       </div>
 
-      <div className="view-board-button">
+      {/* Button to view the full discussion board if preview */}
       {user && preview && (
-          <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
+        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+          <button
+            onClick={() => navigate('/discussion')}
+            style={{
+              backgroundColor: '#6c63ff',
+              color: '#fff',
+              padding: '0.6rem 1.2rem',
+              border: 'none',
+              borderRadius: '30px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            View Discussion Board
+          </button>
+        </div>
       )}
-      </div>
     </div>
-  )
+  );
 };
 
 export default DiscussionBoard;
