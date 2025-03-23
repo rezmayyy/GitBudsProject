@@ -108,7 +108,7 @@ function Signup() {
 
                         <div className="checkbox">
                             <label>
-                                <input type="checkbox" required /> I agree to the <Link to="/terms-and-conditions" target="_blank" rel="noopener noreferrer">Terms and Conditions</Link>.
+                                <input type="checkbox" required /> I agree to the <Link to="/tos">Terms and Conditions</Link>.
                             </label>
                         </div>
 
