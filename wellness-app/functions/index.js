@@ -7,10 +7,8 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
 
-const functionsModule = require('./functions.js');
+const functionsModule = require("./functions.js");
 module.exports = functionsModule;
 
 // Create and deploy your first functions
