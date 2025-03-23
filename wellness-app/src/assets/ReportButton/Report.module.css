@@ -9,7 +9,7 @@
   height: 100% !important;
   background-color: rgba(0, 0, 0, 0.5) !important;
   
-  /* Flexbox centering */
+  /* Use flexbox to center the modal */
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
