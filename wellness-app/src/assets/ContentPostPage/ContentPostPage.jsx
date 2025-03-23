@@ -44,68 +44,70 @@ const ContentPostPage = () => {
 
     //error handling
     useEffect(() => {
-        const fetchPost = async () => { //fetch from firebase
-            const postDoc = doc(db, 'content-posts', postId);
-            const postSnapshot = await getDoc(postDoc);
-            if (postSnapshot.exists()) {
-                const postData = { id: postId, ...postSnapshot.data() };
-                setPost(postData);
-                setEditedTitle(postData.title || "");
-                setEditedDescription(postData.description || "");
-                setEditedBody(postData.body || "")
-                setLikes(postData.likes || []);
-                setDislikes(postData.dislikes || []);
-                setEditedTags(postData.tags || []);
+        const fetchData = async () => {
+          setLoading(true);
+          
+          try {
 
-                const postTags = postData.tags || [];
-                const tagObjects = postTags.map((tagId) => {
-                    return { value: tagId, label: tagNames[tagId] || tagId }; //match tag id and name
-                });
-                setTags(tagObjects);
-
-                const id = await getUserIdByDisplayName(postData.author);
-                setUid(id);
-
-                if (postData.status === 'approved') {
-                    setIsAuthorized(true);
-                }
-                else if (currentUser) {
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    const userSnap = await getDoc(userRef);
-
-                    if (userSnap.exists()) {
-                        const role = userSnap.data().role;
-                        const isAuthorized = role === 'admin' || role === 'moderator';
-
-                        if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
-                            setIsAuthorized(true);
-                        } else {
-                            setError('You do not have permission to view this post.');
-                        }
-                    }
-                }
-            } else {
-                console.error('No such document!');
-            }
-            setLoading(false);
-        };
-
-        fetchPost();
-    }, [postId, tagNames]);
-
-    useEffect(() => {
-        const fetchTagNames = async () => {
             const tagsCollection = await getDocs(collection(db, 'tags'));
             const tagsMap = {};
             tagsCollection.forEach(tagDoc => {
-                const tagData = tagDoc.data();
-                tagsMap[tagDoc.id] = tagData.name;
+              const tagData = tagDoc.data();
+              tagsMap[tagDoc.id] = tagData.name;
             });
             setTagNames(tagsMap);
-        };
 
-        fetchTagNames();
-    }, []);
+            const postDoc = doc(db, 'content-posts', postId);
+            const postSnapshot = await getDoc(postDoc);
+            if (postSnapshot.exists()) {
+              const postData = { id: postId, ...postSnapshot.data() };
+              setPost(postData);
+              setEditedTitle(postData.title || "");
+              setEditedDescription(postData.description || "");
+              setEditedBody(postData.body || "");
+              setLikes(postData.likes || []);
+              setDislikes(postData.dislikes || []);
+              setEditedTags(postData.tags || []);
+    
+              const postTags = postData.tags || [];
+              const tagObjects = postTags.map((tagId) => {
+                return { value: tagId, label: tagsMap[tagId] || tagId }; //match tag id and name
+              });
+              setTags(tagObjects);
+    
+              const id = await getUserIdByDisplayName(postData.author);
+              setUid(id);
+
+              if (postData.status === 'approved') {
+                setIsAuthorized(true);
+              } else if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+    
+                if (userSnap.exists()) {
+                  const role = userSnap.data().role;
+                  const isAuthorized = role === 'admin' || role === 'moderator';
+    
+                  if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
+                    setIsAuthorized(true);
+                  } else {
+                    setError('You do not have permission to view this post.');
+                  }
+                }
+              }
+            } else {
+              console.error('No such document!');
+            }
+          } catch (err) {
+            console.error('Error fetching data:', err);
+            setError('An error occurred while fetching the data.');
+          }
+    
+          setLoading(false);
+        };
+    
+        fetchData();
+      }, [postId, currentUser]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -490,6 +492,26 @@ const ContentPostPage = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* tags section */}
+            <div className="card-body">
+                {isEditing === "tags" ? (
+                    <div>
+                        <TagSelector
+                            selectedTags={tags}  // Ensuring tags is an array
+                            setSelectedTags={setTags}
+                        />
+                        <button className="btn btn-success" onClick={handleSaveTags}>
+                            Save Tags
+                        </button>
+                    </div>
+                ) : (
+                    <div onDoubleClick={handleEditTags}>
+                        <strong>Tags:</strong> {selectedTagNames.join(', ')}
+                    </div>
+                )}
+            </div>
+
                 </div>
 
 
@@ -512,24 +534,7 @@ const ContentPostPage = () => {
             </div>
 
             
-            {/* tags section */}
-            <div className="card-body">
-                {isEditing === "tags" ? (
-                    <div>
-                        <TagSelector
-                            selectedTags={tags}  // Ensuring tags is an array
-                            setSelectedTags={setTags}
-                        />
-                        <button className="btn btn-success" onClick={handleSaveTags}>
-                            Save Tags
-                        </button>
-                    </div>
-                ) : (
-                    <div onDoubleClick={handleEditTags}>
-                        <strong>Tags:</strong> {selectedTagNames.join(', ')}
-                    </div>
-                )}
-            </div>
+            
 
 
             <div className='comments-section'>
