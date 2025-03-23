@@ -134,6 +134,7 @@
     cursor: pointer;
     font-size: 14px;
     margin-top: 10px;
+    width: 50%;
   }
   
   .post-comment-button:hover {
@@ -144,4 +145,37 @@
     background-color: #ccc; /* Gray background for disabled state */
     cursor: not-allowed;
   }
-  
+
+  .reply-button {
+    width: 50%; /* Ensures the button takes up only the necessary width */
+    padding: 8px 12px; /* Add some padding for aesthetics */
+    background-color: #007bff; /* Customize the background color */
+    color: white; /* Text color */
+    border: none; /* Remove any border */
+    border-radius: 4px; /* Round the corners */
+    cursor: pointer; /* Make it look clickable */
+}
+
+.reply-button:hover {
+    background-color: #0056b3; /* Darken background on hover */
+}
+
+.comment-form {
+  max-width: 400px; /* Set a fixed width */
+  margin: 0; /* Remove auto-centering */
+  padding: 10px; /* Add some padding */
+  border: 1px solid #ccc; /* Optional: Add a border */
+  border-radius: 8px; /* Optional: Add rounded corners */
+  background-color: #f9f9f9; /* Optional: Light background */
+}
+
+.comment-form textarea {
+  width: 100%; /* Make the textarea fill the form width */
+  height: 100px; /* Set a height */
+  padding: 10px; /* Add padding inside the textarea */
+  border: 1px solid #ccc; /* Border styling */
+  border-radius: 4px; /* Rounded corners for textarea */
+  font-size: 14px; /* Adjust font size */
+  resize: none; /* Disable resizing */
+  box-sizing: border-box; /* Ensure padding doesn't affect total width */
+}

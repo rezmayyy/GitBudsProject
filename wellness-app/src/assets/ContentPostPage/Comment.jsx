@@ -26,6 +26,8 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
   const [showReplies, setShowReplies] = useState(false); // New state to toggle replies visibility
   const [repliesToShow, setRepliesToShow] = useState(5); // Track number of replies to show
   const [showReplyBox, setShowReplyBox] = useState(false); // Track visibility of the reply text box
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   // Fetch replies when the component mounts
   useEffect(() => {
@@ -126,13 +128,13 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
     try {
       const updateData = userLikedComment
         ? {
-            likes: commentLikes - 1,
-            likedBy: arrayRemove(currentUser.uid),
-          }
+          likes: commentLikes - 1,
+          likedBy: arrayRemove(currentUser.uid),
+        }
         : {
-            likes: commentLikes + 1,
-            likedBy: arrayUnion(currentUser.uid),
-          };
+          likes: commentLikes + 1,
+          likedBy: arrayUnion(currentUser.uid),
+        };
 
       await updateDoc(commentRef, updateData);
       setCommentLikes(commentLikes + (userLikedComment ? -1 : 1));
@@ -148,13 +150,13 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
     try {
       const updateData = userLikedReplies[replyId]
         ? {
-            likes: currentLikes - 1,
-            likedBy: arrayRemove(currentUser.uid),
-          }
+          likes: currentLikes - 1,
+          likedBy: arrayRemove(currentUser.uid),
+        }
         : {
-            likes: currentLikes + 1,
-            likedBy: arrayUnion(currentUser.uid),
-          };
+          likes: currentLikes + 1,
+          likedBy: arrayUnion(currentUser.uid),
+        };
 
       await updateDoc(replyRef, updateData);
       setReplyLikes(prev => ({ ...prev, [replyId]: currentLikes + (userLikedReplies[replyId] ? -1 : 1) }));
@@ -262,19 +264,21 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
         </div>
       )}
 
+      {/* Reply Button */}
+      <button onClick={toggleReplyBox}>
+        {showReplyBox ? "Cancel" : "Reply"}
+      </button>
+
       {/* Reply Form */}
-      {!showReplyBox && (
-        <button onClick={toggleReplyBox}>Reply</button>
-      )}
       {showReplyBox && (
-        <form onSubmit={handleReplySubmit}>
+        <form onSubmit={handleReplySubmit} className="comment-form">
           <textarea
             value={newReply}
             onChange={(e) => setNewReply(e.target.value)}
             placeholder="Add a reply..."
             required
           />
-          <button type="submit">Post Reply</button>
+          <button type="submit" className="reply-button">Post Reply</button>
         </form>
       )}
     </div>
