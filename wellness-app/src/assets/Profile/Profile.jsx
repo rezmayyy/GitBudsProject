@@ -301,10 +301,10 @@ const Profile = () => {
                 }
                 onClick={handleSubscribe}
               >
-                {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                {isSubscribed ? 'Unfollow' : 'Follow'} 
               </button>
             ) : (
-              <p className="login-message">Please log in to subscribe.</p>
+              <p className="login-message">Please log in to follow.</p>
             )}
           </>
         )}

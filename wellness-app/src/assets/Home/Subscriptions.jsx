@@ -55,7 +55,7 @@ function Subscriptions() {
 
   return (
     <div className="subscriptions-container">
-      <h4>Your Subscriptions</h4>
+      <h4>Following</h4>
       <ul className="subscriptions-list">
         {subscriptions.map((sub) => (
           <li key={sub.id} className="subscription-item">

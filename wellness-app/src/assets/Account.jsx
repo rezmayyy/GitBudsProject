@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import UserContext from './UserContext';
@@ -8,6 +9,8 @@ import styles from '../styles/account.css';
 import dummyPic from "./dummyPic.jpeg";
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import HealerApplicationForm from './ApplyForHealer/HealerApplicationForm';
+import YourFollows from './YourFollows';
+
 
 
 function Account() {
@@ -326,6 +329,14 @@ function Account() {
                         )}
                     </div>
                 );
+            case 'yourFollows':
+                return (
+                     <div className="form-box">
+                         <h3>Your Follows</h3>
+                            <p>These are the users you are currently following.</p>
+                            <YourFollows />
+                    </div>
+                 );
             default:
                 return null;
         }
@@ -351,6 +362,9 @@ function Account() {
                 </button>
                 <button onClick={() => setActiveTab('deleteAccount')} className={`tab-button ${activeTab === 'deleteAccount' ? 'active' : ''}`}>
                     Delete Account
+                </button>
+                <button onClick={() => setActiveTab('yourFollows')} className={`tab-button ${activeTab === 'yourFollows' ? 'active' : ''}`}> 
+                    Your Follows
                 </button>
             </div>
 
