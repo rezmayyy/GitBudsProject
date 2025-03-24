@@ -1,9 +1,9 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useTags } from "./TagSystem/useTags";
-import TagSelector from './TagSystem/TagSelector';
-import UserContext from './UserContext';
+import { useTags } from "../TagSystem/useTags";
+import TagSelector from '../TagSystem/TagSelector';
+import UserContext from '../UserContext';
 import styles from './create-post.module.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
