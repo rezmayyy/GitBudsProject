@@ -34,18 +34,19 @@ import About from './assets/About';
 import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
 import Resources from './assets/Resources';
+import ConfirmEmailChange from './assets/ConfirmEmailChange';
 
 function App() {
   // Manages posts and replies
   const [posts, setPosts] = useState([]);
-  
+
   return (
     <div className="App">
       <UserProvider>
-      <Router>
-        <Header />
-        <Routes>
-          {/* Auth routes */}
+        <Router>
+          <Header />
+          <Routes>
+            {/* Auth routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/recover" element={<ForgotPassword />} />
@@ -72,16 +73,17 @@ function App() {
             <Route path="/profile/diary/editor" element={<DiaryEditor />} />
             <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/events" element={<EventsPage/>} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
             <Route path="/create-event" element={<CreateEventPage />} />
             <Route path="/about" element={<About />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/blogs" element={<BlogsPage />} />
             <Route path="/resources" element={<Resources />} />
-        </Routes>
-        <Footer />
-      </Router>
+            <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
+          </Routes>
+          <Footer />
+        </Router>
       </UserProvider>
     </div>
   );
@@ -91,4 +93,4 @@ export default App;
 
 
 // eslint-disable-next-line no-lone-blocks
-{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */}
+{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */ }

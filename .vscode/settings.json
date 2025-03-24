@@ -1,2 +1,5 @@
 {
-}
+    "editor.formatOnSave": true,
+    "eslint.autoFixOnSave": true,
+    "files.eol": "\n"
+  }
