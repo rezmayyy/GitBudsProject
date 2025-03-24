@@ -1,8 +1,8 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import UserContext from './UserContext';
-import '../styles/create-post.css';
+import UserContext from '../UserContext';
+import styles from './create-post.module.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from "dompurify";
@@ -11,19 +11,19 @@ import DOMPurify from "dompurify";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 
 function CreatePost() {
-    const [activeTab, setActiveTab] = useState('video'); // Default tab
+    // IMPORTANT: Change initial state from 'video' to an empty string
+    // so that the user is first asked what they're uploading.
+    const [activeTab, setActiveTab] = useState('');
     const { user } = useContext(UserContext);
     const navigate = useNavigate();
     const quillRef = useRef(null);
     const [quillInstance, setQuillInstance] = useState(null);
     const [showNotification, setShowNotification] = useState(false);
 
-
-
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
-        audio: 100 * 1024 * 1024,  // 100 MB
-        image: 10 * 1024 * 1024    // 10 MB
+        audio: 100 * 1024 * 1024, // 100 MB
+        image: 10 * 1024 * 1024   // 10 MB
     };
 
     // Notification function
@@ -51,7 +51,7 @@ function CreatePost() {
         setPostData({ ...postData, [e.target.name]: e.target.value });
     };
 
-    // File validation function (client-side check remains unchanged)
+    // File validation function (client-side check)
     const validateFile = async (file, type) => {
         if (!file) return false;
 
@@ -98,10 +98,14 @@ function CreatePost() {
         // Validate file signature (Magic Bytes)
         const buffer = await file.arrayBuffer();
         const uint8Array = new Uint8Array(buffer);
-        const fileSignature = Array.from(uint8Array.slice(0, 12), (byte) => byte.toString(16).padStart(2, "0"));
+        const fileSignature = Array.from(uint8Array.slice(0, 12), (byte) =>
+            byte.toString(16).padStart(2, "0")
+        );
 
         const validSigs = validSignatures[fileExtension] || [];
-        const isValid = validSigs.some(sig => fileSignature.slice(0, sig.length).join(" ") === sig.join(" "));
+        const isValid = validSigs.some(sig =>
+            fileSignature.slice(0, sig.length).join(" ") === sig.join(" ")
+        );
 
         if (!isValid) {
             alert("Invalid file signature. Possible spoofed file.");
@@ -125,7 +129,7 @@ function CreatePost() {
         }));
     };
 
-    // Updated upload function to include user-specific folder in the file path
+    // Upload function to include user-specific folder in the file path
     const uploadFileToStorage = async (file, folder) => {
         if (!file) return null;
         try {
@@ -162,10 +166,10 @@ function CreatePost() {
     if (process.env.REACT_APP_USE_EMULATOR === "true") {
         connectFunctionsEmulator(functions, "localhost", 5001);
     }
-    // Create callable instance for our new Cloud Function
+    // Create callable instance for Cloud Function
     const createContentPost = httpsCallable(functions, "createContentPost");
 
-    // Unified form submission handler using Cloud Function for document creation
+    // Form submission handler using Cloud Function
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -199,8 +203,12 @@ function CreatePost() {
         const fileFolder = `${activeTab}-uploads/${userId}`;
         const thumbFolder = `thumbnails/${userId}`;
 
-        const fileURL = fileInputs.file ? await uploadFileToStorage(fileInputs.file, fileFolder) : null;
-        const thumbnailURL = activeTab !== 'article' ? await uploadFileToStorage(fileInputs.thumbnail, thumbFolder) : null;
+        const fileURL = fileInputs.file
+            ? await uploadFileToStorage(fileInputs.file, fileFolder)
+            : null;
+        const thumbnailURL = activeTab !== 'article'
+            ? await uploadFileToStorage(fileInputs.thumbnail, thumbFolder)
+            : null;
 
         // Build the payload for the Cloud Function
         const payload = {
@@ -211,7 +219,7 @@ function CreatePost() {
                 type: activeTab,
                 keywords
             },
-            filePath: fileURL,         // These should be the storage paths/URLs
+            filePath: fileURL,
             thumbnailPath: thumbnailURL
         };
 
@@ -240,7 +248,7 @@ function CreatePost() {
         }
     };
 
-    // Quill image upload handler remains unchanged
+    // Quill image upload handler
     const handleQuillImageUpload = (quillRef) => {
         const input = document.createElement("input");
         input.setAttribute("type", "file");
@@ -277,76 +285,119 @@ function CreatePost() {
         }
     }, [quillInstance]);
 
-    const renderForm = () => (
-        <form className={`${activeTab}-form`} onSubmit={handleSubmit}>
-            <label>Title</label>
-            <input type="text" name="title" value={postData.title} onChange={handleInputChange} required />
-
-            {activeTab !== 'article' && (
-                <>
-                    <label>Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)</label>
-                    <input type="file" accept={`${activeTab}/*`} onChange={(e) => handleFileChange(e, activeTab)} required />
-                    {fileInputs.previewFile && (activeTab === 'video' ? (
-                        <video controls width="300">
-                            <source src={fileInputs.previewFile} type="video/mp4" />
-                        </video>
-                    ) : (
-                        <audio controls>
-                            <source src={fileInputs.previewFile} type="audio/mpeg" />
-                        </audio>
-                    ))}
-                </>
-            )}
-
-            {activeTab !== 'article' && (
-                <>
-                    <label>Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)</label>
-                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'image')} required />
-                    {fileInputs.previewThumbnail && <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />}
-                </>
-            )}
-
-            {activeTab === 'article' ? (
-                <>
-                    <label>Article Body</label>
-                    <ReactQuill
-                        ref={quillRef}
-                        value={postData.body}
-                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
-                        modules={modules}
-                        theme="snow"
-                        onChangeSelection={() => {
-                            if (!quillInstance && quillRef.current) {
-                                setQuillInstance(quillRef.current.getEditor());
-                            }
-                        }}
-                    />
-                </>
-            ) : (
-                <>
-                    <label>Description</label>
-                    <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
-                </>
-            )}
-
-            <button className="tab-button" type="submit">
-                Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            </button>
-        </form>
-    );
-
     return (
-        <div>
-            <div className="tabs">
-                {['video', 'audio', 'article'].map((type) => (
-                    <button key={type} onClick={() => setActiveTab(type)} className={`tab-button ${activeTab === type ? 'active' : ''}`}>
-                        Post {type.charAt(0).toUpperCase() + type.slice(1)}
-                    </button>
-                ))}
+        <div className={styles.mainContainer}>
+            {/* Step 1: Select Post Type */}
+            <div className={styles.menuContainer}>
+                <h2 className={styles.menuTitle}>What are you uploading?</h2>
+                <div className={styles.menuOptions}>
+                    {['video', 'audio', 'article'].map((type) => (
+                        <button
+                            key={type}
+                            onClick={() => setActiveTab(type)}
+                            className={`${styles.menuOption} ${activeTab === type ? styles.activeOption : ''}`}
+                        >
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            <div className="tab-content">{renderForm()}</div>
-            {showNotification && <div className="upload-notification">Uploading...</div>}
+            {/* Step 2: Show Form Only If a Type Is Chosen */}
+            {activeTab && (
+                <div className={styles.formWrapper}>
+                    <form className={styles.outerForm} onSubmit={handleSubmit}>
+                        {/* White Card Container for Fields */}
+                        <div className={styles.formContainer}>
+                            <label className={styles.formLabel}>Title</label>
+                            <input
+                                className={styles.contentInput}
+                                type="text"
+                                name="title"
+                                value={postData.title}
+                                onChange={handleInputChange}
+                                required
+                            />
+
+                            {activeTab !== 'article' && (
+                                <>
+                                    <label className={styles.formLabel}>
+                                        Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)
+                                    </label>
+                                    <input
+                                        className={styles.contentInput}
+                                        type="file"
+                                        accept={`${activeTab}/*`}
+                                        onChange={(e) => handleFileChange(e, activeTab)}
+                                        required
+                                    />
+                                    {fileInputs.previewFile && (activeTab === 'video' ? (
+                                        <video controls width="300">
+                                            <source src={fileInputs.previewFile} type="video/mp4" />
+                                        </video>
+                                    ) : (
+                                        <audio controls>
+                                            <source src={fileInputs.previewFile} type="audio/mpeg" />
+                                        </audio>
+                                    ))}
+
+                                    <label className={styles.formLabel}>
+                                        Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)
+                                    </label>
+                                    <input
+                                        className={styles.contentInput}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleFileChange(e, 'image')}
+                                        required
+                                    />
+                                    {fileInputs.previewThumbnail && (
+                                        <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />
+                                    )}
+                                </>
+                            )}
+
+                            {activeTab === 'article' ? (
+                                <div className={styles.quillWrapper}>
+                                    <label className={styles.formLabel}>Article Body</label>
+                                    <ReactQuill
+                                        ref={quillRef}
+                                        className={styles.quillEditor}
+                                        value={postData.body}
+                                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
+                                        modules={modules}
+                                        theme="snow"
+                                        onChangeSelection={() => {
+                                            if (!quillInstance && quillRef.current) {
+                                                setQuillInstance(quillRef.current.getEditor());
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    <label className={styles.formLabel}>Description</label>
+                                    <textarea
+                                        className={styles.contentTextarea}
+                                        name="description"
+                                        value={postData.description}
+                                        onChange={handleInputChange}
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        {/* Separate Container for Submit Button */}
+                        <div className={styles.submitContainer}>
+                            <button className={styles.submitButton} type="submit">
+                                Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {showNotification && <div className={styles.uploadNotification}>Uploading...</div>}
         </div>
     );
 }

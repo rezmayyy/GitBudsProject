@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '../Firebase';
 import { collection, addDoc, query, getDocs, serverTimestamp } from 'firebase/firestore';
 import Comment from './Comment';
-import './Comment.css';
+import styles from './Comment.module.css';
 
 const CommentsSection = ({ postId, currentUser }) => {
   const [comments, setComments] = useState([]);
@@ -61,10 +61,10 @@ const CommentsSection = ({ postId, currentUser }) => {
   };
 
   return (
-    <div>
-      <h3>Comments</h3>
+    <div className={styles.commentsContainer}>
+      <h3 className={styles.commentsTitle}>Comments</h3>
       {comments.length === 0 ? (
-        <p>No comments yet. Be the first to comment!</p>
+        <p className={styles.noComments}>No comments yet. Be the first to comment!</p>
       ) : (
         comments.slice(0, commentsToShow).map((comment) => {
           const user = users[comment.userId]; // Fetch user data by userId
@@ -83,20 +83,26 @@ const CommentsSection = ({ postId, currentUser }) => {
 
       {/* Show the Load More button if there are more comments to show */}
       {commentsToShow < comments.length && (
-        <button onClick={() => setCommentsToShow(commentsToShow + 5)}>
+        <button
+          className={styles.loadMoreButton}
+          onClick={() => setCommentsToShow(commentsToShow + 5)}
+        >
           Load More
         </button>
       )}
 
       {currentUser && (
-        <form onSubmit={handleCommentSubmit}>
+        <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
           <textarea
+            className={styles.commentTextarea}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
             required
           />
-          <button type="submit" className="post-comment-button">Post Comment</button>
+          <button type="submit" className={styles.postCommentButton}>
+            Post Comment
+          </button>
         </form>
       )}
     </div>
