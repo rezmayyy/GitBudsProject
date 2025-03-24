@@ -1,14 +1,17 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
-import { format } from 'date-fns';
+import { format } from "date-fns";
+import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
+import { useTags } from "../TagSystem/useTags";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
+import TagSelector from '../TagSystem/TagSelector';
 import styles from './ContentPostPage.module.css';
 
 const ContentPostPage = () => {
@@ -20,14 +23,21 @@ const ContentPostPage = () => {
     const [loading, setLoading] = useState(true);
     const [authorName, setAuthorName] = useState('[Deleted]');
 
-    const [likes, setLikes] = useState([]);
-    const [dislikes, setDislikes] = useState([]);
-
+    // Editing state (for title, description, body)
     const [isEditing, setIsEditing] = useState('');
     const [editedTitle, setEditedTitle] = useState('');
     const [editedDescription, setEditedDescription] = useState('');
     const [editedBody, setEditedBody] = useState('');
 
+    // Tag-related state
+    const [tags, setTags] = useState([]);
+    const [tagNames, setTagNames] = useState({});
+
+    // Interaction state
+    const [likes, setLikes] = useState([]);
+    const [dislikes, setDislikes] = useState([]);
+
+    // For showing messages
     const [showMessage, setShowMessage] = useState(false);
     const [message, setMessage] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -39,64 +49,101 @@ const ContentPostPage = () => {
     };
 
     useEffect(() => {
-        const fetchAuthorName = async (uid) => {
-            if (!uid) return '[Deleted]';
-            const userSnap = await getDoc(doc(db, 'users', uid));
-            return userSnap.exists() ? userSnap.data().displayName : '[Deleted]';
-        };
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch tags from 'tags' collection and build a mapping (id -> name)
+                const tagsCollection = await getDocs(collection(db, 'tags'));
+                const tagsMap = {};
+                tagsCollection.forEach(tagDoc => {
+                    const tagData = tagDoc.data();
+                    tagsMap[tagDoc.id] = tagData.name;
+                });
+                setTagNames(tagsMap);
 
-        const fetchPost = async () => {
-            const postDoc = doc(db, 'content-posts', postId);
-            const postSnapshot = await getDoc(postDoc);
+                // Fetch the post document
+                const postDoc = doc(db, 'content-posts', postId);
+                const postSnapshot = await getDoc(postDoc);
 
-            if (postSnapshot.exists()) {
-                const postData = { id: postId, ...postSnapshot.data() };
+                if (postSnapshot.exists()) {
+                    const postData = { id: postId, ...postSnapshot.data() };
 
-                let authorName;
-                if (postData.userId) {
-                    // Future posts (using userId)
-                    authorName = await fetchAuthorName(postData.userId);
-                } else if (postData.author) {
-                    // Old posts (using author field directly)
-                    authorName = postData.author;
-                } else {
-                    authorName = '[Deleted]';
-                }
+                    // Determine author name
+                    let fetchedAuthorName;
+                    if (postData.userId) {
+                        fetchedAuthorName = await fetchAuthorName(postData.userId);
+                    } else if (postData.author) {
+                        fetchedAuthorName = postData.author;
+                    } else {
+                        fetchedAuthorName = '[Deleted]';
+                    }
 
-                setPost({ ...postData, authorName });
-                setEditedTitle(postData.title || "");
-                setEditedDescription(postData.description || "");
-                setEditedBody(postData.body || "");
-                setLikes(postData.likes || []);
-                setDislikes(postData.dislikes || []);
+                    setPost({ ...postData, authorName: fetchedAuthorName });
+                    setEditedTitle(postData.title || "");
+                    setEditedDescription(postData.description || "");
+                    setEditedBody(postData.body || "");
+                    setLikes(postData.likes || []);
+                    setDislikes(postData.dislikes || []);
 
-                if (postData.status === 'approved') {
-                    setIsAuthorized(true);
-                } else if (currentUser) {
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    const userSnap = await getDoc(userRef);
+                    // Process tags for the post: convert tag IDs to { value, label }
+                    const postTags = postData.tags || [];
+                    const tagObjects = postTags.map((tagId) => ({
+                        value: tagId,
+                        label: tagsMap[tagId] || tagId
+                    }));
+                    setTags(tagObjects);
 
-                    if (userSnap.exists()) {
-                        const role = userSnap.data().role;
-                        const isAuthorized = role === 'admin' || role === 'moderator';
-
-                        if (postData.status === 'approved' || isAuthorized || currentUser.uid === postData.userId || currentUser.displayName === postData.author) {
-                            setIsAuthorized(true);
-                        } else {
-                            setError('You do not have permission to view this post.');
+                    // Check authorization: if post status is approved or user is admin/moderator or author.
+                    if (postData.status === 'approved') {
+                        setIsAuthorized(true);
+                    } else if (currentUser) {
+                        const userRef = doc(db, 'users', currentUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        if (userSnap.exists()) {
+                            const role = userSnap.data().role;
+                            const adminOrMod = role === 'admin' || role === 'moderator';
+                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId || currentUser.displayName === postData.author) {
+                                setIsAuthorized(true);
+                            } else {
+                                setError('You do not have permission to view this post.');
+                            }
                         }
                     }
+                } else {
+                    setError('Post does not exist.');
                 }
-            } else {
-                setError('Post does not exist.');
-            }
 
-            setLoading(false);
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch data.');
+                setLoading(false);
+            }
         };
 
-        fetchPost();
+        fetchData();
     }, [postId, currentUser]);
 
+    const handleSaveTags = async () => {
+        if (!post) return;
+        const postRef = doc(db, "content-posts", post.id);
+        const tagIds = tags.map(tag => tag.value);
+
+        await updateDoc(postRef, { tags: tagIds, lastUpdated: serverTimestamp() });
+        setPost((prev) => ({
+            ...prev,
+            tags: tagIds
+        }));
+        setIsEditing('');
+    };
+
+    const handleEditTags = () => {
+        if (isEditing !== "tags") {
+            setIsEditing("tags");
+        }
+    };
+
+    const selectedTagNames = tags.map(tag => tag.label);
 
     const handleInteraction = async (type) => {
         if (!currentUser) {
@@ -137,7 +184,6 @@ const ContentPostPage = () => {
     if (error) return <div>{error}</div>;
     if (!post) return <div>Post not found</div>;
 
-    const isAuthor = currentUser?.uid === post.userId;
     const formattedDate = post.timestamp ? format(post.timestamp.toDate(), 'PP p') : 'Unknown Date';
     const formattedLastUpdated = post.lastUpdated ? format(post.lastUpdated.toDate(), 'PP p') : 'Never updated';
 
@@ -236,36 +282,53 @@ const ContentPostPage = () => {
                             </button>
                             <span>{dislikes.length}</span>
                         </div>
+
+                        {/* Tags section */}
+                        <div className="card-body">
+                            {isEditing === "tags" ? (
+                                <div>
+                                    <TagSelector
+                                        selectedTags={tags}  // Ensuring tags is an array
+                                        setSelectedTags={setTags}
+                                    />
+                                    <button className="btn btn-success" onClick={handleSaveTags}>
+                                        Save Tags
+                                    </button>
+                                </div>
+                            ) : (
+                                <div onDoubleClick={handleEditTags}>
+                                    <strong>Tags:</strong> {selectedTagNames.join(', ')}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
-            </div>
 
-            {/* Comments Section Container */}
-            <div className={styles.commentsSection}>
-                <CommentsSection postId={post.id} currentUser={currentUser} />
-            </div>
+                {/* Comments Section Container */}
+                <div className={styles.commentsSection}>
+                    <CommentsSection postId={post.id} currentUser={currentUser} />
+                </div>
 
-            {/* Modal for Messages */}
-            {showMessage && (
-                <div className="modal show d-block" tabIndex="-1">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Notice</h5>
-                                <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
-                            </div>
-                            <div className="modal-body">
-                                <p>{message}</p>
-                                <Link to="/login" className="btn btn-primary">
-                                    Log In
-                                </Link>
+                {/* Modal for Messages */}
+                {showMessage && (
+                    <div className="modal show d-block" tabIndex="-1">
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Notice</h5>
+                                    <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>{message}</p>
+                                    <Link to="/login" className="btn btn-primary">Log In</Link>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
-}
+};
 
 export default ContentPostPage;

@@ -27,6 +27,8 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
   const [showReplies, setShowReplies] = useState(false); // New state to toggle replies visibility
   const [repliesToShow, setRepliesToShow] = useState(5); // Track number of replies to show
   const [showReplyBox, setShowReplyBox] = useState(false); // Track visibility of the reply text box
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   // Fetch replies when the component mounts
   useEffect(() => {
@@ -298,6 +300,11 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
         </div>
       )}
 
+      {/* Reply Button */}
+      <button onClick={toggleReplyBox}>
+        {showReplyBox ? "Cancel" : "Reply"}
+      </button>
+
       {/* Reply Form */}
       {showReplyBox && (
         <form onSubmit={handleReplySubmit} className={styles["reply-form"]}>
@@ -310,6 +317,7 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
           <button type="submit" className={styles["post-reply-button"]}>
             Post Reply
           </button>
+
         </form>
       )}
     </div>

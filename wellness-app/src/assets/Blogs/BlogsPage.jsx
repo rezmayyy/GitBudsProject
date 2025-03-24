@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import {db, auth} from "../Firebase"
+import { db, auth } from "../Firebase"
 import { getFirestore, collection, getDocs, query, where, startAfter, startAt, limit } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Card, Button, Container, Row, Col, Nav } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
-import {format} from "date-fns";
+import { format } from "date-fns";
+import { useTags } from "../TagSystem/useTags"
 
 
 const BlogsPage = () => {
@@ -14,6 +15,8 @@ const BlogsPage = () => {
     const auth = getAuth();
     const user = auth.currentUser;
     const navigate = useNavigate();
+    const postsPerPage = 10;
+    const { tags } = useTags();
 
     const [activeTab, setActiveTab] = useState("All topics");
     const [activeCategoryTab, setActiveCategoryTab] = useState("All categories");
@@ -21,52 +24,57 @@ const BlogsPage = () => {
     const topics = ["All topics", "Business Advice", "Healer Q&A", "Insights", "Marketing Tips", "New Features", "Personal Growth"];
     const categories = ["All categories", "Articles", "Videos"];
 
-    const [articlePosts, setArticlePosts] = useState([]);
-    const [visibleArticlePosts, setVisibleArticlePosts] = useState(10);
+    const [contentPosts, setContentPosts] = useState([]);
+    const [visibleContentPosts, setVisibleContentPosts] = useState(postsPerPage);
 
     const [currentPage, setCurrentPage] = useState(1);
     const [lastVisible, setLastVisible] = useState(null);
     const [firstVisible, setFirstVisible] = useState(null);
 
-    const postsPerPage = 10;
+    //tag name instead of tag id
+    const tagNames = tags.reduce((acc, tag) => {
+        acc[tag.value] = tag.label;
+        return acc;
+    }, {});
+
+    const selectedTag = tags.length > 0 ? tags.find(tag => tag.label === activeTab) : null;
+    const tagId = selectedTag ? selectedTag.value : null;
 
     useEffect(() => {
+
         const fetchPosts = async () => {
             //from home page fetch recent videos function
             try {
-                const postsRef = collection(db, 'content-posts');
-                let q; 
+                let q = query(
+                    collection(db, 'content-posts'),
+                    where('status', '==', 'approved'));
+                
+                //filtering by topic/tag
+                if(tagId){
+                    q = query(q, where("tags", "array-contains", tagId));
+                }
 
                 //filtering by category
-                if(activeCategoryTab === "All categories"){
+                if (activeCategoryTab === "Articles") {
                     q = query(
-                        postsRef,
-                        where('status', '==', 'approved'),
-                        
-                        limit(postsPerPage)
-                    );
-                }else if(activeCategoryTab === "Articles"){
-                    q = query(
-                        postsRef,
-                        where('status', '==', 'approved'),
+                        q,
                         where('type', '==', 'article'),
-                        
                         limit(postsPerPage)
                     );
-                }else if(activeCategoryTab === "Videos"){
+                } else if (activeCategoryTab === "Videos") {
                     q = query(
-                        postsRef,
-                        where('status', '==', 'approved'),
+                        q,
                         where('type', '==', 'video'),
-                        
                         limit(postsPerPage)
                     );
                 }
 
-                if(currentPage > 1 && lastVisible){
+
+                //pagination
+                if (currentPage > 1 && lastVisible) {
                     q = query(q, startAfter(lastVisible)); //start from where last page ended
-                }else if(currentPage < 1 && firstVisible){
-                    q = query(q, startAt(firstVisible)); 
+                } else if (currentPage < 1 && firstVisible) {
+                    q = query(q, startAt(firstVisible));
                 }
 
                 const querySnapshot = await getDocs(q);
@@ -80,11 +88,12 @@ const BlogsPage = () => {
                         postDate: timestamp ? format(timestamp, "PP p") : "Unknown Date",
                         thumbnail: data.thumbnailURL || "/assets/default-post-thumbnail.jpg",
                         author: data.author, // The displayName of the author
-                        type: data.type
+                        type: data.type,
+                        tags: data.tags || []  //tags
                     }
                 });
-                console.log("Fetched posts:", fetchedPosts);
-                setArticlePosts(fetchedPosts);
+
+                setContentPosts(fetchedPosts);
                 setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
                 setFirstVisible(querySnapshot.docs[0]);
             } catch (error) {
@@ -94,24 +103,31 @@ const BlogsPage = () => {
         };
         fetchPosts();
 
-    }, [activeCategoryTab, currentPage]);
+    }, [activeCategoryTab, activeTab, currentPage]);
 
     useEffect(() => {
         setCurrentPage(1);
     }, [activeCategoryTab])
 
     const nextPage = () => {
-        if(articlePosts.length === postsPerPage){
+        if (contentPosts.length === postsPerPage) {
             setCurrentPage(prevPage => prevPage + 1);
         }
-        
+
     };
 
     const prevPage = () => {
-        if(currentPage > 1){
+        if (currentPage > 1) {
             setCurrentPage(prevPage => prevPage - 1);
         }
     }
+
+
+    // const filteredPosts = contentPosts.filter(post => {
+    //     const matchesTopic = activeTab === "All topics" || post.tags.some(tagId => tagNames[tagId] === activeTab);
+    //     const matchesCategory = activeCategoryTab === "All categories" || post.type === activeCategoryTab.toLowerCase();
+    //     return matchesTopic && matchesCategory;
+    // });
 
     return (
         <Container className="my-5">
@@ -132,9 +148,9 @@ const BlogsPage = () => {
                             <Card.Title className="display-4">-<span className="text-warning">for Free.</span></Card.Title>
                             <Card.Text className="lead">Explore free topics that inspire, educate, and empower your journey.</Card.Text>
                             <div className="d-flex">
-                                <Button as={Link} to="/directory" variant="primary" className="me-3" 
-                                    style={{backgroundColor: "#5B56A4", borderColor: "#5B56A4"}}>
-                                        Find a Healer
+                                <Button as={Link} to="/directory" variant="primary" className="me-3"
+                                    style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4" }}>
+                                    Find a Healer
                                 </Button>
                                 {/*<Button variant="primary">Download our free healing guides</Button>*/}
                             </div>
@@ -208,44 +224,52 @@ const BlogsPage = () => {
 
                     <Row className="mt-4">
 
-                        {articlePosts.slice(0, visibleArticlePosts).map(post => (
+                        {contentPosts.slice(0, visibleContentPosts).map(post => (
 
                             <Col md={12}>
                                 <Card className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
                                     <Row className="g-0">
                                         <Col md={4}>
-                                            <Card.Img src={post.thumbnail} alt={post.title} 
-                                                className="img-fluid rounded-start" 
-                                                style={{width: "100%", height: "200px", objectFit: "cover"}}/>
+                                            <Card.Img src={post.thumbnail} alt={post.title}
+                                                className="img-fluid rounded-start"
+                                                style={{ width: "100%", height: "200px", objectFit: "cover" }} />
                                         </Col>
                                         <Col md={8}>
                                             <Card.Body>
                                                 <Card.Title className="fw-bold">{post.title}</Card.Title>
                                                 <Card.Text className="text-muted small">{post.postDate}</Card.Text>
                                                 <Card.Text>
+                                                    <div className="tags">
+                                                        {post.tags.map((tagId, index) => (
+                                                            <span key={index} className="badge bg-warning me-2">
+                                                                {tagNames[tagId] || "Unknown Tag"}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+
                                                     {/*display text depending on post type*/}
                                                     {post.type === 'article' ? (
-                                                        <Link to={`/content/${post.id}`} 
-                                                            className="stretched-link" 
-                                                            style={{textDecoration: "none"}}>
-                                                                <span className="text-warning">Read article</span>
-                                                        </Link>                                                 
+                                                        <Link to={`/content/${post.id}`}
+                                                            className="stretched-link"
+                                                            style={{ textDecoration: "none" }}>
+                                                            <span className="text-warning">Read article</span>
+                                                        </Link>
                                                     ) : post.type === 'video' ? (
-                                                        <Link to={`/content/${post.id}`} 
-                                                            className="stretched-link" 
-                                                            style={{textDecoration: "none"}}>
-                                                                <span className="text-warning">View video</span>
-                                                        </Link> 
-                                                    ) : null }
-                                                              
+                                                        <Link to={`/content/${post.id}`}
+                                                            className="stretched-link"
+                                                            style={{ textDecoration: "none" }}>
+                                                            <span className="text-warning">View video</span>
+                                                        </Link>
+                                                    ) : null}
+
                                                 </Card.Text>
                                             </Card.Body>
                                         </Col>
                                     </Row>
                                 </Card>
-                                <hr style={{borderStyle: "dashed", color: "orange"}}/>
+                                <hr style={{ borderStyle: "dashed", color: "orange" }} />
                             </Col>
-                            
+
                         ))}
                     </Row>
 
@@ -254,7 +278,7 @@ const BlogsPage = () => {
                             Prev
                         </Button>
                         <span data-testid="page">Page {currentPage}</span>
-                        <Button onClick={nextPage} variant="primary" disabled={articlePosts.length < postsPerPage}>
+                        <Button onClick={nextPage} variant="primary" disabled={contentPosts.length < postsPerPage}>
                             Next
                         </Button>
 

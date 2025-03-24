@@ -1,7 +1,9 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import UserContext from '../UserContext';
+import { useTags } from "./TagSystem/useTags";
+import TagSelector from './TagSystem/TagSelector';
+import UserContext from './UserContext';
 import styles from './create-post.module.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
@@ -19,6 +21,9 @@ function CreatePost() {
     const quillRef = useRef(null);
     const [quillInstance, setQuillInstance] = useState(null);
     const [showNotification, setShowNotification] = useState(false);
+    const tags = useTags();
+    const [selectedTags, setSelectedTags] = useState([]);
+
 
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
@@ -37,6 +42,7 @@ function CreatePost() {
         title: '',
         description: '',
         body: '',
+        tags: [] //store all tags
     });
 
     // File inputs state
@@ -194,9 +200,17 @@ function CreatePost() {
             return;
         }
 
+
+        if (!postData.tags || postData.tags.length === 0) {
+            alert('Please select at least one tag.');
+            return;
+        }
+
+        // Show upload notification
         showUploadingNotification();
         const cleanBody = DOMPurify.sanitize(postData.body);
         const keywords = getKeywords(postData.title, postData.description, user.displayName);
+
         const userId = user.uid;
 
         // Build the file paths to include userId subfolders
@@ -217,7 +231,8 @@ function CreatePost() {
                 description: postData.description,
                 body: cleanBody,
                 type: activeTab,
-                keywords
+                keywords,
+                tags: postData.tags.map(tag => tag.value) //tags
             },
             filePath: fileURL,
             thumbnailPath: thumbnailURL
@@ -284,6 +299,75 @@ function CreatePost() {
             }
         }
     }, [quillInstance]);
+
+    const renderForm = () => (
+        <form className={`${activeTab}-form`} onSubmit={handleSubmit}>
+            <label>Title</label>
+            <input type="text" name="title" value={postData.title} onChange={handleInputChange} required />
+
+            {activeTab !== 'article' && (
+                <>
+                    <label>Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)</label>
+                    <input type="file" accept={`${activeTab}/*`} onChange={(e) => handleFileChange(e, activeTab)} required />
+                    {fileInputs.previewFile && (activeTab === 'video' ? (
+                        <video controls width="300">
+                            <source src={fileInputs.previewFile} type="video/mp4" />
+                        </video>
+                    ) : (
+                        <audio controls>
+                            <source src={fileInputs.previewFile} type="audio/mpeg" />
+                        </audio>
+                    ))}
+                </>
+            )}
+
+            {activeTab !== 'article' && (
+                <>
+                    <label>Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)</label>
+                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'image')} required />
+                    {fileInputs.previewThumbnail && <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />}
+                </>
+            )}
+
+            {activeTab === 'article' ? (
+                <>
+                    <label>Article Body</label>
+                    <ReactQuill
+                        ref={quillRef}
+                        value={postData.body}
+                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
+                        modules={modules}
+                        theme="snow"
+                        onChangeSelection={() => {
+                            if (!quillInstance && quillRef.current) {
+                                setQuillInstance(quillRef.current.getEditor());
+                            }
+                        }}
+                    />
+                </>
+            ) : (
+                <>
+                    <label>Description</label>
+                    <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
+                </>
+            )}
+
+
+            <TagSelector
+                selectedTags={postData.tags || []}  // Ensuring tags is an array
+                setSelectedTags={(selectedTags) =>
+                    setPostData(prevState => ({
+                        ...prevState,
+                        tags: selectedTags
+                    }))
+                }
+            />
+
+            <button className="tab-button" type="submit">
+                Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </button>
+        </form>
+    );
 
     return (
         <div className={styles.mainContainer}>
