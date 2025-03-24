@@ -5,12 +5,14 @@ import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
 import { format } from "date-fns";
 import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
+import { useTags } from "../TagSystem/useTags";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
+import TagSelector from '../TagSystem/TagSelector';
 
 
 const ContentPostPage = () => {
@@ -22,6 +24,10 @@ const ContentPostPage = () => {
     const [editedTitle, setEditedTitle] = useState("");
     const [editedDescription, setEditedDescription] = useState("");
     const [editedBody, setEditedBody] = useState("");
+    const [editedTags, setEditedTags] = useState([]);
+
+    const [tags, setTags] = useState([]);
+    const [tagNames, setTagNames] = useState({});
 
     const [likes, setLikes] = useState([]);
     const [dislikes, setDislikes] = useState([]);
@@ -38,45 +44,70 @@ const ContentPostPage = () => {
 
     //error handling
     useEffect(() => {
-        const fetchPost = async () => { //fetch from firebase
+        const fetchData = async () => {
+          setLoading(true);
+          
+          try {
+
+            const tagsCollection = await getDocs(collection(db, 'tags'));
+            const tagsMap = {};
+            tagsCollection.forEach(tagDoc => {
+              const tagData = tagDoc.data();
+              tagsMap[tagDoc.id] = tagData.name;
+            });
+            setTagNames(tagsMap);
+
             const postDoc = doc(db, 'content-posts', postId);
             const postSnapshot = await getDoc(postDoc);
             if (postSnapshot.exists()) {
-                const postData = { id: postId, ...postSnapshot.data() };
-                setPost(postData);
-                setEditedTitle(postData.title || "");
-                setEditedDescription(postData.description || "");
-                setEditedBody(postData.body || "")
-                setLikes(postData.likes || []);
-                setDislikes(postData.dislikes || []);
-                const id = await getUserIdByDisplayName(postData.author);
-                setUid(id);
-                if (postData.status === 'approved') {
+              const postData = { id: postId, ...postSnapshot.data() };
+              setPost(postData);
+              setEditedTitle(postData.title || "");
+              setEditedDescription(postData.description || "");
+              setEditedBody(postData.body || "");
+              setLikes(postData.likes || []);
+              setDislikes(postData.dislikes || []);
+              setEditedTags(postData.tags || []);
+    
+              const postTags = postData.tags || [];
+              const tagObjects = postTags.map((tagId) => {
+                return { value: tagId, label: tagsMap[tagId] || tagId }; //match tag id and name
+              });
+              setTags(tagObjects);
+    
+              const id = await getUserIdByDisplayName(postData.author);
+              setUid(id);
+
+              if (postData.status === 'approved') {
+                setIsAuthorized(true);
+              } else if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+    
+                if (userSnap.exists()) {
+                  const role = userSnap.data().role;
+                  const isAuthorized = role === 'admin' || role === 'moderator';
+    
+                  if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
                     setIsAuthorized(true);
+                  } else {
+                    setError('You do not have permission to view this post.');
+                  }
                 }
-                else if (currentUser) {
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    const userSnap = await getDoc(userRef);
-
-                    if (userSnap.exists()) {
-                        const role = userSnap.data().role;
-                        const isAuthorized = role === 'admin' || role === 'moderator';
-
-                        if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
-                            setIsAuthorized(true);
-                        } else {
-                            setError('You do not have permission to view this post.');
-                        }
-                    }
-                }
+              }
             } else {
-                console.error('No such document!');
+              console.error('No such document!');
             }
-            setLoading(false);
+          } catch (err) {
+            console.error('Error fetching data:', err);
+            setError('An error occurred while fetching the data.');
+          }
+    
+          setLoading(false);
         };
-
-        fetchPost();
-    }, [postId]);
+    
+        fetchData();
+      }, [postId, currentUser]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -90,7 +121,29 @@ const ContentPostPage = () => {
     }
 
 
+    const handleSaveTags = async () => {
 
+        if (!post) return;
+        const postRef = doc(db, "content-posts", post.id);
+        const tagIds = tags.map(tag => tag.value);
+
+        await updateDoc(postRef, { tags: tagIds, lastUpdated: serverTimestamp() });
+        setPost((prev) => ({
+            ...prev,
+            tags: tagIds
+        }));
+        setIsEditing(false);
+    };
+
+    const handleEditTags = () => {
+        if(isEditing !== "tags"){
+            setIsEditing("tags");
+        }
+        
+    }
+
+    //use tag name instead of tag id
+    const selectedTagNames = tags.map(tag => tag.label);
 
     const handleLike = async () => {
 
@@ -439,7 +492,28 @@ const ContentPostPage = () => {
                             </div>
                         </div>
                     )}
+
+                    {/* tags section */}
+            <div className="card-body">
+                {isEditing === "tags" ? (
+                    <div>
+                        <TagSelector
+                            selectedTags={tags}  // Ensuring tags is an array
+                            setSelectedTags={setTags}
+                        />
+                        <button className="btn btn-success" onClick={handleSaveTags}>
+                            Save Tags
+                        </button>
+                    </div>
+                ) : (
+                    <div onDoubleClick={handleEditTags}>
+                        <strong>Tags:</strong> {selectedTagNames.join(', ')}
+                    </div>
+                )}
+            </div>
+
                 </div>
+
 
                 {showMessage && (
                     <div className="modal show d-block" tabIndex="-1">
@@ -458,6 +532,10 @@ const ContentPostPage = () => {
                     </div>
                 )}
             </div>
+
+            
+            
+
 
             <div className='comments-section'>
                 <CommentsSection postId={post.id} currentUser={currentUser} />

@@ -89,7 +89,7 @@ const CommentsSection = ({ postId, currentUser }) => {
       )}
 
       {currentUser && (
-        <form onSubmit={handleCommentSubmit}>
+        <form onSubmit={handleCommentSubmit} className="comment-form">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}

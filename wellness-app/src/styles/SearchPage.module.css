@@ -237,10 +237,24 @@
   }
   .postDetails {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 10px;
     font-size: 14px;
     color: #888;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .tags .badge {
+    background-color: #e0e0e0;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 12px;
   }
   
   /* Report Button */

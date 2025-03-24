@@ -1,6 +1,8 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import {useTags} from "./TagSystem/useTags";
+import TagSelector from './TagSystem/TagSelector';
 import UserContext from './UserContext';
 import '../styles/create-post.css';
 import ReactQuill from 'react-quill';
@@ -17,7 +19,8 @@ function CreatePost() {
     const quillRef = useRef(null);
     const [quillInstance, setQuillInstance] = useState(null);
     const [showNotification, setShowNotification] = useState(false);
-
+    const tags = useTags();
+    const [selectedTags, setSelectedTags] = useState([]);
 
 
     const MAX_FILE_SIZES = {
@@ -37,6 +40,7 @@ function CreatePost() {
         title: '',
         description: '',
         body: '',
+        tags: [] //store all tags
     });
 
     // File inputs state
@@ -190,9 +194,17 @@ function CreatePost() {
             return;
         }
 
+
+        if(!postData.tags || postData.tags.length === 0){
+            alert('Please select at least one tag.');
+            return;
+        }
+
+        // Show upload notification
         showUploadingNotification();
         const cleanBody = DOMPurify.sanitize(postData.body);
         const keywords = getKeywords(postData.title, postData.description, user.displayName);
+
         const userId = user.uid;
 
         // Build the file paths to include userId subfolders
@@ -209,7 +221,8 @@ function CreatePost() {
                 description: postData.description,
                 body: cleanBody,
                 type: activeTab,
-                keywords
+                keywords,
+                tags: postData.tags.map(tag => tag.value) //tags
             },
             filePath: fileURL,         // These should be the storage paths/URLs
             thumbnailPath: thumbnailURL
@@ -328,6 +341,17 @@ function CreatePost() {
                     <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
                 </>
             )}
+
+
+            <TagSelector 
+                selectedTags={postData.tags || []}  // Ensuring tags is an array
+                setSelectedTags={(selectedTags) => 
+                    setPostData(prevState => ({
+                        ...prevState, 
+                        tags: selectedTags
+                    }))
+                }
+            />
 
             <button className="tab-button" type="submit">
                 Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}

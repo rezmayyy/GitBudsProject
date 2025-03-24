@@ -40,7 +40,6 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     // Validate password on the client side
     if (!validatePassword(password)) {
       setPasswordError(
