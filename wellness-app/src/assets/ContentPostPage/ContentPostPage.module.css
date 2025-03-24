@@ -1,0 +1,124 @@
+/* ContentPostPage.module.css */
+
+.pageContainer {
+    max-width: 1400px;
+    width: 80%;
+    margin: 2em auto;
+    padding: 2em;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    text-align: center;
+    border: 2px solid #f8c8dc;
+}
+
+.videoContainer {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto 30px auto;
+    /* centers container and adds bottom margin */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+
+.card {
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.thumbnailContainer {
+    position: relative;
+    cursor: pointer;
+}
+
+.thumbnailContainer img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.videoPlayer {
+    width: 100%;
+    display: block;
+}
+
+
+.contentHeader {
+    padding: 15px;
+    background-color: #fff;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.description {
+    font-size: 16px;
+    color: #555;
+}
+
+.authorInfo {
+    font-size: 14px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.buttonsContainer {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btnLike,
+.btnDislike {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btnLike:hover,
+.btnDislike:hover {
+    background-color: #e0e0e0;
+}
+
+.commentsSection {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto 30px auto;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.interactionContainer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.emojiButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+}

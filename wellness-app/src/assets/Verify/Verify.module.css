@@ -1,0 +1,37 @@
+.verify-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    /* Adjust as needed */
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+}
+
+.verify-container h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #333;
+    text-align: center;
+}
+
+.verify-container p {
+    font-size: 1rem;
+    color: #555;
+    text-align: center;
+}
+
+.verify-container a {
+    color: #eac784;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.verify-container a:hover {
+    text-decoration: underline;
+}

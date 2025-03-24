@@ -82,6 +82,7 @@ exports.unbanUsers = functions.pubsub.schedule('every 24 hours').onRun(async () 
 exports.createContentPost = functions.https.onCall(async (data, context) => {
   const authInfo = context.auth || data.auth;
   if (!authInfo) throw new functions.https.HttpsError('unauthenticated', 'Login required');
+
   const { postData, filePath, thumbnailPath } = data.data || data;
   const userId = authInfo.uid;
 
@@ -89,7 +90,10 @@ exports.createContentPost = functions.https.onCall(async (data, context) => {
   if (postData.type !== 'article') {
     try {
       const decode = url => decodeURIComponent(new URL(url).pathname.split('/o/')[1]);
-      if (!decode(filePath).startsWith(`${postData.type}-uploads/${userId}/`) || !decode(thumbnailPath).startsWith(`thumbnails/${userId}/`)) {
+      if (
+        !decode(filePath).startsWith(`${postData.type}-uploads/${userId}/`) ||
+        !decode(thumbnailPath).startsWith(`thumbnails/${userId}/`)
+      ) {
         throw new Error();
       }
     } catch {
@@ -97,17 +101,90 @@ exports.createContentPost = functions.https.onCall(async (data, context) => {
     }
   }
 
-  const settings = await db.collection('adminSettings').doc('uploadRules').get().catch(() => null);
-  const autoApprove = settings?.data()?.AutoApprove === true;
+  const settingsSnap = await db.collection('adminSettings').doc('uploadRules').get().catch(() => null);
+  const autoApprove = settingsSnap?.data()?.AutoApprove === true;
 
-  const newPost = { title: postData.title, description: postData.description || '', body: postData.body || '', author: authInfo.token.name || userId, type: postData.type, fileURL: filePath || null, thumbnailURL: thumbnailPath || null, timestamp: Timestamp.now(), status: autoApprove ? 'approved' : 'pending', keywords: Array.isArray(postData.keywords) ? postData.keywords : [] };
+  const newPost = {
+    title: postData.title,
+    description: postData.description || '',
+    body: postData.body || '',
+    type: postData.type,
+    fileURL: filePath || null,
+    thumbnailURL: thumbnailPath || null,
+    timestamp: Timestamp.now(),
+    status: autoApprove ? 'approved' : 'pending',
+    keywords: Array.isArray(postData.keywords) ? postData.keywords : [],
+    userId: userId // 
+  };
+
   const docRef = await db.collection('content-posts').add(newPost);
+
   return { message: 'Post created', postId: docRef.id };
 });
 
 // =============================
 // USER ACCOUNT FUNCTIONS
 // =============================
+
+exports.handleUserSignup = functions.https.onCall(async (data, context) => {
+  // Expect payload: { email, password, firstName, lastName, displayName }
+  const { email, password, displayName } = data.data || data;
+  if (!email || !password || !displayName) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Email, password, first name, last name, and display name are required.'
+    );
+  }
+
+  // Regex: at least 8 characters, one uppercase, one lowercase, one number, one special character
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.'
+    );
+  }
+
+  // Check if the chosen displayName is already taken.
+  const usernameDoc = await db.collection('usernames').doc(displayName).get();
+  if (usernameDoc.exists) {
+    throw new functions.https.HttpsError('already-exists', 'Display name is already taken.');
+  }
+
+  try {
+    // Create the user in Firebase Auth (account created enabled)
+    const userRecord = await admin.auth().createUser({
+      email: email,
+      password: password,
+      displayName: displayName
+    });
+
+    // Reserve the displayName in the usernames collection.
+    await db.collection('usernames').doc(displayName).set({ uid: userRecord.uid });
+
+    // Create the public user document in the "users" collection (only public info)
+    await db.collection('users').doc(userRecord.uid).set({
+      displayName: displayName
+    });
+
+    // Create a subcollection "privateInfo" under the user document for sensitive data.
+    await db.collection('users').doc(userRecord.uid)
+      .collection('privateInfo').doc('info').set({
+        email: email
+      });
+
+    // Create a custom token so the client can sign in.
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+
+    return {
+      message: 'Signup initiated. Please check your email for a confirmation link.',
+      token: customToken
+    };
+  } catch (error) {
+    console.error('Error in handleUserSignup:', error);
+    throw new functions.https.HttpsError('internal', error.message);
+  }
+});
 
 exports.changeDisplayName = functions.https.onCall(async (data, context) => {
   const authInfo = context.auth || data.auth;
@@ -240,7 +317,7 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
 // EMAIL CHANGE FUNCTIONS
 // =============================
 
-// Step 1️⃣: Request email change — sends a confirmation link to the user’s current email
+// Step 1️: Request email change — sends a confirmation link to the user’s current email
 exports.requestEmailChange = functions.https.onCall(async (data, context) => {
   const authInfo = context.auth || data.auth;
   if (!authInfo) throw new functions.https.HttpsError('unauthenticated', 'Login required');
@@ -259,7 +336,7 @@ exports.requestEmailChange = functions.https.onCall(async (data, context) => {
   return { message: 'A confirmation link has been sent to your current email.' };
 });
 
-// Step 2️⃣: Confirm email change — called when user clicks the link
+// Step 2️: Confirm email change — called when user clicks the link
 exports.confirmEmailChange = functions.https.onCall(async (data, context) => {
   const { token } = data.data || data;
   if (!token) throw new functions.https.HttpsError('invalid-argument', 'Token required');
