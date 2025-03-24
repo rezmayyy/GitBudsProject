@@ -142,3 +142,4 @@ exports.reportUser = async (user) => {
       throw new functions.https.HttpsError('internal', 'Failed to report user.');
     };
 };
+

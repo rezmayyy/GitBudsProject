@@ -34,16 +34,20 @@ import About from './assets/About';
 import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
 import Resources from './assets/Resources';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 function App() {
   // Manages posts and replies
   const [posts, setPosts] = useState([]);
+  const stripePromise = loadStripe('pk_test_51Qw8WDPFPGEe3qFb0nIcqEuo07sDWc9IVmiFmDtwRxgrn8XsrYbBzhPf3v9mr6RuYZun7WgsjayULZncj0UMVBKX001bvHReAR');
   
   return (
     <div className="App">
       <UserProvider>
       <Router>
         <Header />
+        <Elements stripe={stripePromise}>
         <Routes>
           {/* Auth routes */}
             <Route path="/login" element={<Login />} />
@@ -80,6 +84,7 @@ function App() {
             <Route path="/blogs" element={<BlogsPage />} />
             <Route path="/resources" element={<Resources />} />
         </Routes>
+        </Elements>
         <Footer />
       </Router>
       </UserProvider>

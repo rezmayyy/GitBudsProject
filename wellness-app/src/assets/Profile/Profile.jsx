@@ -13,6 +13,7 @@ import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
 import HealerServices from './healerServices'; // New module for healers
+import Donate from '../Stripe/Donate';
 
 const Profile = () => {
   const { user } = useContext(UserContext);
@@ -314,9 +315,22 @@ const Profile = () => {
           </button>
         )}
       </div>
-
+      
+       
       {/* About & Contact Sections */}
       <div className={styles.aboutContactContainer}>
+
+     
+         {/* Only show Donate if not viewing own profile */}
+        {/*only render if user has associated Stripe id in firestore (todo)*/}
+        {!isCurrentUser && user && (
+           <div className={styles.donateContainer}>
+           <h3>Donate</h3>
+         
+           <Donate recipientId={viewedUserId} />
+         </div>
+          
+        )}
         {/* About Section */}
         <div className={styles.aboutSection}>
           <h3>About</h3>
