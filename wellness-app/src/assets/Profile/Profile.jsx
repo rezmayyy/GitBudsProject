@@ -1,14 +1,13 @@
-// Profile.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
+import { httpsCallable } from 'firebase/functions';
 import {
   doc, getDoc, setDoc, Timestamp, deleteDoc,
   collection, query, where, getDocs
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { httpsCallable } from 'firebase/functions';
 import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';

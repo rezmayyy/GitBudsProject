@@ -40,7 +40,7 @@ function computeKeywordScore(post, tokens) {
  * @param {string} sortType - The secondary sorting method ("date", "rating", "views").
  * @returns {Promise<Array>} A promise that resolves to a sorted array of post objects.
  */
-export async function searchPostsByKeywords(searchString, sortType = "date") {
+export async function searchPostsByKeywords(searchString, sortType = "date", selectedTag = "") {
   try {
     if (!searchString) return [];
 
@@ -57,9 +57,16 @@ export async function searchPostsByKeywords(searchString, sortType = "date") {
     const postsRef = collection(db, "content-posts");
 
     // Build the Firestore query
-    const q = query(postsRef, where("keywords", "array-contains-any", tokens));
-    const querySnapshot = await getDocs(q);
+    let q;
+    if (selectedTag) {
+      q = query(postsRef, where("tags", "array-contains", selectedTag));
+    } else if (tokens.length > 0) {
+      q = query(postsRef, where("keywords", "array-contains-any", tokens));
+    } else {
+      q = query(postsRef); //return all posts
+    }
 
+    const querySnapshot = await getDocs(q);
     const posts = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),

@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import styles from '../styles/SearchPage.module.css';
 import UserContext from './UserContext';
 import { searchPostsByKeywords } from './searchalg'; // Named export
+import { useTags } from "./TagSystem/useTags";
 
 function SearchResults() {
   // Retrieve the query parameter from the URL (e.g., ?query=dog)
@@ -24,6 +25,9 @@ function SearchResults() {
   const { user } = useContext(UserContext);
   const [sortMethod, setSortMethod] = useState('date'); // Default sorting method
 
+  const {tags} = useTags();
+  const [selectedTag, setSelectedTag] = useState("");
+
 
   // Toggle dropdown visibility for the category filter
   const toggleDropdown = (dropdown) => {
@@ -35,26 +39,35 @@ function SearchResults() {
     async function fetchPosts() {
       setLoading(true);
       try {
-        // Use the URL query as the search string.
-        const results = await searchPostsByKeywords(urlQuery, sortMethod);
-        // Filter the results by type if a category is selected.
-        const filteredResults = selectedCategory
-          ? results.filter(post => post.type === selectedCategory)
-          : results;
-        setPosts(filteredResults);
+        let results = await searchPostsByKeywords(urlQuery, sortMethod, selectedTag);
+  
+        //category
+        if (selectedCategory) {
+          results = results.filter(post => post.type === selectedCategory);
+        }
+  
+        //tags/topics
+        if (selectedTag) {
+          results = results.filter(post => post.tags?.includes(selectedTag));
+        }
+  
+        setPosts(results);
+
       } catch (error) {
-        console.error("Error fetching posts from searchalg:", error);
+        console.error("Error fetching posts:", error);
       }
       setLoading(false);
     }
     fetchPosts();
-  }, [urlQuery, selectedCategory, sortMethod]);
+  }, [urlQuery, selectedCategory, selectedTag, sortMethod]); 
+  
 
   return (
     <div className={styles.pageContainer}>
       {/* Sidebar for Filters */}
       <aside className={styles.sidebar}>
         <h3>Filter Content</h3>
+        {/* filter by category */}
         <div className={styles.filterSection}>
           <button
             onClick={() => toggleDropdown('category')}
@@ -86,31 +99,64 @@ function SearchResults() {
             </ul>
           )}
         </div>
+        {/* filter by topic */}
+        <div className={styles.filterSection}>
+          <button
+            onClick={() => toggleDropdown('topic')}
+            className={styles.dropdownButton}
+          >
+            Topic ▼
+          </button>
+          {activeDropdown === 'topic' && (
+            <ul className={styles.dropdownContent}>
+              {tags.map((tag) => (
+                <li key={tag.value}>
+                  <a
+                    href="#"
+                    className={selectedTag === tag.value ? styles.activeCategory : ''}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // If clicked category is already selected, unselect it (show all posts)
+                      setSelectedTag(selectedTag === tag.value ? '' : tag.value);
+
+                    }}
+                  >
+                    {tag.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+
+
+
       </aside>
 
       {/* Main Content Area */}
       <main className={styles.mainContent}>
-      <div className={styles.sortingModule}>
-        <h3>Sort By:</h3>
-        <button 
-          className={`${styles.sortButton} ${sortMethod === 'date' ? styles.activeSort : ''}`} 
-          onClick={() => setSortMethod('date')}
-        >
-          Date
-        </button>
-        <button 
-          className={`${styles.sortButton} ${sortMethod === 'rating' ? styles.activeSort : ''}`} 
-          onClick={() => setSortMethod('rating')}
-        >
-          Rating
-        </button>
-        <button 
-          className={`${styles.sortButton} ${sortMethod === 'views' ? styles.activeSort : ''}`} 
-          onClick={() => setSortMethod('views')}
-        >
-          Views
-        </button>
-      </div>
+        <div className={styles.sortingModule}>
+          <h3>Sort By:</h3>
+          <button
+            className={`${styles.sortButton} ${sortMethod === 'date' ? styles.activeSort : ''}`}
+            onClick={() => setSortMethod('date')}
+          >
+            Date
+          </button>
+          <button
+            className={`${styles.sortButton} ${sortMethod === 'rating' ? styles.activeSort : ''}`}
+            onClick={() => setSortMethod('rating')}
+          >
+            Rating
+          </button>
+          <button
+            className={`${styles.sortButton} ${sortMethod === 'views' ? styles.activeSort : ''}`}
+            onClick={() => setSortMethod('views')}
+          >
+            Views
+          </button>
+        </div>
         <div className={styles.postsContainer}>
           {loading ? (
             <p>Loading posts...</p>
@@ -139,6 +185,17 @@ function SearchResults() {
                   </p>
                   <div className={styles.postDetails}>
                     {post.type && <span>Category: {post.type}</span>}
+
+                    {post.tags?.length > 0 && (
+                      <div className="tags">
+                        {post.tags?.map((tagId, index) => (
+                      <span key={index} className="badge" style={{backgroundColor: '#e0e0e0', color: '#333', marginRight: '8px'}}>
+                        {tags.find(tag => tag.value === tagId)?.label || "Unknown Tag" }
+                      </span>
+                    ))}
+                      </div>
+                    )}
+                    
                     {typeof post.views === 'number' && <span>Views: {post.views}</span>}
                     {Array.isArray(post.likes) && <span>Likes: {post.likes.length}</span>}
                     {Array.isArray(post.dislikes) && <span>Dislikes: {post.dislikes.length}</span>}

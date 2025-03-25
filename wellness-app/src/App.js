@@ -9,12 +9,11 @@ import Login from './assets/Auth/Login';
 import Signup from './assets/Auth/Signup';
 import Footer from './assets/Footer';
 import Profile from './assets/Profile/Profile';
-import AccountSettings from './assets/Account';
 import TOS from './assets/TOS';
 import PrivacyPolicy from './assets/PrivacyPolicy';
 import DiscussionBoardPage from './assets/DiscussionBoardPage';
-import CreatePost from './assets/CreatePost';
-import ContentPostPage from './assets/ContentPostPage';
+import CreatePost from './assets/Create/CreatePost';
+import ContentPostPage from './assets/ContentPostPage/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/Moderation/ModDashboard';
 import Support from './assets/Support';
@@ -34,54 +33,58 @@ import About from './assets/About';
 import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
 import Resources from './assets/Resources';
+import ConfirmEmailChange from './assets/ConfirmEmailChange';
+import VerifyReroute from './assets/Verify/VerifyReroute';
+import Verify from './assets/Verify/Verify';
 
 function App() {
   // Manages posts and replies
   const [posts, setPosts] = useState([]);
-  
+
   return (
     <div className="App">
       <UserProvider>
-      <Router>
-        <Header />
-        <Routes>
-          {/* Auth routes */}
+        <Router>
+          <Header />
+          <Routes>
+            {/* Auth routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/recover" element={<ForgotPassword />} />
 
             {/* Profile routes */}
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<VerifyReroute element={<Profile />} />} />
             <Route path="/profile/:username" element={<Profile />} />
 
             {/* Main pages */}
             <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
-            <Route path="/discussion" element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />
-            <Route path="/create-post" element={<CreatePost />} />
+            <Route path="/discussion" element={<VerifyReroute element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />} />
+            <Route path="/create-post" element={<VerifyReroute element={<CreatePost />} />} />
             <Route path="/content/:postId" element={<ContentPostPage />} />
-            <Route path="/accountsettings" element={<AccountSettings />} />
             <Route path="/tos" element={<TOS />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
             <Route path="/contact" element={<Support />} />
-            <Route path="/ticket" element={<Ticket />} />
-            <Route path="/create-ticket" element={<CreateTicket />} />
+            <Route path="/ticket" element={<VerifyReroute element={<Ticket />} />} />
+            <Route path="/create-ticket" element={<VerifyReroute element={<CreateTicket />} />} />
             <Route path="/search" element={<SearchResults />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/profile/diary" element={<DiaryPage />} />
-            <Route path="/profile/diary/editor" element={<DiaryEditor />} />
+            <Route path="/account" element={<VerifyReroute element={<Account />} />} />
+            <Route path="/profile/diary" element={<VerifyReroute element={<DiaryPage />} />} />
+            <Route path="/profile/diary/editor" element={<VerifyReroute element={<DiaryEditor />} />} />
             <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/events" element={<EventsPage/>} />
+            <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
-            <Route path="/create-event" element={<CreateEventPage />} />
+            <Route path="/create-event" element={<VerifyReroute element={<CreateEventPage />} />} />
             <Route path="/about" element={<About />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/blogs" element={<BlogsPage />} />
             <Route path="/resources" element={<Resources />} />
-        </Routes>
-        <Footer />
-      </Router>
+            <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
+            <Route path="/verify" element={<Verify />} />
+          </Routes>
+          <Footer />
+        </Router>
       </UserProvider>
     </div>
   );
@@ -91,4 +94,4 @@ export default App;
 
 
 // eslint-disable-next-line no-lone-blocks
-{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */}
+{/* additional installations:  npm install react-scripts, npm install react-router-dom,  npm install react-icons --save */ }
