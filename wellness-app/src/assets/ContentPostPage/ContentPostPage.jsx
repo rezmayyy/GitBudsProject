@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
@@ -39,6 +39,7 @@ const ContentPostPage = () => {
     // Interaction state
     const [likes, setLikes] = useState([]);
     const [dislikes, setDislikes] = useState([]);
+    const [views, setViews] = useState(0);
 
     // For showing messages
     const [showMessage, setShowMessage] = useState(false);
@@ -87,6 +88,7 @@ const ContentPostPage = () => {
                     setEditedBody(postData.body || "");
                     setLikes(postData.likes || []);
                     setDislikes(postData.dislikes || []);
+                    setViews(postData.views || 0);
 
                     // Process tags for the post: convert tag IDs to { value, label }
                     const postTags = postData.tags || [];
@@ -125,6 +127,12 @@ const ContentPostPage = () => {
         };
 
         fetchData();
+
+        //check if the post is already viewed in this session
+        const viewedKey = `viewed_${postId}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+            handleInteraction('view');
+        }
     }, [postId, currentUser]);
 
     const handleSaveTags = async () => {
@@ -149,6 +157,27 @@ const ContentPostPage = () => {
     const selectedTagNames = tags.map(tag => tag.label);
 
     const handleInteraction = async (type) => {
+        if (type === 'view') {
+            const viewedKey = `viewed_${postId}`;
+            const lastViewedTime = localStorage.getItem(viewedKey);
+            const now = new Date().getTime();
+
+            // Check if it's been more than 24 hours since the last view
+            if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
+                localStorage.setItem(viewedKey, now); // Update view timestamp
+
+                const postRef = doc(db, 'content-posts', postId);
+                await updateDoc(postRef, { views: increment(1) });
+
+                // Fetch updated post to get the correct views count
+                const updatedPostSnap = await getDoc(postRef);
+                if (updatedPostSnap.exists()) {
+                    setViews(updatedPostSnap.data().views || 0);
+                }
+            }
+            return;
+        }
+
         if (!currentUser) {
             setMessage('You must be logged in.');
             setShowMessage(true);
@@ -166,6 +195,7 @@ const ContentPostPage = () => {
 
         setLikes(updatedLikes);
         setDislikes(updatedDislikes);
+        return;
     };
 
     const handleSave = async () => {
