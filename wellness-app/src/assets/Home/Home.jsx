@@ -5,25 +5,26 @@ import RecentVideos from './RecentVideos';
 import GigiVideos from './GigiVideos';
 
 function Home() {
-    return (
-      <main className="home-container">
-      <div id="subscriptions">
+  return (
+    <div className="home">
+      <aside className="sidebar">
         <Subscriptions />
+      </aside>
+      <div className="main-content">
+        <div className="recent-videos">
+          <RecentVideos />
+        </div>
+        <div className="ceo-videos">
+          <div className="video-grid">
+            <GigiVideos />
+          </div>
+        </div>
+        <div className="discussion-section">
+          <DiscussionBoard preview />
+        </div>
       </div>
+    </div>
+  );
+}
 
-      <div id="recent-videos">
-        <RecentVideos />
-      </div>
-
-      <div id ="gigiVideos">
-        <GigiVideos />
-      </div>
-
-      <div id="discussion-board">
-        <DiscussionBoard preview />
-      </div>
-    </main>
-    );
-  }
-  
-  export default Home;
+export default Home;
