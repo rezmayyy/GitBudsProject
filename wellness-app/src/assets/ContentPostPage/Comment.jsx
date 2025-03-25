@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../Firebase';
 import styles from './Comment.module.css';
+import dummyPic from '../dummyPic.jpeg';
 
 
 const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
@@ -81,7 +82,7 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
           text: newReply,
           timestamp: serverTimestamp(),
           displayName: currentUser.displayName || 'Anonymous',
-          profilePicUrl: userData.profilePicUrl || 'default-profile-pic-url',
+          profilePicUrl: userData.profilePicUrl || dummyPic,
           likes: 0,
           likedBy: [],
         };
@@ -185,7 +186,7 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
       <div className={styles["comment-header"]}>
         <Link to={`/profile/${comment.userId}`}>
           <img
-            src={user?.profilePicUrl || 'default-profile-pic-url'}
+            src={user?.profilePicUrl || dummyPic}
             alt={`${user?.displayName || 'User'}'s profile`}
             width="30"
             height="30"
@@ -250,7 +251,7 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
               <div className={styles["reply-header"]}>
                 <Link to={`/profile/${reply.userId}`}>
                   <img
-                    src={reply?.profilePicUrl || 'default-profile-pic-url'}
+                    src={reply?.profilePicUrl || dummyPic}
                     alt={`${reply?.displayName || 'User'}'s profile`}
                     width="25"
                     height="25"

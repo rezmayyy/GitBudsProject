@@ -1,6 +1,6 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { validateFile, uploadFileToStorage } from "../../Utils/fileUtils";
 import { useTags } from "../TagSystem/useTags";
 import TagSelector from '../TagSystem/TagSelector';
 import UserContext from '../UserContext';
@@ -10,7 +10,8 @@ import 'react-quill/dist/quill.snow.css';
 import DOMPurify from "dompurify";
 
 // Import functions from Firebase Functions SDK
-import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { functions } from "../Firebase";
 
 function CreatePost() {
     // IMPORTANT: Change initial state from 'video' to an empty string
@@ -34,7 +35,7 @@ function CreatePost() {
     // Notification function
     const showUploadingNotification = () => {
         setShowNotification(true);
-        setTimeout(() => setShowNotification(false), 6000);
+        setTimeout(() => setShowNotification(false), 30000);
     };
 
     // Post data state
@@ -57,96 +58,15 @@ function CreatePost() {
         setPostData({ ...postData, [e.target.name]: e.target.value });
     };
 
-    // File validation function (client-side check)
-    const validateFile = async (file, type) => {
-        if (!file) return false;
-
-        const allowedExtensions = {
-            video: ["mp4"],
-            audio: ["mp3", "wav"],
-            image: ["jpg", "jpeg", "png", "bmp"]
-        };
-
-        const allowedMimeTypes = {
-            video: ["video/mp4"],
-            audio: ["audio/mpeg", "audio/wav"],
-            image: ["image/jpeg", "image/png"]
-        };
-
-        const validSignatures = {
-            "mp4": [["00", "00", "00"], ["66", "74", "79", "70"]],
-            "mp3": [["49", "44", "33"]],
-            "wav": [["52", "49", "46", "46"]],
-            "jpg": [["ff", "d8", "ff", "e0"], ["ff", "d8", "ff", "e1"]],
-            "jpeg": [["ff", "d8", "ff", "e0"], ["ff", "d8", "ff", "e1"]],
-            "png": [["89", "50", "4e", "47"]]
-        };
-
-        // Validate size
-        if (file.size > MAX_FILE_SIZES[type]) {
-            alert(`File exceeds ${MAX_FILE_SIZES[type] / 1024 / 1024}MB limit.`);
-            return false;
-        }
-
-        // Validate extension
-        const fileExtension = file.name.split(".").pop().toLowerCase();
-        if (!allowedExtensions[type].includes(fileExtension)) {
-            alert("Invalid file extension.");
-            return false;
-        }
-
-        // Validate MIME type
-        if (!allowedMimeTypes[type].includes(file.type)) {
-            alert("Invalid file type.");
-            return false;
-        }
-
-        // Validate file signature (Magic Bytes)
-        const buffer = await file.arrayBuffer();
-        const uint8Array = new Uint8Array(buffer);
-        const fileSignature = Array.from(uint8Array.slice(0, 12), (byte) =>
-            byte.toString(16).padStart(2, "0")
-        );
-
-        const validSigs = validSignatures[fileExtension] || [];
-        const isValid = validSigs.some(sig =>
-            fileSignature.slice(0, sig.length).join(" ") === sig.join(" ")
-        );
-
-        if (!isValid) {
-            alert("Invalid file signature. Possible spoofed file.");
-            return false;
-        }
-
-        return true;
-    };
-
-    const handleFileChange = async (event, type) => {
-        const file = event.target.files[0];
+    const handleFileChange = async (e, type) => {
+        const file = e.target.files[0];
         if (!file) return;
-
-        const isValid = await validateFile(file, type);
-        if (!isValid) return;
-
-        setFileInputs((prev) => ({
+        if (!(await validateFile(file, type))) return;
+        setFileInputs(prev => ({
             ...prev,
             [type === "image" ? "thumbnail" : "file"]: file,
             [type === "image" ? "previewThumbnail" : "previewFile"]: URL.createObjectURL(file)
         }));
-    };
-
-    // Upload function to include user-specific folder in the file path
-    const uploadFileToStorage = async (file, folder) => {
-        if (!file) return null;
-        try {
-            const storage = getStorage();
-            const storageRef = ref(storage, `${folder}/${file.name}`);
-            await uploadBytes(storageRef, file);
-            return await getDownloadURL(storageRef);
-        } catch (error) {
-            console.error('Error uploading file:', error);
-            return null;
-        }
     };
 
     const getKeywords = (title = "", description = "", author = "") => {
@@ -168,7 +88,6 @@ function CreatePost() {
     };
 
     // Initialize Firebase Functions and conditionally connect to emulator
-    const functions = getFunctions();
     if (process.env.REACT_APP_USE_EMULATOR === "true") {
         connectFunctionsEmulator(functions, "localhost", 5001);
     }
@@ -469,6 +388,15 @@ function CreatePost() {
                                     />
                                 </>
                             )}
+                            <TagSelector
+                                selectedTags={postData.tags || []}
+                                setSelectedTags={(selectedTags) =>
+                                    setPostData((prevState) => ({
+                                        ...prevState,
+                                        tags: selectedTags,
+                                    }))
+                                }
+                            />
                         </div>
 
                         {/* Separate Container for Submit Button */}
@@ -481,7 +409,7 @@ function CreatePost() {
                 </div>
             )}
 
-            {showNotification && <div className={styles.uploadNotification}>Uploading...</div>}
+            {showNotification && <div className={styles.uploadNotification}>Uploading, this may take a few minutes</div>}
         </div>
     );
 }

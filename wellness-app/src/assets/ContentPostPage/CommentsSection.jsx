@@ -3,6 +3,7 @@ import { db } from '../Firebase';
 import { collection, addDoc, query, getDocs, serverTimestamp } from 'firebase/firestore';
 import Comment from './Comment';
 import styles from './Comment.module.css';
+import dummyPic from '../dummyPic.jpeg';
 
 const CommentsSection = ({ postId, currentUser }) => {
   const [comments, setComments] = useState([]);
@@ -47,7 +48,7 @@ const CommentsSection = ({ postId, currentUser }) => {
         text: newComment,
         timestamp: serverTimestamp(),
         displayName: currentUser.displayName || 'Anonymous',
-        profilePicUrl: currentUser.profilePicUrl || 'default-profile-pic-url',
+        profilePicUrl: currentUser.profilePicUrl || dummyPic,
       };
 
       const commentRef = await addDoc(collection(db, 'content-posts', postId, 'comments'), commentData);

@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
 import { format } from "date-fns";
-import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
 import { useTags } from "../TagSystem/useTags";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
+import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
+import ReactQuill from 'react-quill';
 import TagSelector from '../TagSystem/TagSelector';
 import styles from './ContentPostPage.module.css';
+import ContentDisplayView from './ContentDisplayView';
+import ContentEditForm from './ContentEditForm';
 
 const ContentPostPage = () => {
     const { postId } = useParams();
@@ -167,11 +170,18 @@ const ContentPostPage = () => {
 
     const handleSave = async () => {
         if (!post) return;
+        const slurRegex = /\b(?:nigger|kike|chink|spic|gook)\b/i;
+        if (slurRegex.test(editedTitle) || slurRegex.test(editedDescription)) {
+            setError("Your update contains inappropriate language.");
+            return;
+        }
+
         const postRef = doc(db, 'content-posts', postId);
         const updatedData = {
             title: editedTitle,
             description: editedDescription,
             body: editedBody,
+            tags: tags.map(t => t.value),
             lastUpdated: serverTimestamp(),
         };
 
@@ -185,7 +195,43 @@ const ContentPostPage = () => {
     if (!post) return <div>Post not found</div>;
 
     const formattedDate = post.timestamp ? format(post.timestamp.toDate(), 'PP p') : 'Unknown Date';
-    const formattedLastUpdated = post.lastUpdated ? format(post.lastUpdated.toDate(), 'PP p') : 'Never updated';
+    let updatedDate = null;
+    let formattedLastUpdated = "Never updated";
+
+    if (post.lastUpdated) {
+        let dateObj;
+
+        // If it’s a Firestore Timestamp
+        if (typeof post.lastUpdated.toDate === "function") {
+            dateObj = post.lastUpdated.toDate();
+        }
+        // If it’s already a Date
+        else if (post.lastUpdated instanceof Date) {
+            dateObj = post.lastUpdated;
+        }
+        // If it’s a parsable string
+        else if (!isNaN(Date.parse(post.lastUpdated))) {
+            dateObj = new Date(post.lastUpdated);
+        }
+
+        if (dateObj instanceof Date && !isNaN(dateObj)) {
+            formattedLastUpdated = format(dateObj, "PP p");
+        }
+    }
+    const canEdit = currentUser?.uid === post.userId;
+    const handleQuillImageUpload = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/jpeg,image/png,image/bmp";
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!(await validateFile(file, 'image'))) return;
+            const url = await uploadFileToStorage(file, `article-images/${currentUser.uid}`);
+            setEditedBody(prev => prev + `<img src="${url}" alt="Uploaded Image"/>`);
+        };
+    };
 
     const quillModules = {
         toolbar: [
@@ -197,138 +243,35 @@ const ContentPostPage = () => {
             ['clean'],
         ],
     };
-
     return (
         <div className={styles.pageContainer}>
-            {/* Media Container */}
-            <div className={styles.videoContainer}>
-                {post.type === 'video' && (
-                    <>
-                        <div
-                            className={styles.thumbnailContainer}
-                            onClick={(e) => {
-                                const video = e.currentTarget.querySelector('video');
-                                video.play();
-                                e.currentTarget.querySelector('img').style.display = 'none';
-                            }}
-                        >
-                            <img src={post.thumbnailURL} alt="Thumbnail" />
-                            <video className={styles.videoPlayer} controls>
-                                <source src={post.fileURL} type="video/mp4" />
-                                Your browser does not support the video tag.
-                            </video>
-                        </div>
-                        <div className={styles.contentHeader}>
-                            <h2 className={styles.title}>{post.title}</h2>
-                            <p className={styles.description}>{post.description}</p>
-                            <div className={styles.authorInfo}>
-                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
-                            </div>
-                            <div className={styles.interactionContainer}>
-                                <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
-                                    👍
-                                </button>
-                                <span>{likes.length}</span>
-                                <button className={styles.emojiButton} onClick={() => handleInteraction('dislike')}>
-                                    👎
-                                </button>
-                                <span>{dislikes.length}</span>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {post.type === 'audio' && (
-                    <>
-                        <img className={styles.thumbnailContainer} src={post.thumbnailURL} alt="Audio Thumbnail" />
-                        <audio className={styles.videoPlayer} controls>
-                            <source src={post.fileURL} type="audio/mpeg" />
-                        </audio>
-                        <div className={styles.contentHeader}>
-                            <h2 className={styles.title}>{post.title}</h2>
-                            <p className={styles.description}>{post.description}</p>
-                            <div className={styles.authorInfo}>
-                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
-                            </div>
-                            <div className={styles.interactionContainer}>
-                                <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
-                                    👍
-                                </button>
-                                <span>{likes.length}</span>
-                                <button className={styles.emojiButton} onClick={() => handleInteraction('dislike')}>
-                                    👎
-                                </button>
-                                <span>{dislikes.length}</span>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-                {post.type === 'article' && (
-                    <div className={styles.contentHeader}>
-                        <h2 className={styles.title}>{post.title}</h2>
-                        <p className={styles.description}>{post.description}</p>
-                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
-                        <div className={styles.authorInfo}>
-                            By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
-                        </div>
-                        <div className={styles.interactionContainer}>
-                            <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
-                                👍
-                            </button>
-                            <span>{likes.length}</span>
-                            <button className={styles.emojiButton} onClick={() => handleInteraction('dislike')}>
-                                👎
-                            </button>
-                            <span>{dislikes.length}</span>
-                        </div>
-
-                        {/* Tags section */}
-                        <div className="card-body">
-                            {isEditing === "tags" ? (
-                                <div>
-                                    <TagSelector
-                                        selectedTags={tags}  // Ensuring tags is an array
-                                        setSelectedTags={setTags}
-                                    />
-                                    <button className="btn btn-success" onClick={handleSaveTags}>
-                                        Save Tags
-                                    </button>
-                                </div>
-                            ) : (
-                                <div onDoubleClick={handleEditTags}>
-                                    <strong>Tags:</strong> {selectedTagNames.join(', ')}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Comments Section Container */}
-                <div className={styles.commentsSection}>
-                    <CommentsSection postId={post.id} currentUser={currentUser} />
-                </div>
-
-                {/* Modal for Messages */}
-                {showMessage && (
-                    <div className="modal show d-block" tabIndex="-1">
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Notice</h5>
-                                    <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>{message}</p>
-                                    <Link to="/login" className="btn btn-primary">Log In</Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
+            {isEditing === "content" ? (
+                <ContentEditForm
+                    type={post.type}
+                    title={editedTitle}
+                    description={editedDescription}
+                    body={editedBody}
+                    tags={tags}
+                    onChangeTitle={setEditedTitle}
+                    onChangeDescription={setEditedDescription}
+                    onChangeBody={setEditedBody}
+                    onChangeTags={setTags}
+                    onSave={handleSave}
+                    onCancel={() => setIsEditing("")}
+                />
+            ) : (
+                <ContentDisplayView
+                    post={post}
+                    canEdit={canEdit}
+                    onEdit={() => setIsEditing("content")}
+                    likes={likes}
+                    dislikes={dislikes}
+                    onLike={() => handleInteraction("like")}
+                    onDislike={() => handleInteraction("dislike")}
+                />
+            )}
+            <CommentsSection postId={post.id} currentUser={currentUser} />
         </div>
     );
-};
-
+}
 export default ContentPostPage;

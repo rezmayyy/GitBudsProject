@@ -122,3 +122,23 @@
     font-size: 1.2rem;
     padding: 4px;
 }
+
+.editButton {
+    background-color: #a5d6a7;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.editButton:hover {
+    background-color: #81c784;
+}
+
+.description {
+    white-space: pre-wrap;
+}
