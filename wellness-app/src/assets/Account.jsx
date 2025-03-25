@@ -1,5 +1,13 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import UserContext from './UserContext';
+import { db, storage, functions} from './Firebase'; // Import Firebase functions
+import { doc, getDoc, setDoc, Timestamp, deleteDoc} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import dummyPic from "./dummyPic.jpeg";
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
+import HealerApplicationForm from './ApplyForHealer/HealerApplicationForm';
+import YourFollows from './YourFollows';
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import styles from '../styles/account.module.css';
 
@@ -73,35 +81,46 @@ export default function Account() {
                         <button onClick={() => setConfirmDelete(false)}>Cancel</button>
                     </>
                     : <button onClick={() => setConfirmDelete(true)}>Delete Account</button>;
-
-            default:
-                return (
-                    <>
-                        <input placeholder="Value" value={formValues.newDisplayName || ''} onChange={e => setFormValues({ ...formValues, newDisplayName: e.target.value })} />
-                        <button onClick={handleSubmit}>Save</button>
-                    </>
-                );
-        }
-    };
-
-    if (!user) return <p>Please log in.</p>;
-
-    return (
-        <div className={styles.dashboardContainer}>
-            <aside className={styles.sidebar}>
-                {tabs.map(tab => (
-                    <button key={tab.key} className={`${styles.sidebarButton} ${activeTab === tab.key ? styles.active : ''}`} onClick={() => { setActiveTab(tab.key); setMessage(''); setFormValues({}); }}>
-                        {tab.label}
-                    </button>
-                ))}
-            </aside>
-            <main className={styles.contentWrapper}>
-                <div className={styles.manageModuleContainer}>
-                    <h2 className={styles.postTitle}>{tabs.find(t => t.key === activeTab).label}</h2>
-                    {renderContent()}
-                    {message && <p className={styles.message}>{message}</p>}
-                </div>
-            </main>
-        </div>
-    );
+      case 'applyToBeHealer':
+        return <HealerApplicationForm />;
+      case 'yourFollows':
+        return (
+          <div className={styles.formBox}>
+            <h3>Your Follows</h3>
+            <p>These are the users you are currently following.</p>
+            <YourFollows />
+          </div>
+        );
+      default:
+        return null;
 }
+};
+
+
+  return (
+    <div className={styles.dashboardContainer}>
+      <aside className={styles.sidebar}>
+        {tabs.map(tab => (
+          <button
+            key={tab.key}
+            className={`${styles.sidebarButton} ${activeTab === tab.key ? styles.active : ''}`}
+            onClick={() => { setActiveTab(tab.key); setMessage(''); setFormValues({}); }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </aside>
+
+      <main className={styles.contentWrapper}>
+        <div className={styles.manageModuleContainer}>
+          <h2 className={styles.postTitle}>
+            {tabs.find(t => t.key === activeTab)?.label}
+          </h2>
+          {renderContent()}
+          {message && <p className={styles.message}>{message}</p>}
+        </div>
+      </main>
+    </div>
+  );
+}
+
