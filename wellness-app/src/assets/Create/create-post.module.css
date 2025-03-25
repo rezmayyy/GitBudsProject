@@ -155,3 +155,22 @@
         transform: translateY(20px);
     }
 }
+
+.descriptionQuillWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 60px;
+}
+
+.descriptionQuillWrapper .ql-container {
+    border: 1px solid #ccc;
+    border-radius: 0 0 8px 8px;
+    min-height: 20px;
+}
+
+.descriptionQuillWrapper .ql-toolbar {
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+}

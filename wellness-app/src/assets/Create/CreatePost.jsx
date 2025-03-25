@@ -25,7 +25,6 @@ function CreatePost() {
     const tags = useTags();
     const [selectedTags, setSelectedTags] = useState([]);
 
-
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
         audio: 100 * 1024 * 1024, // 100 MB
@@ -43,7 +42,7 @@ function CreatePost() {
         title: '',
         description: '',
         body: '',
-        tags: [] //store all tags
+        tags: [] // store all tags
     });
 
     // File inputs state
@@ -94,6 +93,26 @@ function CreatePost() {
     // Create callable instance for Cloud Function
     const createContentPost = httpsCallable(functions, "createContentPost");
 
+    // Define two toolbar modules:
+    const articleModules = {
+        toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ align: [] }, { color: [] }, { background: [] }],
+            ['link', 'image', 'code-block'],
+            ['clean']
+        ]
+    };
+
+    const minimalModules = {
+        toolbar: [
+            ['bold', 'italic'],
+            ['link'],
+            ['clean']
+        ]
+    };
+
     // Form submission handler using Cloud Function
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -103,7 +122,8 @@ function CreatePost() {
             return;
         }
 
-        if (!postData.title || (activeTab === 'article' && !postData.body)) {
+        // For articles, require title and body; for others, require title and description.
+        if (!postData.title || (activeTab === 'article' && !postData.body) || (activeTab !== 'article' && !postData.description)) {
             alert('Please complete all required fields.');
             return;
         }
@@ -119,7 +139,6 @@ function CreatePost() {
             return;
         }
 
-
         if (!postData.tags || postData.tags.length === 0) {
             alert('Please select at least one tag.');
             return;
@@ -127,12 +146,18 @@ function CreatePost() {
 
         // Show upload notification
         showUploadingNotification();
-        const cleanBody = DOMPurify.sanitize(postData.body);
-        const keywords = getKeywords(postData.title, postData.description, user.displayName);
+
+        // Sanitize the content:
+        const cleanBody = activeTab === 'article'
+            ? DOMPurify.sanitize(postData.body)
+            : "";
+        const cleanDescription = activeTab !== 'article'
+            ? DOMPurify.sanitize(postData.description)
+            : "";
+
+        const keywords = getKeywords(postData.title, activeTab !== 'article' ? postData.description : postData.body, user.displayName);
 
         const userId = user.uid;
-
-        // Build the file paths to include userId subfolders
         const fileFolder = `${activeTab}-uploads/${userId}`;
         const thumbFolder = `thumbnails/${userId}`;
 
@@ -143,15 +168,14 @@ function CreatePost() {
             ? await uploadFileToStorage(fileInputs.thumbnail, thumbFolder)
             : null;
 
-        // Build the payload for the Cloud Function
         const payload = {
             postData: {
                 title: postData.title,
-                description: postData.description,
-                body: cleanBody,
+                description: activeTab !== 'article' ? cleanDescription : "",
+                body: activeTab === 'article' ? cleanBody : "",
                 type: activeTab,
                 keywords,
-                tags: postData.tags.map(tag => tag.value) //tags
+                tags: postData.tags.map(tag => tag.value)
             },
             filePath: fileURL,
             thumbnailPath: thumbnailURL
@@ -168,22 +192,8 @@ function CreatePost() {
         }
     };
 
-    const modules = {
-        toolbar: {
-            container: [
-                [{ 'header': [3, 4, 5, 6, false] }],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                [{ 'color': [] }, { 'background': [] }],
-                [{ 'align': [] }],
-                ['link', 'image'],
-                ['clean']
-            ],
-        }
-    };
-
-    // Quill image upload handler
-    const handleQuillImageUpload = (quillRef) => {
+    // Quill image upload handler remains the same
+    const handleQuillImageUpload = () => {
         const input = document.createElement("input");
         input.setAttribute("type", "file");
         input.setAttribute("accept", "image/jpeg, image/png, image/bmp");
@@ -192,20 +202,25 @@ function CreatePost() {
         input.onchange = async () => {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-
                 const isValid = await validateFile(file, "image");
                 if (!isValid) return;
-
-                const imageUrl = await uploadFileToStorage(file, `article-images/${user.uid}`);
-                if (!imageUrl) {
+                const url = await uploadFileToStorage(file, `article-images/${user.uid}`);
+                if (!url) {
                     alert("Image upload failed.");
                     return;
                 }
-
-                setPostData((prev) => ({
-                    ...prev,
-                    body: prev.body + `<img src="${imageUrl}" alt="Uploaded Image"/>`
-                }));
+                // Append the uploaded image to the appropriate field
+                if (activeTab === 'article') {
+                    setPostData(prev => ({
+                        ...prev,
+                        body: prev.body + `<img src="${url}" alt="Uploaded Image"/>`
+                    }));
+                } else {
+                    setPostData(prev => ({
+                        ...prev,
+                        description: prev.description + `<img src="${url}" alt="Uploaded Image"/>`
+                    }));
+                }
             }
         };
     };
@@ -221,13 +236,59 @@ function CreatePost() {
 
     const renderForm = () => (
         <form className={`${activeTab}-form`} onSubmit={handleSubmit}>
-            <label>Title</label>
-            <input type="text" name="title" value={postData.title} onChange={handleInputChange} required />
+            <label className={styles.formLabel}>Title</label>
+            <input
+                className={styles.contentInput}
+                type="text"
+                name="title"
+                value={postData.title}
+                onChange={handleInputChange}
+                required
+            />
+
+            {activeTab !== 'article' ? (
+                <>
+                    <div className={styles.descriptionQuillWrapper}>
+                        <label className={styles.formLabel}>Description</label>
+                        <ReactQuill
+                            value={postData.description}
+                            onChange={(content) => setPostData(prev => ({ ...prev, description: content }))}
+                            modules={minimalModules}
+                            theme="snow"
+                        />
+                    </div>
+                </>
+            ) : (
+                <div className={styles.quillWrapper}>
+                    <label className={styles.formLabel}>Article Body</label>
+                    <ReactQuill
+                        ref={quillRef}
+                        className={styles.quillEditor}
+                        value={postData.body}
+                        onChange={(content) => setPostData(prev => ({ ...prev, body: content }))}
+                        modules={articleModules}
+                        theme="snow"
+                        onChangeSelection={() => {
+                            if (!quillInstance && quillRef.current) {
+                                setQuillInstance(quillRef.current.getEditor());
+                            }
+                        }}
+                    />
+                </div>
+            )}
 
             {activeTab !== 'article' && (
                 <>
-                    <label>Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)</label>
-                    <input type="file" accept={`${activeTab}/*`} onChange={(e) => handleFileChange(e, activeTab)} required />
+                    <label className={styles.formLabel}>
+                        Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)
+                    </label>
+                    <input
+                        className={styles.contentInput}
+                        type="file"
+                        accept={`${activeTab}/*`}
+                        onChange={(e) => handleFileChange(e, activeTab)}
+                        required
+                    />
                     {fileInputs.previewFile && (activeTab === 'video' ? (
                         <video controls width="300">
                             <source src={fileInputs.previewFile} type="video/mp4" />
@@ -237,43 +298,25 @@ function CreatePost() {
                             <source src={fileInputs.previewFile} type="audio/mpeg" />
                         </audio>
                     ))}
-                </>
-            )}
 
-            {activeTab !== 'article' && (
-                <>
-                    <label>Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)</label>
-                    <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'image')} required />
-                    {fileInputs.previewThumbnail && <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />}
-                </>
-            )}
-
-            {activeTab === 'article' ? (
-                <>
-                    <label>Article Body</label>
-                    <ReactQuill
-                        ref={quillRef}
-                        value={postData.body}
-                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
-                        modules={modules}
-                        theme="snow"
-                        onChangeSelection={() => {
-                            if (!quillInstance && quillRef.current) {
-                                setQuillInstance(quillRef.current.getEditor());
-                            }
-                        }}
+                    <label className={styles.formLabel}>
+                        Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)
+                    </label>
+                    <input
+                        className={styles.contentInput}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange(e, 'image')}
+                        required
                     />
-                </>
-            ) : (
-                <>
-                    <label>Description</label>
-                    <textarea name="description" value={postData.description} onChange={handleInputChange}></textarea>
+                    {fileInputs.previewThumbnail && (
+                        <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />
+                    )}
                 </>
             )}
-
 
             <TagSelector
-                selectedTags={postData.tags || []}  // Ensuring tags is an array
+                selectedTags={postData.tags || []}
                 setSelectedTags={(selectedTags) =>
                     setPostData(prevState => ({
                         ...prevState,
@@ -309,103 +352,7 @@ function CreatePost() {
             {/* Step 2: Show Form Only If a Type Is Chosen */}
             {activeTab && (
                 <div className={styles.formWrapper}>
-                    <form className={styles.outerForm} onSubmit={handleSubmit}>
-                        {/* White Card Container for Fields */}
-                        <div className={styles.formContainer}>
-                            <label className={styles.formLabel}>Title</label>
-                            <input
-                                className={styles.contentInput}
-                                type="text"
-                                name="title"
-                                value={postData.title}
-                                onChange={handleInputChange}
-                                required
-                            />
-
-                            {activeTab !== 'article' && (
-                                <>
-                                    <label className={styles.formLabel}>
-                                        Choose {activeTab} file (Max: {MAX_FILE_SIZES[activeTab] / 1024 / 1024} MB)
-                                    </label>
-                                    <input
-                                        className={styles.contentInput}
-                                        type="file"
-                                        accept={`${activeTab}/*`}
-                                        onChange={(e) => handleFileChange(e, activeTab)}
-                                        required
-                                    />
-                                    {fileInputs.previewFile && (activeTab === 'video' ? (
-                                        <video controls width="300">
-                                            <source src={fileInputs.previewFile} type="video/mp4" />
-                                        </video>
-                                    ) : (
-                                        <audio controls>
-                                            <source src={fileInputs.previewFile} type="audio/mpeg" />
-                                        </audio>
-                                    ))}
-
-                                    <label className={styles.formLabel}>
-                                        Choose thumbnail image (Max: {MAX_FILE_SIZES.image / 1024 / 1024} MB)
-                                    </label>
-                                    <input
-                                        className={styles.contentInput}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleFileChange(e, 'image')}
-                                        required
-                                    />
-                                    {fileInputs.previewThumbnail && (
-                                        <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />
-                                    )}
-                                </>
-                            )}
-
-                            {activeTab === 'article' ? (
-                                <div className={styles.quillWrapper}>
-                                    <label className={styles.formLabel}>Article Body</label>
-                                    <ReactQuill
-                                        ref={quillRef}
-                                        className={styles.quillEditor}
-                                        value={postData.body}
-                                        onChange={(content) => setPostData((prev) => ({ ...prev, body: content }))}
-                                        modules={modules}
-                                        theme="snow"
-                                        onChangeSelection={() => {
-                                            if (!quillInstance && quillRef.current) {
-                                                setQuillInstance(quillRef.current.getEditor());
-                                            }
-                                        }}
-                                    />
-                                </div>
-                            ) : (
-                                <>
-                                    <label className={styles.formLabel}>Description</label>
-                                    <textarea
-                                        className={styles.contentTextarea}
-                                        name="description"
-                                        value={postData.description}
-                                        onChange={handleInputChange}
-                                    />
-                                </>
-                            )}
-                            <TagSelector
-                                selectedTags={postData.tags || []}
-                                setSelectedTags={(selectedTags) =>
-                                    setPostData((prevState) => ({
-                                        ...prevState,
-                                        tags: selectedTags,
-                                    }))
-                                }
-                            />
-                        </div>
-
-                        {/* Separate Container for Submit Button */}
-                        <div className={styles.submitContainer}>
-                            <button className={styles.submitButton} type="submit">
-                                Submit {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-                            </button>
-                        </div>
-                    </form>
+                    {renderForm()}
                 </div>
             )}
 

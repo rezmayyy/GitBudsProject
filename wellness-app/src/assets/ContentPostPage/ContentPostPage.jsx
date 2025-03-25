@@ -296,8 +296,8 @@ const ContentPostPage = () => {
                     onEdit={() => setIsEditing("content")}
                     likes={likes}
                     dislikes={dislikes}
-                    onLike={() => handleInteraction("like")}
-                    onDislike={() => handleInteraction("dislike")}
+                    handleInteraction={handleInteraction}
+                    formattedDate={post.timestamp.toDate().toLocaleString()}
                 />
             )}
             <CommentsSection postId={post.id} currentUser={currentUser} />

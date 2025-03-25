@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
 import DOMPurify from "dompurify";
+import { db } from "../Firebase";
 import styles from "./ContentPostPage.module.css";
 
 export default function ContentDisplayView({
@@ -13,6 +15,22 @@ export default function ContentDisplayView({
     formattedDate,
     selectedTagNames
 }) {
+    const [profilePic, setProfilePic] = useState(null);
+
+    useEffect(() => {
+        const fetchProfilePic = async () => {
+            if (post.userId) {
+                const userRef = doc(db, "users", post.userId);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const data = userSnap.data();
+                    if (data.profilePicUrl) setProfilePic(data.profilePicUrl);
+                }
+            }
+        };
+        fetchProfilePic();
+    }, [post.userId]);
+
     return (
         <>
             {/* Video */}
@@ -39,17 +57,37 @@ export default function ContentDisplayView({
                 </>
             )}
 
-            {/* Common header */}
+            {/* Title & Metadata */}
             <div className={styles.contentHeader}>
-                <h2 className={styles.title}>{post.title}</h2>
-                <div
-                    className={styles.description}
-                    dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(post.description)
-                    }}
-                />
-                <div className={styles.authorInfo}>
-                    By <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
+                <div className={styles.topRow}>
+                    <div className={styles.leftColumn}>
+                        <h2 className={styles.titleLeft}>{post.title}</h2>
+                    </div>
+
+                    <div className={styles.centerColumn}>
+                        <div className={styles.interactionCenter}>
+                            <button className={styles.emojiButton} onClick={() => handleInteraction("like")}>👍</button>
+                            <span>{likes.length}</span>
+                            <button className={styles.emojiButton} onClick={() => handleInteraction("dislike")}>👎</button>
+                            <span>{dislikes.length}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.metaRow}>
+                    {profilePic && (
+                        <img
+                            src={profilePic}
+                            alt="Author"
+                            className={styles.profilePic}
+                            width={32}
+                            height={32}
+                        />
+                    )}
+                    <span>
+                        <Link to={`/profile/${post.userId}`}>{post.authorName}</Link>
+                    </span>
+
                     {canEdit && (
                         <button className={styles.editButton} onClick={onEdit}>
                             Edit
@@ -57,15 +95,22 @@ export default function ContentDisplayView({
                     )}
                 </div>
 
-                {/* Likes / Dislikes */}
-                <div className={styles.interactionContainer}>
-                    <button className={styles.emojiButton} onClick={() => handleInteraction("like")}>👍</button>
-                    <span>{likes.length}</span>
-                    <button className={styles.emojiButton} onClick={() => handleInteraction("dislike")}>👎</button>
-                    <span>{dislikes.length}</span>
+                <div className={styles.grayDescriptionBox}>
+                    <div className={styles.descriptionHeaderRow}>
+                        <div className={styles.descriptionLeft}>
+                            Views: {post.views || 0} • {formattedDate}
+                        </div>
+                        <div className={styles.descriptionRight}>
+                            edited: {post.lastUpdated?.toDate().toLocaleString()}
+                        </div>
+                    </div>
+                    <div
+                        dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(post.description),
+                        }}
+                    />
                 </div>
 
-                {/* Article body + tags */}
                 {post.type === "article" && (
                     <>
                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
