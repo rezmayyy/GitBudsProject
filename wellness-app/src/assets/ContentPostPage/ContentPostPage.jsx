@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
@@ -36,6 +36,7 @@ const ContentPostPage = () => {
     // Interaction state
     const [likes, setLikes] = useState([]);
     const [dislikes, setDislikes] = useState([]);
+    const [views, setViews] = useState(0);
 
     // For showing messages
     const [showMessage, setShowMessage] = useState(false);
@@ -84,6 +85,7 @@ const ContentPostPage = () => {
                     setEditedBody(postData.body || "");
                     setLikes(postData.likes || []);
                     setDislikes(postData.dislikes || []);
+                    setViews(postData.views || 0);
 
                     // Process tags for the post: convert tag IDs to { value, label }
                     const postTags = postData.tags || [];
@@ -122,6 +124,12 @@ const ContentPostPage = () => {
         };
 
         fetchData();
+
+        //check if the post is already viewed in this session
+        const viewedKey = `viewed_${postId}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+            handleInteraction('view');
+        }
     }, [postId, currentUser]);
 
     const handleSaveTags = async () => {
@@ -146,23 +154,45 @@ const ContentPostPage = () => {
     const selectedTagNames = tags.map(tag => tag.label);
 
     const handleInteraction = async (type) => {
+        if (type === 'view') {
+            const viewedKey = `viewed_${postId}`;
+            const lastViewedTime = localStorage.getItem(viewedKey);
+            const now = new Date().getTime();
+    
+            // Check if it's been more than 24 hours since the last view
+            if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
+                localStorage.setItem(viewedKey, now); // Update view timestamp
+    
+                const postRef = doc(db, 'content-posts', postId);
+                await updateDoc(postRef, { views: increment(1) });
+    
+                // Fetch updated post to get the correct views count
+                const updatedPostSnap = await getDoc(postRef);
+                if (updatedPostSnap.exists()) {
+                    setViews(updatedPostSnap.data().views || 0);
+                }
+            }
+            return;
+        }
+    
         if (!currentUser) {
             setMessage('You must be logged in.');
             setShowMessage(true);
             return;
         }
-
+    
         const postRef = doc(db, 'content-posts', postId);
         const updatedLikes = [...likes.filter(uid => uid !== currentUser.uid)];
         const updatedDislikes = [...dislikes.filter(uid => uid !== currentUser.uid)];
-
+    
         if (type === 'like' && !likes.includes(currentUser.uid)) updatedLikes.push(currentUser.uid);
         if (type === 'dislike' && !dislikes.includes(currentUser.uid)) updatedDislikes.push(currentUser.uid);
-
+    
         await updateDoc(postRef, { likes: updatedLikes, dislikes: updatedDislikes });
-
+        
         setLikes(updatedLikes);
         setDislikes(updatedDislikes);
+        return;
     };
 
     const handleSave = async () => {
@@ -222,7 +252,7 @@ const ContentPostPage = () => {
                             <h2 className={styles.title}>{post.title}</h2>
                             <p className={styles.description}>{post.description}</p>
                             <div className={styles.authorInfo}>
-                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
+                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate} | Views: {views || 0}
                             </div>
                             <div className={styles.interactionContainer}>
                                 <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
@@ -248,7 +278,7 @@ const ContentPostPage = () => {
                             <h2 className={styles.title}>{post.title}</h2>
                             <p className={styles.description}>{post.description}</p>
                             <div className={styles.authorInfo}>
-                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
+                                By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate} | Views: {views || 0}
                             </div>
                             <div className={styles.interactionContainer}>
                                 <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
@@ -270,7 +300,7 @@ const ContentPostPage = () => {
                         <p className={styles.description}>{post.description}</p>
                         <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
                         <div className={styles.authorInfo}>
-                            By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate}
+                            By: <Link to={`/profile/${post.userId}`}>{post.authorName}</Link> | {formattedDate} | Views: {views || 0}
                         </div>
                         <div className={styles.interactionContainer}>
                             <button className={styles.emojiButton} onClick={() => handleInteraction('like')}>
