@@ -1,0 +1,161 @@
+/* HeroSection.css */
+.hero {
+  width: 100%;
+  background-color: #fff;
+  padding: 100px 20px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (min-width: 992px) {
+  .hero-content {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+.hero-left {
+  flex: 1;
+  text-align: center;
+}
+
+@media (min-width: 992px) {
+  .hero-left {
+    text-align: left;
+    padding-right: 40px;
+  }
+}
+
+.hero-left h1 {
+  font-size: 2.5rem;
+  line-height: 1.2;
+  font-weight: bold;
+  margin-bottom: 20px;
+  font-family: var(--font-header);
+}
+
+.highlight {
+  color: var(--warm-gold);
+}
+
+.bold {
+  color: #000;
+  font-weight: bold;
+}
+
+.hero-left p {
+  color: #555;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+  font-family:Lora;
+}
+
+.hero-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 500px) {
+  .hero-buttons {
+    flex-direction: row;
+  }
+}
+
+.hero-buttons .btn {
+  font-family: var(--font-call-to-action);
+  font-weight: var(--call-to-action-weight);
+  padding: 12px 24px;
+  font-size: 1rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--deep-indigo);
+  border-color: var(--deep-indigo);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #553c9a;
+  border-color: #553c9a;
+}
+
+.btn-outline-primary {
+  color: var(--deep-indigo);
+  border-color: var(--deep-indigo);
+  background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--light-beige);
+  color: var(--deep-indigo);
+  border-color: var(--deep-indigo);
+}
+
+.hero-right {
+  flex: 1;
+  margin-top: 40px;
+  position: relative;
+}
+
+@media (min-width: 992px) {
+  .hero-right {
+    margin-top: 0;
+  }
+}
+
+.hero-bg-blur {
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 120%;
+  max-width: 600px;
+  opacity: 0.5;
+  filter: blur(60px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero-collage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+}
+
+.customers {
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  padding: 60px 16px;
+  box-sizing: border-box;
+}
+
+.customers-img {
+  width: 100%;
+  max-width: 1034px;
+  height: auto;
+  object-fit: cover;
+}
+
+@media (min-width: 768px) {
+  .customers {
+    padding: 80px 40px;
+  }
+}
+
+#hero {
+  scroll-margin-top: 100px;
+}
