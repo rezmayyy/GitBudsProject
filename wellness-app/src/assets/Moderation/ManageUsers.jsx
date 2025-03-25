@@ -78,17 +78,20 @@ const ManageUsers = () => {
   };
 
   const handleBanUser = async (userId) => {
+
     const duration = prompt('Enter ban duration in days:');
     if (!duration) return;
-
+    const reason = prompt('Enter a reason for the ban:');
+    if (!reason) return;
     const banUser = httpsCallable(functions, 'banUser');
     try {
-      const result = await banUser({ userId, duration: parseInt(duration) });
+      const result = await banUser({ userId, duration: parseInt(duration), reason });
       alert(result.data.message);
     } catch (error) {
       console.error('Error banning user:', error);
-      alert('Failed to ban user.');
+      alert('Failed to ban the user.');
     }
+
   };
 
   const handleUnbanUser = async (userId) => {

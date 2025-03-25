@@ -1,0 +1,277 @@
+/* ContentPostPage.module.css */
+
+.pageContainer {
+    max-width: 1400px;
+    width: 80%;
+    margin: 2em auto;
+    padding: 2em;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    text-align: center;
+    border: 2px solid #f8c8dc;
+}
+
+.videoContainer {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto 30px auto;
+    /* centers container and adds bottom margin */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+
+.card {
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.thumbnailContainer {
+    position: relative;
+    cursor: pointer;
+}
+
+.thumbnailContainer img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+.videoPlayer {
+    width: 100%;
+    display: block;
+}
+
+
+.contentHeader {
+    padding: 15px;
+    background-color: #fff;
+}
+
+.title {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.description {
+    font-size: 16px;
+    color: #555;
+}
+
+.authorInfo {
+    font-size: 14px;
+    color: #888;
+    margin-top: 10px;
+}
+
+.buttonsContainer {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btnLike,
+.btnDislike {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btnLike:hover,
+.btnDislike:hover {
+    background-color: #e0e0e0;
+}
+
+.commentsSection {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto 30px auto;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.interactionContainer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.emojiButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px;
+}
+
+.editButton {
+    background-color: #a5d6a7;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.editButton:hover {
+    background-color: #81c784;
+}
+
+.description {
+    white-space: pre-wrap;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.metaDetails {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.profilePic {
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.grayDescriptionBox {
+    background-color: #eee;
+    color: #333;
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-align: left;
+    margin: 16px 0;
+    white-space: pre-wrap;
+}
+
+.topRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* align items at top */
+    gap: 20px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+
+.leftColumn {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    text-align: left;
+}
+
+.centerColumn {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 180px;
+}
+
+.rightColumn {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    text-align: right;
+}
+
+.titleLeft {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    padding-right: 12px;
+}
+
+
+.interactionCenter {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.dateRight {
+    text-align: right;
+    flex: 1;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.metaRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.grayDescriptionBox {
+    background-color: #eee;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 10px;
+    text-align: left;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .topRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rightColumn {
+        text-align: left;
+    }
+
+    .centerColumn {
+        justify-content: flex-start;
+        margin: 10px 0;
+    }
+}
+
+.descriptionHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.descriptionLeft {
+    text-align: left;
+}
+
+.descriptionRight {
+    text-align: right;
+}

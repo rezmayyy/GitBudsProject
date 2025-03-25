@@ -14,6 +14,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '../Firebase';
 import ReportButton from '../ReportButton/Report';
+import styles from './Comment.module.css';
+import dummyPic from '../dummyPic.jpeg';
+
 
 const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
   const [newReply, setNewReply] = useState('');
@@ -25,9 +28,11 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
     comment.likedBy?.includes(currentUser.uid) || false
   );
   const [userLikedReplies, setUserLikedReplies] = useState({});
-  const [showReplies, setShowReplies] = useState(false);
-  const [repliesToShow, setRepliesToShow] = useState(5);
-  const [showReplyBox, setShowReplyBox] = useState(false);
+  const [showReplies, setShowReplies] = useState(false); // New state to toggle replies visibility
+  const [repliesToShow, setRepliesToShow] = useState(5); // Track number of replies to show
+  const [showReplyBox, setShowReplyBox] = useState(false); // Track visibility of the reply text box
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState("");
 
   // Fetch replies when the component mounts
   useEffect(() => {
@@ -85,7 +90,7 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
           text: newReply,
           timestamp: serverTimestamp(),
           displayName: currentUser.displayName || 'Anonymous',
-          profilePicUrl: userData.profilePicUrl || 'default-profile-pic-url',
+          profilePicUrl: userData.profilePicUrl || dummyPic,
           likes: 0,
           likedBy: [],
         };
@@ -133,13 +138,13 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
     try {
       const updateData = userLikedComment
         ? {
-            likes: commentLikes - 1,
-            likedBy: arrayRemove(currentUser.uid),
-          }
+          likes: commentLikes - 1,
+          likedBy: arrayRemove(currentUser.uid),
+        }
         : {
-            likes: commentLikes + 1,
-            likedBy: arrayUnion(currentUser.uid),
-          };
+          likes: commentLikes + 1,
+          likedBy: arrayUnion(currentUser.uid),
+        };
 
       await updateDoc(commentRef, updateData);
       setCommentLikes(commentLikes + (userLikedComment ? -1 : 1));
@@ -163,13 +168,13 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
     try {
       const updateData = userLikedReplies[replyId]
         ? {
-            likes: currentLikes - 1,
-            likedBy: arrayRemove(currentUser.uid),
-          }
+          likes: currentLikes - 1,
+          likedBy: arrayRemove(currentUser.uid),
+        }
         : {
-            likes: currentLikes + 1,
-            likedBy: arrayUnion(currentUser.uid),
-          };
+          likes: currentLikes + 1,
+          likedBy: arrayUnion(currentUser.uid),
+        };
 
       await updateDoc(replyRef, updateData);
       setReplyLikes((prev) => ({
@@ -195,12 +200,12 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
   };
 
   return (
-    <div className="comment-container">
+    <div className={styles["comment-container"]}>
       {/* Comment Header */}
-      <div className="comment-header">
+      <div className={styles["comment-header"]}>
         <Link to={`/profile/${comment.userId}`}>
           <img
-            src={user?.profilePicUrl || 'default-profile-pic-url'}
+            src={user?.profilePicUrl || dummyPic}
             alt={`${user?.displayName || 'User'}'s profile`}
             width="30"
             height="30"
@@ -210,6 +215,8 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
           <strong>{user?.displayName || 'Unknown User'}</strong>
         </Link>
       </div>
+
+      {/* Comment Text & Timestamp */}
       <p>{comment.text}</p>
       <p>
         <small>
@@ -220,101 +227,145 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
             : 'No timestamp'}
         </small>
       </p>
-      <p>
-        <small>Likes: {commentLikes}</small>
-        <button onClick={toggleLikeComment}>
-          {userLikedComment ? '👎 Unlike' : '👍 Like'}
-        </button>
-      </p>
-      {currentUser.uid === comment.userId && (
-        <button onClick={handleDeleteComment} disabled={deleting}>
-          {deleting ? 'Deleting...' : 'Delete'}
-        </button>
-      )}
+
+      {/* Like Row */}
+      <div className={styles.likeRow}>
+        <span>Likes: {commentLikes}</span>
+        <span className={styles.emojiButton} onClick={toggleLikeComment}>
+          {userLikedComment ? '👎' : '👍'}
+        </span>
+      </div>
+
+      {/* Delete Button (if owner) */}
+      {
+        currentUser.uid === comment.userId && (
+          <button
+            onClick={handleDeleteComment}
+            disabled={deleting}
+            className={styles["delete-button"]}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </button>
+        )
+      }
       {/* Report Button for Comment (if current user is not the comment author) */}
-      {currentUser.uid !== comment.userId && (
-        <div style={{ textAlign: 'right', marginBottom: '10px' }}>
-          <ReportButton
-            contentUrl={`${window.location.href}#comment-${comment.id}`}
-            profileUrl={`/profile/${comment.userId}`}
-          />
-        </div>
-      )}
+      {
+        currentUser.uid !== comment.userId && (
+          <div style={{ textAlign: 'right', marginBottom: '10px' }}>
+            <ReportButton
+              contentUrl={`${window.location.href}#comment-${comment.id}`}
+              profileUrl={`/profile/${comment.userId}`}
+            />
+          </div>
+        )
+      }
+
+      {/* Reply & View Replies Buttons */}
+      <div className={styles.replyActions}>
+        {!showReplyBox && (
+          <button onClick={toggleReplyBox} className={styles.smallButton}>
+            Reply
+          </button>
+        )}
+        {replies.length > 0 && (
+          <button className={styles.smallButton} onClick={toggleReplies}>
+            {showReplies ? 'Hide Replies' : 'View Replies'}
+          </button>
+        )}
+      </div>
 
       {/* Replies Section */}
-      {replies.length > 0 && (
-        <button onClick={toggleReplies}>
-          {showReplies ? 'Hide Replies' : 'View Replies'}
-        </button>
-      )}
-      {showReplies && (
-        <div style={{ marginLeft: '20px' }}>
-          {replies.slice(0, repliesToShow).map((reply) => (
-            <div key={reply.id} className="reply-container" style={{ borderBottom: '1px solid #ddd', paddingBottom: '10px', marginBottom: '10px' }}>
-              <div className="reply-header">
-                <Link to={`/profile/${reply.userId}`}>
-                  <img
-                    src={reply?.profilePicUrl || 'default-profile-pic-url'}
-                    alt={`${reply?.displayName || 'User'}'s profile`}
-                    width="25"
-                    height="25"
-                  />
-                </Link>
-                <Link to={`/profile/${reply.userId}`}>
-                  <strong>{reply?.displayName || 'Anonymous'}</strong>
-                </Link>
-              </div>
-              <p>{reply.text}</p>
-              <p>
-                <small>
-                  {reply.timestamp
-                    ? reply.timestamp.seconds
-                      ? new Date(reply.timestamp.seconds * 1000).toLocaleString()
-                      : new Date(reply.timestamp).toLocaleString()
-                    : 'No timestamp'}
-                </small>
-              </p>
-              <p>
-                <small>Likes: {replyLikes[reply.id] || reply.likes || 0}</small>
-                <button onClick={() => toggleLikeReply(reply.id, replyLikes[reply.id] || reply.likes || 0)}>
-                  {userLikedReplies[reply.id] ? '👎 Unlike' : '👍 Like'}
-                </button>
-              </p>
-              {currentUser.uid === reply.userId && (
-                <button onClick={() => handleDeleteReply(reply.id)}>Delete</button>
-              )}
-              {/* Small red flag report icon for replies (if current user is not the reply author) */}
-              {currentUser.uid !== reply.userId && (
-                <div style={{ textAlign: 'right' }}>
-                  <ReportButton
-                    contentUrl={`${window.location.href}#reply-${reply.id}`}
-                    profileUrl={`/profile/${reply.userId}`}
-                    iconOnly={true}
-                  />
+      {
+        showReplies && (
+          <div className={styles.repliesContainer}>
+            {replies.slice(0, repliesToShow).map(reply => (
+              <div key={reply.id} className={styles["reply-container"]}>
+                <div className={styles["reply-header"]}>
+                  <Link to={`/profile/${reply.userId}`}>
+                    <img
+                      src={reply?.profilePicUrl || dummyPic}
+                      alt={`${reply?.displayName || 'User'}'s profile`}
+                      width="25"
+                      height="25"
+                    />
+                  </Link>
+                  <Link to={`/profile/${reply.userId}`}>
+                    <strong>{reply?.displayName || 'Anonymous'}</strong>
+                  </Link>
                 </div>
-              )}
-            </div>
-          ))}
-          {replies.length > repliesToShow && (
-            <button onClick={loadMoreReplies}>Load More Replies</button>
-          )}
-        </div>
-      )}
+                <p>{reply.text}</p>
+                <p>
+                  <small>
+                    {reply.timestamp
+                      ? reply.timestamp.seconds
+                        ? new Date(reply.timestamp.seconds * 1000).toLocaleString()
+                        : new Date(reply.timestamp).toLocaleString()
+                      : 'No timestamp'}
+                  </small>
+                </p>
+                <div className={styles.likeRow}>
+                  <span>Likes: {replyLikes[reply.id] || reply.likes || 0}</span>
+                  <span
+                    className={styles.emojiButton}
+                    onClick={() =>
+                      toggleLikeReply(reply.id, replyLikes[reply.id] || reply.likes || 0)
+                    }
+                  >
+                    {userLikedReplies[reply.id] ? '👎' : '👍'}
+                  </span>
+                </div>
+                {currentUser.uid === reply.userId && (
+                  <button
+                    onClick={() => handleDeleteReply(reply.id)}
+                    className={styles["delete-button"]}
+                  >
+                    Delete
+                  </button>
+                )}
+                {/* Small red flag report icon for replies (if current user is not the reply author) */}
+                {currentUser.uid !== reply.userId && (
+                  <div style={{ textAlign: 'right' }}>
+                    <ReportButton
+                      contentUrl={`${window.location.href}#reply-${reply.id}`}
+                      profileUrl={`/profile/${reply.userId}`}
+                      iconOnly={true}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+            {replies.length > repliesToShow && (
+              <button onClick={loadMoreReplies} className={styles.smallButton}>
+                Load More Replies
+              </button>
+            )}
+          </div>
+        )
+      }
+
+      {/* Reply Button */}
+      <button onClick={toggleReplyBox}>
+        {showReplyBox ? "Cancel" : "Reply"}
+      </button>
 
       {/* Reply Form */}
-      {!showReplyBox && <button onClick={toggleReplyBox}>Reply</button>}
-      {showReplyBox && (
-        <form onSubmit={handleReplySubmit}>
-          <textarea
-            value={newReply}
-            onChange={(e) => setNewReply(e.target.value)}
-            placeholder="Add a reply..."
-            required
-          />
-          <button type="submit">Post Reply</button>
-        </form>
-      )}
-    </div>
+      {
+        showReplyBox && (
+          <form onSubmit={handleReplySubmit} className={styles["reply-form"]}>
+            <textarea
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
+              placeholder="Add a reply..."
+              required
+            />
+            <button type="submit" className={styles["post-reply-button"]}>
+              Post Reply
+            </button>
+
+          </form>
+        )
+      }
+    </div >
   );
 };
 

@@ -3,6 +3,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import UserContext from '../UserContext';
+<<<<<<< HEAD
 import { collection, addDoc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../Firebase';
 import ReportButton from '../ReportButton/Report';
@@ -24,16 +25,24 @@ function formatTimestamp(timestamp) {
   return format(dateVal, 'MMM d, yyyy h:mm a');
 }
 
+=======
+import PostItem from '../PostItem';
+import { collection, addDoc, Timestamp, getDocs, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../Firebase';
+import { FaArrowLeft } from 'react-icons/fa';
+
+>>>>>>> main
 const DiscussionBoard = ({ preview }) => {
   const { user } = useContext(UserContext);
   const [newPost, setNewPost] = useState('');
   const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
 
   // Fetch posts from Firestore
   useEffect(() => {
-    const fetchPosts = async () => {
       if (!user) return;
+<<<<<<< HEAD
       try {
         const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
         const postsSnapshot = await getDocs(postsQuery);
@@ -47,6 +56,18 @@ const DiscussionBoard = ({ preview }) => {
       }
     };
     fetchPosts();
+=======
+
+        const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+        
+        const snap = onSnapshot(postsQuery, (snapshot) => {
+          const postsList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+          setPosts(postsList);
+        });
+        
+        return() => snap();
+    
+>>>>>>> main
   }, [user]);
 
   // Submit a new post
@@ -76,8 +97,19 @@ const DiscussionBoard = ({ preview }) => {
     }
   };
 
+<<<<<<< HEAD
   // If it's a preview, only show the first 3
   const displayedPosts = preview ? posts.slice(0, 3) : posts;
+=======
+  const displayedPosts = preview ? posts.slice(0, 3) : posts;
+
+  const handleReplyAdded = async (postId, updatedReplies) => {
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, { replies: updatedReplies });
+  };
+
+
+>>>>>>> main
 
   return (
     <div className="discussion-board" style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -85,9 +117,14 @@ const DiscussionBoard = ({ preview }) => {
         {preview ? 'Latest Discussions' : 'Discussion Board'}
       </h2>
 
+<<<<<<< HEAD
       {/* New Post Form */}
       {user && !preview && (
         <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+=======
+      {user && !preview && !selectedPost && (
+        <>
+>>>>>>> main
           <textarea
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
@@ -119,6 +156,7 @@ const DiscussionBoard = ({ preview }) => {
         </div>
       )}
 
+<<<<<<< HEAD
       <div style={{ marginTop: '1rem' }}>
         {user ? (
           displayedPosts.length > 0 ? (
@@ -227,6 +265,29 @@ const DiscussionBoard = ({ preview }) => {
             })
           ) : (
             <p style={{ textAlign: 'center' }}>No posts yet. Be the first to share!</p>
+=======
+      <div style={{ paddingTop: '20px' }} className="posts-list">
+        {user ? (
+          selectedPost ? (
+            <div>
+              <button onClick={() => setSelectedPost(null)}><FaArrowLeft /></button>
+              <PostItem post={selectedPost} />
+            </div>
+          ) : (
+            displayedPosts.length > 0 ? (
+              displayedPosts.map((post) => (
+                <PostItem
+                  key={post.id}
+                  post={post}
+                  onExpand={() => setSelectedPost(selectedPost === post ? null : post)}
+                  preview={preview}
+                  expanded={selectedPost === post} 
+                  onReplyAdded={handleReplyAdded} />
+              ))
+            ) : (
+              <p>No posts yet. Be the first to share!</p>
+            )
+>>>>>>> main
           )
         ) : (
           <div style={{ textAlign: 'center' }}>
@@ -262,6 +323,7 @@ const DiscussionBoard = ({ preview }) => {
         )}
       </div>
 
+<<<<<<< HEAD
       {/* Button to view the full discussion board if preview */}
       {user && preview && (
         <div style={{ textAlign: 'center', marginTop: '1rem' }}>
@@ -281,6 +343,13 @@ const DiscussionBoard = ({ preview }) => {
           </button>
         </div>
       )}
+=======
+      <div className="view-board-button">
+        {user && preview && (
+          <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
+        )}
+      </div>
+>>>>>>> main
     </div>
   );
 };

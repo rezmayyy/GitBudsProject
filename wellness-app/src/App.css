@@ -1,3 +1,19 @@
+/* Global Reset & Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: rgb(240, 240, 240);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* App Container */
 .App {
   display: flex;
   flex-direction: column;
@@ -8,47 +24,110 @@ main {
   flex: 1;
 }
 
-/* Layout for the main page */
-*{
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body{
-  font-family: Arial;
-  background-color:rgb(240, 240, 240);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; /**/
-}
-
-.home-container {
-  display: flex;
-  justify-content: space-between;
+/*---------- Home Page Layout ----------*/
+.home {
+  display: grid;
+  grid-template-columns: 260px 1fr;
   gap: 20px;
   padding: 20px;
-  width: 100%;
-  height: calc(80vh - 100px);
+  background-color: #f7f7f7;
+  min-height: calc(100vh - 60px);
 }
 
-/* ----------Subscription Section---------- */
+.sidebar {
+  width: 260px;
+  overflow-x: hidden;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+}
+
+/*---------- Main Content ----------*/
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/*---------- Recent Videos Section ----------*/
+.recent-videos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.recent-videos h2 {
+  text-align: center;
+  margin: 0;
+  font-size: 1.5em;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.load-more-btn {
+  padding: 10px 20px;
+  background-color: #4facfe;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.load-more-btn:hover {
+  background-color: #00c6ff;
+  transform: translateY(-2px);
+}
+
+/*---------- Discussion Section ----------*/
+.discussion-section {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------- Subscription List ---------- */
 .subscriptions-list li {
+  display: flex;
   align-items: center;
-  padding: 10px 10px;
+  justify-content: space-between;
+  padding: 10px;
   border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
 .subscriptions-list li span {
   margin-right: 15px;
 }
 
-/* Content Posts */
+.subscriptions-list li button {
+  flex-shrink: 0;
+  width: auto;
+  padding: 5px 10px;
+  font-size: 0.9em;
+}
 
-
-/* ----------Home Page Discussion Board Container (Preview)---------- */
+/* ----------Home Page Discussion Board Container---------- */
 #discussion-board {
-  width: 100%;
+  width: 20%;
   max-width: 400px;
   max-height: 320px;
   background-color: #fff;
@@ -66,17 +145,19 @@ body{
 }
 
 #discussion-board button {
-  width: 100%;
+  width: 20%;
   margin-top: 10px;
-  background-color: #4facfe;
+  padding: 12px 20px;
+  background-color: #f8c8dc;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 10px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 #discussion-board button:hover {
-  background-color: #00c6ff;
+  background-color: #f6a5b8;
   transform: translateY(-2px);
 }
 
@@ -120,20 +201,20 @@ body{
 }
 
 .discussion-board button {
-  width: 100%;
+  width: 20%;
   padding: 12px 20px;
-  background-color: #4facfe;
+  background-color: #f8c8dc;
   color: white;
   font-size: 1.1em;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .discussion-board button:hover {
-  background-color: #00c6ff;
+  background-color: #f6a5b8;
   transform: translateY(-2px);
 }
 
@@ -260,79 +341,105 @@ footer p {
   grid-column: 1 / -1;
 }
 
-
 /*-------- Responsive Design --------- */
 
 /* Adjust layout for tablets (768px or smaller) */
 @media (max-width: 768px) {
   .home-container {
-    flex-direction: column; /* Stack items vertically on smaller screens */
-    gap: 15px; /* Reduce gap for tighter layout */
-    padding: 15px; /* Smaller padding */
-    height: auto; /* Adjust height automatically */
+    flex-direction: column;
+    /* Stack items vertically on smaller screens */
+    gap: 15px;
+    /* Reduce gap for tighter layout */
+    padding: 15px;
+    /* Smaller padding */
+    height: auto;
+    /* Adjust height automatically */
   }
 
   #discussion-board {
-    max-width: 100%; /* Use full width on tablets */
-    max-height: none; /* Allow dynamic height */
-    padding: 10px; /* Reduce padding */
+    max-width: 100%;
+    /* Use full width on tablets */
+    max-height: none;
+    /* Allow dynamic height */
+    padding: 10px;
+    /* Reduce padding */
   }
 
   .discussion-board-page-container {
-    padding: 20px; /* Less padding for smaller screens */
+    padding: 20px;
+    /* Less padding for smaller screens */
   }
 
   .discussion-board {
-    width: 100%; /* Make discussion board full-width */
-    padding: 20px; /* Adjust padding */
+    width: 100%;
+    /* Make discussion board full-width */
+    padding: 20px;
+    /* Adjust padding */
   }
 
   .discussion-board h2 {
-    font-size: 1.8em; /* Smaller font for header */
+    font-size: 1.8em;
+    /* Smaller font for header */
   }
 }
 
 /* Adjust layout for mobile devices (480px or smaller) */
 @media (max-width: 480px) {
   footer {
-    grid-template-columns: 1fr; /* Stack footer sections in a single column */
-    text-align: center; /* Center-align text */
+    grid-template-columns: 1fr;
+    /* Stack footer sections in a single column */
+    text-align: center;
+    /* Center-align text */
   }
 
   .footer-section {
-    align-items: center; /* Center footer items */
-    margin-bottom: 15px; /* Add space between sections */
+    align-items: center;
+    /* Center footer items */
+    margin-bottom: 15px;
+    /* Add space between sections */
   }
 
   .discussion-board textarea,
   .reply-form textarea {
-    padding: 8px; /* Reduce padding in text areas */
-    font-size: 1em; /* Smaller font size */
+    padding: 8px;
+    /* Reduce padding in text areas */
+    font-size: 1em;
+    /* Smaller font size */
   }
 
   .discussion-board button,
   .reply-actions button {
-    padding: 10px 15px; /* Reduce button padding */
-    font-size: 1em; /* Smaller button font size */
+    padding: 10px 15px;
+    /* Reduce button padding */
+    font-size: 1em;
+    /* Smaller button font size */
   }
 
   .post-item {
-    padding: 10px; /* Smaller padding */
-    margin-bottom: 15px; /* Reduce space between posts */
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); /* Smaller shadow */
+    padding: 10px;
+    /* Smaller padding */
+    margin-bottom: 15px;
+    /* Reduce space between posts */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    /* Smaller shadow */
   }
 
   .post-actions {
-    flex-direction: column; /* Stack action buttons vertically */
-    gap: 10px; /* Adjust gap between buttons */
+    flex-direction: column;
+    /* Stack action buttons vertically */
+    gap: 10px;
+    /* Adjust gap between buttons */
   }
 
   #discussion-board h2 {
-    font-size: 1.4em; /* Smaller header font */
+    font-size: 1.4em;
+    /* Smaller header font */
   }
 
   #discussion-board button {
-    font-size: 1em; /* Smaller button font */
-    padding: 8px; /* Less padding */
+    font-size: 1em;
+    /* Smaller button font */
+    padding: 8px;
+    /* Less padding */
   }
 }

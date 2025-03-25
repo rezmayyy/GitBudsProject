@@ -1,452 +1,308 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
 import { format } from "date-fns";
-import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
+import { useTags } from "../TagSystem/useTags";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
 import ReportButton from '../ReportButton/Report';
+import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
+import ReactQuill from 'react-quill';
+import TagSelector from '../TagSystem/TagSelector';
+import styles from './ContentPostPage.module.css';
+import ContentDisplayView from './ContentDisplayView';
+import ContentEditForm from './ContentEditForm';
 
 const ContentPostPage = () => {
     const { postId } = useParams();
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedTitle, setEditedTitle] = useState("");
-    const [editedDescription, setEditedDescription] = useState("");
-    const [editedBody, setEditedBody] = useState("");
-
-    const [likes, setLikes] = useState([]);
-    const [dislikes, setDislikes] = useState([]);
-
-    const [showMessage, setShowMessage] = useState(false);
-    const [message, setMessage] = useState("");
-
     const auth = getAuth();
     const currentUser = auth.currentUser;
 
-    const [uid, setUid] = useState("");
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [authorName, setAuthorName] = useState('[Deleted]');
+
+    // Editing state (for title, description, body)
+    const [isEditing, setIsEditing] = useState('');
+    const [editedTitle, setEditedTitle] = useState('');
+    const [editedDescription, setEditedDescription] = useState('');
+    const [editedBody, setEditedBody] = useState('');
+
+    // Tag-related state
+    const [tags, setTags] = useState([]);
+    const [tagNames, setTagNames] = useState({});
+
+    // Interaction state
+    const [likes, setLikes] = useState([]);
+    const [dislikes, setDislikes] = useState([]);
+    const [views, setViews] = useState(0);
+
+    // For showing messages
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [error, setError] = useState(null);
 
-    //error handling
+    const fetchAuthorName = async (userId) => {
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        return userSnap.exists() ? userSnap.data().displayName : '[Deleted]';
+    };
+
     useEffect(() => {
-        const fetchPost = async () => { //fetch from firebase
-            const postDoc = doc(db, 'content-posts', postId);
-            const postSnapshot = await getDoc(postDoc);
-            if (postSnapshot.exists()) {
-                const postData = { id: postId, ...postSnapshot.data() };
-                setPost(postData);
-                setEditedTitle(postData.title || "");
-                setEditedDescription(postData.description || "");
-                setEditedBody(postData.body || "");
-                setLikes(postData.likes || []);
-                setDislikes(postData.dislikes || []);
-                const id = await getUserIdByDisplayName(postData.author);
-                setUid(id);
-                if (postData.status === 'approved') {
-                    setIsAuthorized(true);
-                }
-                else if (currentUser) {
-                    const userRef = doc(db, 'users', currentUser.uid);
-                    const userSnap = await getDoc(userRef);
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Fetch tags from 'tags' collection and build a mapping (id -> name)
+                const tagsCollection = await getDocs(collection(db, 'tags'));
+                const tagsMap = {};
+                tagsCollection.forEach(tagDoc => {
+                    const tagData = tagDoc.data();
+                    tagsMap[tagDoc.id] = tagData.name;
+                });
+                setTagNames(tagsMap);
 
-                    if (userSnap.exists()) {
-                        const role = userSnap.data().role;
-                        const isAuthorized = role === 'admin' || role === 'moderator';
+                // Fetch the post document
+                const postDoc = doc(db, 'content-posts', postId);
+                const postSnapshot = await getDoc(postDoc);
 
-                        if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
-                            setIsAuthorized(true);
-                        } else {
-                            setError('You do not have permission to view this post.');
+                if (postSnapshot.exists()) {
+                    const postData = { id: postId, ...postSnapshot.data() };
+
+                    // Determine author name
+                    let fetchedAuthorName;
+                    if (postData.userId) {
+                        fetchedAuthorName = await fetchAuthorName(postData.userId);
+                    } else if (postData.author) {
+                        fetchedAuthorName = postData.author;
+                    } else {
+                        fetchedAuthorName = '[Deleted]';
+                    }
+
+                    setPost({ ...postData, authorName: fetchedAuthorName });
+                    setEditedTitle(postData.title || "");
+                    setEditedDescription(postData.description || "");
+                    setEditedBody(postData.body || "");
+                    setLikes(postData.likes || []);
+                    setDislikes(postData.dislikes || []);
+                    setViews(postData.views || 0);
+
+                    // Process tags for the post: convert tag IDs to { value, label }
+                    const postTags = postData.tags || [];
+                    const tagObjects = postTags.map((tagId) => ({
+                        value: tagId,
+                        label: tagsMap[tagId] || tagId
+                    }));
+                    setTags(tagObjects);
+
+                    // Check authorization: if post status is approved or user is admin/moderator or author.
+                    if (postData.status === 'approved') {
+                        setIsAuthorized(true);
+                    } else if (currentUser) {
+                        const userRef = doc(db, 'users', currentUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        if (userSnap.exists()) {
+                            const role = userSnap.data().role;
+                            const adminOrMod = role === 'admin' || role === 'moderator';
+                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId || currentUser.displayName === postData.author) {
+                                setIsAuthorized(true);
+                            } else {
+                                setError('You do not have permission to view this post.');
+                            }
                         }
                     }
+                } else {
+                    setError('Post does not exist.');
                 }
-            } else {
-                console.error('No such document!');
+
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch data.');
+                setLoading(false);
             }
-            setLoading(false);
         };
 
-        fetchPost();
-    }, [postId]);
+        fetchData();
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-    if (!post) {
-        return <div>Error loading post</div>
-    }
-    const isAuthor = currentUser?.displayName === post.author;
-    if (!isAuthorized) {
-        return <div>Page is private</div>
-    }
+        //check if the post is already viewed in this session
+        const viewedKey = `viewed_${postId}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+            handleInteraction('view');
+        }
+    }, [postId, currentUser]);
 
-    const handleLike = async () => {
-        if (!currentUser) {
-            setMessage("You need to be logged in to like a post.");
-            setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000);
+    const handleSaveTags = async () => {
+        if (!post) return;
+        const postRef = doc(db, "content-posts", post.id);
+        const tagIds = tags.map(tag => tag.value);
+
+        await updateDoc(postRef, { tags: tagIds, lastUpdated: serverTimestamp() });
+        setPost((prev) => ({
+            ...prev,
+            tags: tagIds
+        }));
+        setIsEditing('');
+    };
+
+    const handleEditTags = () => {
+        if (isEditing !== "tags") {
+            setIsEditing("tags");
+        }
+    };
+
+    const selectedTagNames = tags.map(tag => tag.label);
+
+    const handleInteraction = async (type) => {
+        if (type === 'view') {
+            const viewedKey = `viewed_${postId}`;
+            const lastViewedTime = localStorage.getItem(viewedKey);
+            const now = new Date().getTime();
+
+            // Check if it's been more than 24 hours since the last view
+            if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
+                localStorage.setItem(viewedKey, now); // Update view timestamp
+
+                const postRef = doc(db, 'content-posts', postId);
+                await updateDoc(postRef, { views: increment(1) });
+
+                // Fetch updated post to get the correct views count
+                const updatedPostSnap = await getDoc(postRef);
+                if (updatedPostSnap.exists()) {
+                    setViews(updatedPostSnap.data().views || 0);
+                }
+            }
             return;
         }
 
-        const postRef = doc(db, "content-posts", post.id);
-
-        let updatedLikes = [...likes];
-        let updatedDislikes = [...dislikes];
-
-        if (likes.includes(currentUser.uid)) {
-            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
-        }
-        else {
-            updatedLikes.push(currentUser.uid);
-            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
-        }
-
-        await updateDoc(postRef, {
-            likes: updatedLikes,
-            dislikes: updatedDislikes,
-        });
-
-        setLikes(updatedLikes);
-        setDislikes(updatedDislikes);
-    };
-
-    const handleDislike = async () => {
         if (!currentUser) {
-            setMessage("You need to be logged in to dislike a post.");
+            setMessage('You must be logged in.');
             setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000);
             return;
         }
 
-        const postRef = doc(db, "content-posts", post.id);
+        const postRef = doc(db, 'content-posts', postId);
+        const updatedLikes = [...likes.filter(uid => uid !== currentUser.uid)];
+        const updatedDislikes = [...dislikes.filter(uid => uid !== currentUser.uid)];
 
-        let updatedLikes = [...likes];
-        let updatedDislikes = [...dislikes];
+        if (type === 'like' && !likes.includes(currentUser.uid)) updatedLikes.push(currentUser.uid);
+        if (type === 'dislike' && !dislikes.includes(currentUser.uid)) updatedDislikes.push(currentUser.uid);
 
-        if (dislikes.includes(currentUser.uid)) {
-            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
-        }
-        else {
-            updatedDislikes.push(currentUser.uid);
-            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
-        }
-
-        await updateDoc(postRef, {
-            likes: updatedLikes,
-            dislikes: updatedDislikes,
-        });
+        await updateDoc(postRef, { likes: updatedLikes, dislikes: updatedDislikes });
 
         setLikes(updatedLikes);
         setDislikes(updatedDislikes);
-    };
-
-    const handleEdit = () => {
-        if (isAuthor) {
-            setIsEditing(true);
-        }
+        return;
     };
 
     const handleSave = async () => {
-        try {
-            if (!post) {
-                return;
-            }
-            const postRef = doc(db, "content-posts", post.id);
-            const updatedData = {};
-            if (editedTitle) updatedData.title = editedTitle;
-            if (editedDescription) updatedData.description = editedDescription;
-            if (editedBody) updatedData.body = editedBody;
-            updatedData.lastUpdated = serverTimestamp();
-
-            await updateDoc(postRef, updatedData);
-
-            const updatedPostSnapshot = await getDoc(postRef);
-            const updatedPostData = updatedPostSnapshot.data();
-            setPost((prev) => ({
-                ...prev,
-                ...updatedPostData
-            }));
-            setIsEditing(false);
-        } catch (error) {
-            console.error("Error updating post ", error);
+        if (!post) return;
+        const slurRegex = /\b(?:nigger|kike|chink|spic|gook)\b/i;
+        if (slurRegex.test(editedTitle) || slurRegex.test(editedDescription)) {
+            setError("Your update contains inappropriate language.");
+            return;
         }
+
+        const postRef = doc(db, 'content-posts', postId);
+        const updatedData = {
+            title: editedTitle,
+            description: editedDescription,
+            body: editedBody,
+            tags: tags.map(t => t.value),
+            lastUpdated: serverTimestamp(),
+        };
+
+        await updateDoc(postRef, updatedData);
+        setPost({ ...post, ...updatedData });
+        setIsEditing('');
     };
 
-    const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
-    const formattedLastUpdated = post.lastUpdated && post.lastUpdated.toDate ? format(post.lastUpdated.toDate(), "PP p") : "Unknown Date";
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+    if (!post) return <div>Post not found</div>;
 
-    const modules = {
+    const formattedDate = post.timestamp ? format(post.timestamp.toDate(), 'PP p') : 'Unknown Date';
+    let updatedDate = null;
+    let formattedLastUpdated = "Never updated";
+
+    if (post.lastUpdated) {
+        let dateObj;
+
+        // If it’s a Firestore Timestamp
+        if (typeof post.lastUpdated.toDate === "function") {
+            dateObj = post.lastUpdated.toDate();
+        }
+        // If it’s already a Date
+        else if (post.lastUpdated instanceof Date) {
+            dateObj = post.lastUpdated;
+        }
+        // If it’s a parsable string
+        else if (!isNaN(Date.parse(post.lastUpdated))) {
+            dateObj = new Date(post.lastUpdated);
+        }
+
+        if (dateObj instanceof Date && !isNaN(dateObj)) {
+            formattedLastUpdated = format(dateObj, "PP p");
+        }
+    }
+    const canEdit = currentUser?.uid === post.userId;
+    const handleQuillImageUpload = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/jpeg,image/png,image/bmp";
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!(await validateFile(file, 'image'))) return;
+            const url = await uploadFileToStorage(file, `article-images/${currentUser.uid}`);
+            setEditedBody(prev => prev + `<img src="${url}" alt="Uploaded Image"/>`);
+        };
+    };
+
+    const quillModules = {
         toolbar: [
-            [{ 'header': [3, 4, 5, 6, false] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ header: [3, 4, 5, 6, false] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'align': [] }],
+            [{ color: [] }, { background: [] }, { align: [] }],
             ['link', 'image'],
-            ['clean']
+            ['clean'],
         ],
     };
-
     return (
-        <div className="content-page">
-            <div className="container d-flex justify-content-center align-items-center" style={{ marginTop: '50px', marginBottom: '50px' }}>
-                <div className={`card ${post.type}-post`} style={{ maxWidth: '800px', width: '100%' }}>
-                    {/* VIDEO POSTS */}
-                    {post.type === 'video' && (
-                        <div>
-                            <div className="card-header">
-                                <video className="card-img-top" controls poster={post.thumbnailURL}>
-                                    <source src={post.fileURL} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-
-                            <div className="card-body">
-                                <button className="btn btn-light" onClick={handleLike}>
-                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                </button>
-                                <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                </button>
-                            </div>
-
-                            {/* Title and description */}
-                            <div className="card-body">
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
-                                )) : (
-                                    <h5 className="card-title">{post.title}</h5>
-                                )}
-
-                                {isAuthor ? (isEditing === "description" ? (
-                                    <textarea
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedDescription}
-                                        onChange={(e) => setEditedDescription(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
-                                )) : (
-                                    <p className="card-text">{post.description}</p>
-                                )}
-
-                                {isEditing && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6>
-                            </div>
-
-                            {/* Author section */}
-                            <div className="card-footer">
-                                <h6>About the Author</h6>
-                                <p className="text-muted">Short section about the author.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* AUDIO POSTS */}
-                    {post.type === 'audio' && (
-                        <div>
-                            {/* Thumbnail */}
-                            <div className="card-header">
-                                <img
-                                    src={post.thumbnailURL}
-                                    alt="Audio Thumbnail"
-                                    className="card-img-top"
-                                    style={{ height: 'auto' }}
-                                />
-                            </div>
-
-                            {/* Audio controls */}
-                            <div className="card-body">
-                                <audio controls className="w-100">
-                                    <source src={post.fileURL} type="audio/mpeg" />
-                                    Your browser does not support the audio tag.
-                                </audio>
-                            </div>
-
-                            <div className="card-body">
-                                <button className="btn btn-light" onClick={handleLike}>
-                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                </button>
-                                <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                </button>
-                            </div>
-
-                            {/* Title and description */}
-                            <div className="card-body">
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
-                                )) : (
-                                    <h5 className="card-title">{post.title}</h5>
-                                )}
-
-                                {isAuthor ? (isEditing === "description" ? (
-                                    <textarea
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedDescription}
-                                        onChange={(e) => setEditedDescription(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
-                                )) : (
-                                    <p className="card-text">{post.description}</p>
-                                )}
-
-                                {isEditing && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6>
-                            </div>
-
-                            {/* Author section */}
-                            <div className="card-footer">
-                                <h6>About the Author</h6>
-                                <p className="text-muted">Short section about the author.</p>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ARTICLE POSTS */}
-                    {post.type === 'article' && (
-                        <div>
-                            <div className="article-header">
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h2 className="card-title mb-2" onDoubleClick={() => setIsEditing("title")}>{post.title}</h2>
-                                )) : (
-                                    <h2 className="card-title mb-2">{post.title}</h2>
-                                )}
-
-                                {isEditing === "title" && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-                                <div className="d-flex align-items-center justify-content-between">
-                                    <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6>
-                                    <div className="d-flex align-items-center gap-2">
-                                        <button className="btn btn-light" onClick={handleLike}>
-                                            <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                        </button>
-                                        <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                            <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="card-body">
-                                {post.thumbnailURL && (
-                                    <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{ maxHeight: "800px", objectFit: "cover" }} />
-                                )}
-
-                                {isAuthor ? (isEditing === "body" ? (
-                                    <ReactQuill
-                                        value={editedBody}
-                                        onChange={setEditedBody}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                        modules={modules}
-                                    />
-                                ) : (
-                                    <div className="article-body" onDoubleClick={() => setIsEditing("body")} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
-                                )) : (
-                                    <div className="article-body" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
-                                )}
-
-                                {isEditing === "body" && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Report Button Footer: Only show if the current user is not the author */}
-                    {!isAuthor && (
-                        <div className="card-footer d-flex justify-content-end">
-                            <ReportButton
-                                contentUrl={window.location.href}
-                                profileUrl={`/profile/${post.author}`}
-                            />
-                        </div>
-                    )}
-                </div>
-
-                {showMessage && (
-                    <div className="modal show d-block" tabIndex="-1">
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Notice</h5>
-                                    <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>{message}</p>
-                                    <Link to="/login" className="btn btn-primary">Log In</Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className='comments-section'>
-                <CommentsSection postId={post.id} currentUser={currentUser} />
-            </div>
+        <div className={styles.pageContainer}>
+            {isEditing === "content" ? (
+                <ContentEditForm
+                    type={post.type}
+                    title={editedTitle}
+                    description={editedDescription}
+                    body={editedBody}
+                    tags={tags}
+                    onChangeTitle={setEditedTitle}
+                    onChangeDescription={setEditedDescription}
+                    onChangeBody={setEditedBody}
+                    onChangeTags={setTags}
+                    onSave={handleSave}
+                    onCancel={() => setIsEditing("")}
+                />
+            ) : (
+                <ContentDisplayView
+                    post={post}
+                    canEdit={canEdit}
+                    onEdit={() => setIsEditing("content")}
+                    likes={likes}
+                    dislikes={dislikes}
+                    handleInteraction={handleInteraction}
+                    formattedDate={post.timestamp.toDate().toLocaleString()}
+                />
+            )}
+            <CommentsSection postId={post.id} currentUser={currentUser} />
         </div>
     );
-};
-
+}
 export default ContentPostPage;

@@ -1,263 +1,359 @@
-const admin = require('firebase-admin');
-const functions = require('firebase-functions');
-const { onSchedule } = require('firebase-functions/v2/scheduler');
-require('dotenv').config();
+// =============================
+// Firebase Cloud Functions — Grouped & Commented
+// =============================
 
-const serviceAccount = require(process.env.TRIBEWELL_KEY);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+require("dotenv").config();
+//for emulation
+// const serviceAccount = require(process.env.TRIBEWELL_KEY);
+// admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+//for deploying
+admin.initializeApp();
 const db = admin.firestore();
-const { Timestamp } = require('firebase-admin/firestore');
+const { Timestamp, FieldValue } = require("firebase-admin/firestore");
 
-// Function to ban a user by disabling their account and setting an unban date
+// Helper — enforce admin/moderator permissions
+async function assertAdminOrModerator(uid) {
+  const snap = await db.collection("users").doc(uid).get();
+  const role = snap.exists ? snap.data().role : null;
+  if (!["admin", "moderator"].includes(role)) {
+    throw new functions.https.HttpsError("permission-denied", "Only admins or moderators can perform this action.");
+  }
+}
+
+// =============================
+// ADMIN & MODERATION FUNCTIONS
+// =============================
+
+// Ban a user
 exports.banUser = functions.https.onCall(async (data, context) => {
   const { userId, duration, reason } = data.data || data;
   const authInfo = context.auth || data.auth;
-  // Only admins and moderators can ban users
-  if (!authInfo || !(authInfo.token.role === 'admin' || authInfo.token.role === 'moderator')) {
-    throw new functions.https.HttpsError('permission-denied', 'Only admins or moderators can ban users.');
-  }
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  await assertAdminOrModerator(authInfo.uid);
 
   try {
-    const bannedUntil = admin.firestore.Timestamp.fromDate(new Date(Date.now() + duration * 24 * 60 * 60 * 1000));
-
-    // Disable the user in Firebase Auth
+    const bannedUntil = Timestamp.fromDate(new Date(Date.now() + duration * 86400000));
     await admin.auth().updateUser(userId, { disabled: true });
-
-    // Set the unban date in Firestore
-    await db.collection('users').doc(userId).set(
-      { unbanDate: bannedUntil },
-      { merge: true }
-    );
-
-    // Create a new document in the punishments sub-collection with the ban details
-    await db.collection('users').doc(userId).collection('punishments').add({
-      reason: reason,
-      duration: duration,
-      bannedBy: context.auth.token.uid, // Store the UID of the admin/moderator banning the user
-      timestamp: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    return { message: `User has been banned for ${duration} days. Reason: ${reason}` };
+    await db.collection("users").doc(userId).set({ unbanDate: bannedUntil }, { merge: true });
+    await db.collection("users").doc(userId).collection("punishments").add({ reason, duration, bannedBy: authInfo.uid, timestamp: Timestamp.now(), unbanDate: bannedUntil });
+    return { message: `User banned for ${duration} days.` };
   } catch (error) {
-    console.error('Error banning user:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to ban user.');
+    console.error("Error banning user:", error);
+    throw new functions.https.HttpsError("internal", "Failed to ban user.");
   }
 });
 
-exports.createContentPost = functions.https.onCall(async (data, context) => {
-  // Require an authenticated user
+// Unban a single user
+exports.unbanUser = functions.https.onCall(async (data, context) => {
+  const { userId } = data.data || data;
   const authInfo = context.auth || data.auth;
-  if (!authInfo) {
-    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated.');
-  }
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  await assertAdminOrModerator(authInfo.uid);
 
-  const { postData, filePath, thumbnailPath } = (data.data || data);
+  try {
+    await admin.auth().updateUser(userId, { disabled: false });
+    await db.collection("users").doc(userId).update({ unbanDate: FieldValue.delete() });
+    const punishmentsRef = db.collection("users").doc(userId).collection("punishments");
+    const snap = await punishmentsRef.orderBy("timestamp", "desc").limit(1).get();
+    if (!snap.empty) await punishmentsRef.doc(snap.docs[0].id).delete();
+    return { message: "User unbanned." };
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    throw new functions.https.HttpsError("internal", "Failed to unban user.");
+  }
+});
+
+// Scheduled auto-unban
+exports.unbanUsers = functions.pubsub.schedule("every 24 hours").onRun(async () => {
+  const now = Timestamp.now();
+  const toUnban = await db.collection("users").where("unbanDate", "<=", now).get();
+  await Promise.all(toUnban.docs.map(async (doc) => {
+    const uid = doc.id;
+    await admin.auth().updateUser(uid, { disabled: false });
+    await db.collection("users").doc(uid).update({ unbanDate: FieldValue.delete() });
+    await db.collection("users").doc(uid).collection("punishments").orderBy("timestamp", "desc").limit(1).get().then((s) => s.empty ? null : s.docs[0].ref.delete());
+  }));
+});
+
+// =============================
+// CONTENT FUNCTIONS
+// =============================
+
+exports.createContentPost = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+
+  const { postData, filePath, thumbnailPath } = data.data || data;
   const userId = authInfo.uid;
 
-  // Basic check: ensure that filePath starts with the expected subfolder (for non-articles)
-  if (postData.type !== 'article') {
-    // Decode the file URL to extract the storage path
+  // Validate storage paths
+  if (postData.type !== "article") {
     try {
-      const url = new URL(filePath);
-      const encodedPath = url.pathname.split('/o/')[1];
-      const decodedPath = decodeURIComponent(encodedPath);
-
-      const expectedFolder = `${postData.type}-uploads/${userId}/`;
-      if (!decodedPath.startsWith(expectedFolder)) {
-        throw new functions.https.HttpsError(
-          'permission-denied',
-          'Invalid file path. File must be uploaded to your designated folder.'
-        );
+      const decode = (url) => decodeURIComponent(new URL(url).pathname.split("/o/")[1]);
+      if (
+        !decode(filePath).startsWith(`${postData.type}-uploads/${userId}/`) ||
+        !decode(thumbnailPath).startsWith(`thumbnails/${userId}/`)
+      ) {
+        throw new Error();
       }
-
-      // Similarly, decode and verify thumbnailPath
-      const thumbUrl = new URL(thumbnailPath);
-      const thumbEncoded = thumbUrl.pathname.split('/o/')[1];
-      const decodedThumbPath = decodeURIComponent(thumbEncoded);
-      const expectedThumbFolder = `thumbnails/${userId}/`;
-      if (!decodedThumbPath.startsWith(expectedThumbFolder)) {
-        throw new functions.https.HttpsError(
-          'permission-denied',
-          'Invalid thumbnail path. Thumbnail must be uploaded to your designated folder.'
-        );
-      }
-    } catch (err) {
-      console.error("Error parsing file paths:", err);
-      throw new functions.https.HttpsError(
-        'invalid-argument',
-        'Invalid file URL format.'
-      );
+    } catch {
+      throw new functions.https.HttpsError("permission-denied", "Invalid file URL");
     }
   }
 
-  // Query the auto-approval setting
-  let autoApprove = false;
-  try {
-    const settingsDoc = await db.collection("adminSettings").doc("uploadRules").get();
-    if (settingsDoc.exists) {
-      autoApprove = settingsDoc.data().AutoApprove === true;
-    }
-  } catch (err) {
-    console.error("Error fetching auto-approve settings:", err);
-  }
+  const settingsSnap = await db.collection("adminSettings").doc("uploadRules").get().catch(() => null);
+  const autoApprove = settingsSnap?.data()?.AutoApprove === true;
 
-  // Build your new post object
   const newPost = {
     title: postData.title,
-    description: postData.description || '',
-    body: postData.body || '',
-    author: authInfo.token.name || userId,
+    description: postData.description || "",
+    body: postData.body || "",
     type: postData.type,
     fileURL: filePath || null,
     thumbnailURL: thumbnailPath || null,
     timestamp: Timestamp.now(),
     status: autoApprove ? "approved" : "pending",
-    keywords: Array.isArray(postData.keywords) ? postData.keywords : []
+    keywords: Array.isArray(postData.keywords) ? postData.keywords : [],
+    userId: userId,
+    tags: Array.isArray(postData.tags) ? postData.tags : [],
   };
 
-  try {
-    const docRef = await db.collection("content-posts").add(newPost);
-    return { message: "Post created successfully", postId: docRef.id };
-  } catch (error) {
-    console.error("Error creating post:", error);
-    throw new functions.https.HttpsError("internal", "Failed to create post.");
-  }
+  const docRef = await db.collection("content-posts").add(newPost);
+
+  return { message: "Post created", postId: docRef.id };
 });
 
-exports.unbanUser = functions.https.onCall(async (data, context) => {
-  const { userId } = data.data || data;
-  const authInfo = context.auth || data.auth;
-
-  if (!authInfo || !(authInfo.token.role === 'admin' || authInfo.token.role === 'moderator')) {
-    throw new functions.https.HttpsError('permission-denied', 'Only admins or moderators can unban users.');
-  }
-
-  try {
-    // Reactivate the account by removing the unbanDate and enabling the user in Firebase Auth
-    await admin.auth().updateUser(userId, { disabled: false });
-
-    // Remove the unbanDate field from Firestore
-    await db.collection('users').doc(userId).update({
-      unbanDate: admin.firestore.FieldValue.delete(),
-    });
-
-    // Add a new "status: appealed" to the user's latest punishment
-    const punishmentsRef = db.collection('users').doc(userId).collection('punishments');
-    const punishmentsSnap = await punishmentsRef.orderBy('timestamp', 'desc').limit(1).get();
-    if (!punishmentsSnap.empty) {
-      const latestPunishment = punishmentsSnap.docs[0];
-      await punishmentsRef.doc(latestPunishment.id).update({ status: 'appealed' });
-    }
-
-    return { message: 'User has been unbanned and their punishment status updated to appealed.' };
-  } catch (error) {
-    console.error('Error unbanning user:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to unban user.');
-  }
-});
-
-// Function to automatically unban users when the unban date is reached
-exports.unbanUsers = onSchedule('every 24 hours', async (event) => {
-  try {
-    const now = admin.firestore.Timestamp.now();
-
-    const usersToUnban = await db.collection('users')
-      .where('unbanDate', '<=', now)
-      .get();
-
-    const unbanPromises = usersToUnban.docs.map(async (doc) => {
-      const userId = doc.id;
-
-      // Enable user in Firebase Auth
-      await admin.auth().updateUser(userId, { disabled: false });
-
-      // Remove the unbanDate field
-      await db.collection('users').doc(userId).update({
-        unbanDate: admin.firestore.FieldValue.delete()
-      });
-
-      // Optionally, you could send a notification to the user here
-    });
-
-    await Promise.all(unbanPromises);
-    console.log('Unbanned users successfully.');
-  } catch (error) {
-    console.error('Error unbanning users:', error);
-  }
-});
+// =============================
+// USER ACCOUNT FUNCTIONS
+// =============================
 
 exports.handleUserSignup = functions.https.onCall(async (data, context) => {
-  const payload = data.data || data;
-  console.log("handleUserSignup received data:", payload);
-  const { email, password, displayName } = payload;
+  // Expect payload: { email, password, firstName, lastName, displayName }
+  const { email, password, displayName } = data.data || data;
   if (!email || !password || !displayName) {
     throw new functions.https.HttpsError(
-      'invalid-argument',
-      'Email, password, and display name are required.'
+      "invalid-argument",
+      "Email, password, first name, last name, and display name are required.",
     );
   }
 
-  // Check if display name is already taken
-  const displayNameRef = db.collection("usernames").doc(displayName);
-  const displayNameDoc = await displayNameRef.get();
-  if (displayNameDoc.exists) {
+  // Regex: at least 8 characters, one uppercase, one lowercase, one number, one special character
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!passwordRegex.test(password)) {
     throw new functions.https.HttpsError(
-      'already-exists',
-      'Display name is already taken.'
+      "invalid-argument",
+      "Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.",
     );
+  }
+
+  // Check if the chosen displayName is already taken.
+  const usernameDoc = await db.collection("usernames").doc(displayName).get();
+  if (usernameDoc.exists) {
+    throw new functions.https.HttpsError("already-exists", "Display name is already taken.");
   }
 
   try {
-    // Create the user using the Admin SDK
+    // Create the user in Firebase Auth (account created enabled)
     const userRecord = await admin.auth().createUser({
-      email,
-      password,
-      displayName,
+      email: email,
+      password: password,
+      displayName: displayName,
     });
 
-    // Create a custom token for client sign-in
+    // Reserve the displayName in the usernames collection.
+    await db.collection("usernames").doc(displayName).set({ uid: userRecord.uid });
+
+    // Create the public user document in the "users" collection (only public info)
+    await db.collection("users").doc(userRecord.uid).set({
+      displayName: displayName,
+    });
+
+    // Create a subcollection "privateInfo" under the user document for sensitive data.
+    await db.collection("users").doc(userRecord.uid)
+      .collection("privateInfo").doc("info").set({
+        email: email,
+      });
+
+    // Create a custom token so the client can sign in.
     const customToken = await admin.auth().createCustomToken(userRecord.uid);
 
-    // Reserve the display name and create the user document atomically
-    const userRef = db.collection("users").doc(userRecord.uid);
-    await db.runTransaction(async (transaction) => {
-      transaction.set(displayNameRef, { uid: userRecord.uid });
-      transaction.set(userRef, {
-        uid: userRecord.uid,
-        email,
-        displayName,
-        status: "active",
-        role: "normal",
-      });
-    });
-
-    return { message: "User signed up successfully", token: customToken, uid: userRecord.uid };
+    return {
+      message: "Signup initiated. Please check your email for a confirmation link.",
+      token: customToken,
+    };
   } catch (error) {
-    console.error("Error signing up user:", error);
+    console.error("Error in handleUserSignup:", error);
     throw new functions.https.HttpsError("internal", error.message);
   }
 });
 
-exports.reportUser = functions.https.onCall(async (data, context) => {
-  const { userId, reason } = data.data || data;
+exports.changeDisplayName = functions.https.onCall(async (data, context) => {
   const authInfo = context.auth || data.auth;
-  if (!authInfo) {
-    throw new functions.https.HttpsError('unauthenticated', 'Must be logged in.');
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  const { newDisplayName } = data.data || data;
+  if (!newDisplayName) throw new functions.https.HttpsError("invalid-argument", "New display name required");
+
+  const existing = await db.collection("usernames").doc(newDisplayName).get();
+  if (existing.exists) throw new functions.https.HttpsError("already-exists", "Name taken");
+
+  const userRef = db.collection("users").doc(authInfo.uid);
+  const old = await userRef.get(); if (!old.exists) throw new functions.https.HttpsError("not-found", "User missing");
+  const oldName = old.data().displayName;
+
+  await db.runTransaction((tx) => {
+    tx.delete(db.collection("usernames").doc(oldName));
+    tx.set(db.collection("usernames").doc(newDisplayName), { uid: authInfo.uid });
+    tx.update(userRef, { displayName: newDisplayName });
+  });
+  return { message: "Display name updated" };
+});
+
+exports.changePassword = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  const { newPassword } = data.data || data;
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  if (!regex.test(newPassword)) throw new functions.https.HttpsError("invalid-argument", "Password too weak");
+  await admin.auth().updateUser(authInfo.uid, { password: newPassword });
+  return { message: "Password changed" };
+});
+
+
+exports.deleteAccount = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  const uid = authInfo.uid;
+
+  // --- STORAGE CLEANUP ---
+  const storagePaths = [
+    `video-uploads/${uid}`,
+    `audio-uploads/${uid}`,
+    `article-images/${uid}`,
+    `profile-pics/${uid}`,
+    `thumbnails/${uid}`,
+  ];
+  const bucket = admin.storage().bucket();
+  for (const prefix of storagePaths) await bucket.deleteFiles({ prefix });
+
+  // --- MASK CONTENT AND DISCUSSION POSTS ---
+  for (const postDoc of (await db.collection("content-posts").get()).docs) await maskContentPost(postDoc, uid);
+  for (const postDoc of (await db.collection("posts").get()).docs) await maskDiscussionPost(postDoc, uid);
+
+  // --- DELETE OTHER COLLECTION RECORDS ---
+  await deleteCollectionDocs("diary_entries", uid);
+  await deleteCollectionDocs("healers", uid);
+
+  // --- REMOVE USER RECORDS & AUTH ---
+  const userSnap = await db.collection("users").doc(uid).get();
+  const displayName = userSnap.exists ? userSnap.data().displayName : null;
+  if (displayName) await db.collection("usernames").doc(displayName).delete();
+  await db.collection("users").doc(uid).delete();
+  await admin.auth().deleteUser(uid);
+
+  return { message: "Account fully deleted and content masked" };
+});
+
+// =============================
+// HELPERS
+// =============================
+
+async function deleteCollectionDocs(collectionName, uid) {
+  const snap = await db.collection(collectionName).where("userId", "==", uid).get();
+  for (const doc of snap.docs) await doc.ref.delete();
+}
+
+// Helper: mask a content-post (top-level, comments, replies)
+async function maskContentPost(docSnap, uid) {
+  const data = docSnap.data();
+  if (data.userId === uid) {
+    await docSnap.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
   }
-  try {
-    await db.collection('users')
-      .doc(userId)
-      .collection('reports')
-      .add({
-        reason,
-        reportedBy: authInfo.uid,
-        timestamp: Timestamp.now(),
-      });
-    return { message: `User reported: ${reason}` };
-  } catch (error) {
-    console.error('Error reporting user:', error);
-    throw new functions.https.HttpsError('internal', 'Failed to report user.');
+  const comments = await docSnap.ref.collection("comments").get();
+  for (const comment of comments.docs) {
+    const cData = comment.data();
+    if (cData.userId === uid) await comment.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
+    const replies = await comment.ref.collection("replies").get();
+    for (const reply of replies.docs) {
+      if (reply.data().userId === uid) await reply.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
+    }
   }
+}
+
+// Helper: mask a discussion board post
+async function maskDiscussionPost(docSnap, uid) {
+  const data = docSnap.data();
+  const update = {};
+  if (data.userId === uid) Object.assign(update, { userId: null, userName: "[Deleted]", message: "[deleted]" });
+  if (Array.isArray(data.replies)) {
+    const newReplies = data.replies.map((reply) => reply.userId === uid ?
+      { ...reply, userId: null, userName: "[Deleted]", message: "[deleted]" } :
+      reply,
+    );
+    if (JSON.stringify(newReplies) !== JSON.stringify(data.replies)) update.replies = newReplies;
+  }
+  if (Object.keys(update).length) await docSnap.ref.update(update);
+}
+
+
+// =============================
+// MISCELLANEOUS FUNCTIONS
+// =============================
+
+exports.applyForHealer = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth; if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  const { details } = data.data || data; if (!details) throw new functions.https.HttpsError("invalid-argument", "Details required");
+  const ref = await db.collection("healerApplications").add({ applicantId: authInfo.uid, details, status: "pending", createdAt: Timestamp.now() });
+  return { id: ref.id };
+});
+
+exports.reportUser = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth; if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  const { ruleViolation, reportDescription, contentUrl, offendingUserId } = data.data || data;
+  const ticket = { category: "report", title: ruleViolation, body: `Offending User: ${offendingUserId}\nOffending URL: ${contentUrl}\nDescription: ${reportDescription}`, createdAt: Timestamp.now(), status: "pending", userId: authInfo.uid, displayName: authInfo.token.name || authInfo.uid };
+  const ref = await db.collection("tickets").add(ticket);
+  return { ticketId: ref.id };
+});
+
+// =============================
+// EMAIL CHANGE FUNCTIONS
+// =============================
+
+// Step 1️: Request email change — sends a confirmation link to the user’s current email
+exports.requestEmailChange = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+
+  const { newEmail } = data.data || data;
+  if (!newEmail) throw new functions.https.HttpsError("invalid-argument", "New email required");
+
+  const tokenDoc = db.collection("emailChangeRequests").doc();
+  const token = tokenDoc.id;
+  const expires = Timestamp.fromDate(new Date(Date.now() + 3600 * 1000)); // 1 hour
+
+  await tokenDoc.set({ uid: authInfo.uid, newEmail, expires });
+  const confirmUrl = `${process.env.REACT_APP_APP_URL}/confirm-email-change?token=${token}`;
+
+  await admin.auth().generateEmailVerificationLink(authInfo.token.email, { url: confirmUrl });
+  return { message: "A confirmation link has been sent to your current email." };
+});
+
+// Step 2️: Confirm email change — called when user clicks the link
+exports.confirmEmailChange = functions.https.onCall(async (data, context) => {
+  const { token } = data.data || data;
+  if (!token) throw new functions.https.HttpsError("invalid-argument", "Token required");
+
+  const tokenDoc = await db.collection("emailChangeRequests").doc(token).get();
+  if (!tokenDoc.exists) throw new functions.https.HttpsError("not-found", "Invalid or expired token");
+
+  const { uid, newEmail, expires } = tokenDoc.data();
+  if (expires.toDate() < new Date()) {
+    await tokenDoc.ref.delete();
+    throw new functions.https.HttpsError("deadline-exceeded", "Token expired");
+  }
+
+  await admin.auth().updateUser(uid, { email: newEmail });
+  await tokenDoc.ref.delete();
+  return { message: "Email updated successfully." };
 });

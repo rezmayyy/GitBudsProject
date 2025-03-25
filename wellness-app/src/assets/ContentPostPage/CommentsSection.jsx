@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { db } from '../Firebase';
 import { collection, addDoc, query, getDocs, serverTimestamp } from 'firebase/firestore';
 import Comment from './Comment';
-import './Comment.css'; // Make sure this file contains the updated styles
+import styles from './Comment.module.css';
+import dummyPic from '../dummyPic.jpeg';
 
 const CommentsSection = ({ postId, currentUser }) => {
   const [comments, setComments] = useState([]);
@@ -47,7 +48,7 @@ const CommentsSection = ({ postId, currentUser }) => {
         text: newComment,
         timestamp: serverTimestamp(),
         displayName: currentUser.displayName || 'Anonymous',
-        profilePicUrl: currentUser.profilePicUrl || 'default-profile-pic-url',
+        profilePicUrl: currentUser.profilePicUrl || dummyPic,
       };
 
       const commentRef = await addDoc(collection(db, 'content-posts', postId, 'comments'), commentData);
@@ -61,10 +62,10 @@ const CommentsSection = ({ postId, currentUser }) => {
   };
 
   return (
-    <div className="comments-section">
-      <h3>Comments</h3>
+    <div className={styles.commentsContainer}>
+      <h3 className={styles.commentsTitle}>Comments</h3>
       {comments.length === 0 ? (
-        <p>No comments yet. Be the first to comment!</p>
+        <p className={styles.noComments}>No comments yet. Be the first to comment!</p>
       ) : (
         comments.slice(0, commentsToShow).map(comment => {
           const user = users[comment.userId];
@@ -82,20 +83,26 @@ const CommentsSection = ({ postId, currentUser }) => {
       )}
 
       {commentsToShow < comments.length && (
-        <button className="load-more" onClick={() => setCommentsToShow(commentsToShow + 5)}>
+        <button
+          className={styles.loadMoreButton}
+          onClick={() => setCommentsToShow(commentsToShow + 5)}
+        >
           Load More
         </button>
       )}
 
       {currentUser && (
-        <form onSubmit={handleCommentSubmit}>
+        <form className={styles.commentForm} onSubmit={handleCommentSubmit}>
           <textarea
+            className={styles.commentTextarea}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Add a comment..."
             required
           />
-          <button type="submit" className="post-comment-button">Post Comment</button>
+          <button type="submit" className={styles.postCommentButton}>
+            Post Comment
+          </button>
         </form>
       )}
     </div>

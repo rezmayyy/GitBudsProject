@@ -1,41 +1,41 @@
-import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Keep only one import statement for Link
-import "../../styles/auth.css";
-import "../../styles/guide.css";
+import React, { useContext, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaLock } from "react-icons/fa";
-import {auth} from "../Firebase";
-import {signInWithEmailAndPassword} from 'firebase/auth'
+import { auth } from "../Firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import UserContext from "../UserContext";
-
+import "../../styles/auth.css";
 
 function Login() {
     const navigate = useNavigate();
-    const [email, setEmail] = React.useState('');
-    const [password, setPassword] = React.useState('');
-    const {setUser} = useContext(UserContext);
+    const { setUser } = useContext(UserContext);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
 
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
-    };
-
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-    };
-
-    const handleSubmit = async(e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(""); // reset previous
 
         try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const user = userCredential.user;
-          console.log(user);
-          setUser(user);
-          //setDisplayName
-          navigate('/')
-        } catch (error) {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          console.error(errorCode, errorMessage);
+            const { user } = await signInWithEmailAndPassword(auth, email, password);
+            setUser(user);
+            navigate("/");
+        } catch (err) {
+            switch (err.code) {
+                case "auth/user-disabled":
+                    setError("Your account has been disabled. Contact support.");
+                    break;
+                case "auth/too-many-requests":
+                    setError("Too many login attempts — please try again later.");
+                    break;
+                case "auth/invalid-email":
+                case "auth/user-not-found":
+                case "auth/wrong-password":
+                default:
+                    setError("Invalid email or password.");
+            }
+            console.error(err.code, err.message);
         }
     };
 
@@ -45,40 +45,38 @@ function Login() {
                 <div className="form-box login">
                     <form onSubmit={handleSubmit}>
                         <h1>Login</h1>
+
                         <div className="input-box">
+                            <FaUser className="icon" />
                             <input
-                                type="text"
+                                type="email"
                                 placeholder="Email"
                                 required
                                 value={email}
-                                onChange={handleEmailChange}
+                                onChange={e => setEmail(e.target.value)}
                             />
-                            <FaUser className="icon" />
                         </div>
+
                         <div className="input-box">
+                            <FaLock className="icon" />
                             <input
                                 type="password"
                                 placeholder="Password"
                                 required
                                 value={password}
-                                onChange={handlePasswordChange}
+                                onChange={e => setPassword(e.target.value)}
                             />
-                            <FaLock className="icon" />
                         </div>
 
-                        <div className="checkbox">
-                            <label>
-                                <input type="checkbox" /> Remember me
-                            </label>
-                            <Link to="/recover">Forgot password?</Link>
-                        </div>
+                        {error && <p className="error-message">{error}</p>}
 
                         <button type="submit">Login</button>
 
                         <div className="link">
                             <p>
-                                Don't have an account? <Link to="/signup">Sign Up</Link>
+                                Don’t have an account? <Link to="/signup">Sign Up</Link>
                             </p>
+                            <Link to="/recover">Forgot password?</Link>
                         </div>
                     </form>
                 </div>
