@@ -4,9 +4,10 @@ import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firest
 import { useNavigate } from 'react-router-dom';
 import { db } from './Firebase'; 
 import { FaHeart } from 'react-icons/fa';
+
 import dummyPic from './dummyPic.jpeg';
 
-const PostItem = ({ post, preview }) => { 
+const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => { 
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -15,6 +16,7 @@ const PostItem = ({ post, preview }) => {
   const [likedByUser, setLikedByUser] = useState(post.likers?.includes(user?.uid));
   const [replies, setReplies] = useState(post.replies || []); 
   const [profilePicUrl, setProfilePicUrl] = useState(post.profilePicUrl || dummyPic);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const fetchUserProfilePic = async () => {
@@ -36,7 +38,9 @@ const PostItem = ({ post, preview }) => {
 
   
   // Toggle like for the main post
-  const toggleLike = async () => {
+  const toggleLike = async (event) => {
+    event.stopPropagation();
+
     if (!user) {
       alert('You need to log in to like this post!');
       return;
@@ -94,6 +98,11 @@ const PostItem = ({ post, preview }) => {
         setReplies(updatedReplies);
         setReplyText('');
         setShowReplyForm(false);
+        setExpanded(true);
+
+        onReplyAdded(post.id, updatedReplies);
+        
+
       } catch (error) {
         console.error('Error submitting reply:', error);
       }
@@ -135,8 +144,17 @@ const PostItem = ({ post, preview }) => {
   };
 
   return (
-    <div className="post-item">
-      <div className="post-header">
+    <div className="post-item" 
+      onClick={() => { setExpanded(!expanded); onExpand(); }}
+      style={{
+        cursor: 'pointer',
+        borderBottom: '1px solid #ddd',
+        padding: '10px',
+        transition: 'all 0.3s ease-in-out'
+        }}>
+
+      <div className="post-header"
+        style={{display: 'flex', alignItems: 'center'}}>
         <img
           src={profilePicUrl} 
           alt="Profile"
@@ -156,7 +174,13 @@ const PostItem = ({ post, preview }) => {
         </p>
         <span>{formatDate(post.timestamp)}</span>
       </div>
-      <p>{post.message}</p>
+
+      
+      <p>
+        {expanded ? post.message : post.message.slice(0, 100)
+          + (post.message.length > 100 ? '...' : '')}
+      </p>
+
 
       <div className="post-actions">
         <FaHeart
@@ -167,7 +191,7 @@ const PostItem = ({ post, preview }) => {
         <span>{replies.length || 0} {replies.length === 1 ? 'Reply' : 'Replies'}</span>
       </div>
 
-      {replies.length > 0 && (
+      {expanded && post.replies?.length > 0 && (
         <div className="replies-list">
           {replies.map((reply) => (
             <div key={reply.id} className="reply-item">
@@ -196,7 +220,7 @@ const PostItem = ({ post, preview }) => {
               <div className="reply-actions">
                 <FaHeart
                   className={`heart-icon ${reply.likers?.includes(user?.uid) ? 'liked' : ''}`}
-                  onClick={() => toggleReplyLike(reply.id)}
+                  onClick={(e) => {e.stopPropagation(); toggleReplyLike(reply.id)}}
                 />
                 <span>{reply.likes || 0} {reply.likes === 1 ? 'Like' : 'Likes'}</span>
               </div>
@@ -209,7 +233,7 @@ const PostItem = ({ post, preview }) => {
       {!preview && (
         <>
           <div style={{paddingTop: '10px'}}>
-            <button onClick={() => setShowReplyForm(!showReplyForm)}>
+            <button onClick={(e) => {e.stopPropagation(); setShowReplyForm(!showReplyForm)}}>
               {showReplyForm ? 'Cancel' : 'Reply'}
             </button>
           </div>

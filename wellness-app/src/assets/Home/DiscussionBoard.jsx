@@ -2,29 +2,29 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import PostItem from '../PostItem';
-import { collection, addDoc, Timestamp, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, Timestamp, getDocs, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../Firebase';
+import { FaArrowLeft } from 'react-icons/fa';
 
-const DiscussionBoard = ({ preview }) => { 
+const DiscussionBoard = ({ preview }) => {
   const { user } = useContext(UserContext);
   const [newPost, setNewPost] = useState('');
   const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPosts = async () => {
       if (!user) return;
-      
-      try {
+
         const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-        const postsSnapshot = await getDocs(postsQuery);
-        const postsList = postsSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        setPosts(postsList); 
-      } catch (error) {
-        console.error('Error fetching posts: ', error);
-      }
-    };
-    fetchPosts();
+        
+        const snap = onSnapshot(postsQuery, (snapshot) => {
+          const postsList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+          setPosts(postsList);
+        });
+        
+        return() => snap();
+    
   }, [user]);
 
   const handlePostSubmit = async () => {
@@ -55,13 +55,20 @@ const DiscussionBoard = ({ preview }) => {
     }
   };
 
-  const displayedPosts = preview ? posts.slice(0, 3) : posts; 
+  const displayedPosts = preview ? posts.slice(0, 3) : posts;
+
+  const handleReplyAdded = async (postId, updatedReplies) => {
+    const postRef = doc(db, 'posts', postId);
+    await updateDoc(postRef, { replies: updatedReplies });
+  };
+
+
 
   return (
     <div className="discussion-board">
       <h2>{preview ? 'Latest Discussions' : 'Discussion Board'}</h2>
 
-      {user && !preview && (
+      {user && !preview && !selectedPost && (
         <>
           <textarea
             value={newPost}
@@ -73,14 +80,27 @@ const DiscussionBoard = ({ preview }) => {
         </>
       )}
 
-      <div style={{paddingTop: '20px'}} className="posts-list">
+      <div style={{ paddingTop: '20px' }} className="posts-list">
         {user ? (
-          displayedPosts.length > 0 ? (
-            displayedPosts.map((post) => (
-              <PostItem key={post.id} post={post} preview={preview} />
-            ))
+          selectedPost ? (
+            <div>
+              <button onClick={() => setSelectedPost(null)}><FaArrowLeft /></button>
+              <PostItem post={selectedPost} />
+            </div>
           ) : (
-            <p>No posts yet. Be the first to share!</p>
+            displayedPosts.length > 0 ? (
+              displayedPosts.map((post) => (
+                <PostItem
+                  key={post.id}
+                  post={post}
+                  onExpand={() => setSelectedPost(selectedPost === post ? null : post)}
+                  preview={preview}
+                  expanded={selectedPost === post} 
+                  onReplyAdded={handleReplyAdded} />
+              ))
+            ) : (
+              <p>No posts yet. Be the first to share!</p>
+            )
           )
         ) : (
           <div>
@@ -94,9 +114,9 @@ const DiscussionBoard = ({ preview }) => {
       </div>
 
       <div className="view-board-button">
-      {user && preview && (
+        {user && preview && (
           <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
-      )}
+        )}
       </div>
     </div>
   )

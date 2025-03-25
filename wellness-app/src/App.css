@@ -120,20 +120,20 @@ body{
 }
 
 .discussion-board button {
-  width: 100%;
+  width: 20%;
   padding: 12px 20px;
-  background-color: #4facfe;
+  background-color: #f8c8dc;
   color: white;
   font-size: 1.1em;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .discussion-board button:hover {
-  background-color: #00c6ff;
+  background-color: #f6a5b8;
   transform: translateY(-2px);
 }
 
