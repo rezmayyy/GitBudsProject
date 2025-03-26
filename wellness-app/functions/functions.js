@@ -22,6 +22,14 @@ async function assertAdminOrModerator(uid) {
   }
 }
 
+async function assertAdmin(uid) {
+  const snap = await db.collection("users").doc(uid).get();
+  const role = snap.exists ? snap.data().role : null;
+  if (!["admin"].includes(role)) {
+    throw new functions.https.HttpsError("permission-denied", "Only admins can perform this action.");
+  }
+}
+
 // =============================
 // ADMIN & MODERATION FUNCTIONS
 // =============================
@@ -75,6 +83,38 @@ exports.unbanUsers = functions.pubsub.schedule("every 24 hours").onRun(async () 
     await db.collection("users").doc(uid).update({ unbanDate: FieldValue.delete() });
     await db.collection("users").doc(uid).collection("punishments").orderBy("timestamp", "desc").limit(1).get().then((s) => s.empty ? null : s.docs[0].ref.delete());
   }));
+});
+
+// Set user as Admin
+exports.setAdmin = functions.https.onCall(async (data, context) => {
+  const { userId } = data.data || data;
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  await assertAdmin(authInfo.uid);
+
+  try {
+    await admin.auth().updateUser(userId, { admin: true });
+    return { message: `User is now Admin.` };
+  } catch (error) {
+    console.error("Error adding Admin to user:", error);
+    throw new functions.https.HttpsError("internal", "Failed to add Admin to user.");
+  }
+});
+
+// Set user as Mod
+exports.setMod = functions.https.onCall(async (data, context) => {
+  const { userId } = data.data || data;
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  await assertAdmin(authInfo.uid);
+
+  try {
+    await admin.auth().updateUser(userId, { moderator: true });
+    return { message: `User is now Mod.` };
+  } catch (error) {
+    console.error("Error adding Mod to user:", error);
+    throw new functions.https.HttpsError("internal", "Failed to add Mod to user.");
+  }
 });
 
 // =============================

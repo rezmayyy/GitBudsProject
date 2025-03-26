@@ -9,6 +9,7 @@ import ManageHealerApplications from './ManageHealerApplications';
 import UserContext from '../UserContext';
 import ManageTags from './ManageTags';
 import ManageCEOVideo from './ManageCEOVideo';
+import ManageMods from './ManageMods';
 import styles from '../../styles/ModDashboard.module.css';
 
 const ModDashboard = () => {
@@ -40,9 +41,6 @@ const ModDashboard = () => {
         >
           Manage Tickets
         </button>
-
-
-
         <button
           className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
           onClick={() => setSelectedTab('manageTags')}
@@ -50,10 +48,9 @@ const ModDashboard = () => {
           Manage Tags
         </button>
 
-
         {/* Only show these tabs if the current user is an admin */}
         {isAdmin && (
-          <>
+          <div>
             <button
               className={`${styles.sidebarButton} ${selectedTab === 'manageHealers' ? styles.active : ''}`}
               onClick={() => setSelectedTab('manageHealers')}
@@ -84,12 +81,18 @@ const ModDashboard = () => {
             >
               Manage CEO Videos
             </button>
-          </>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageMods' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageMods')}
+            >
+              Manage Admins & Mods
+            </button>
+          </div>
         )}
       </div>
 
       {/* Main content area */}
-      <div className={styles.contentWrapper}>
+      <div className={styles.contentWrapper} >
         {selectedTab === 'manageUsers' && <ManageUsers />}
         {selectedTab === 'managePosts' && <ManagePosts />}
         {selectedTab === 'manageTickets' && <Ticket />}
@@ -99,6 +102,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageResourcesFAQ' && isAdmin && <ManageResourceFAQ />}
         {selectedTab === 'manageTOS' && isAdmin && <ManageTOS />}
         {selectedTab === 'manageCEOVideo' && isAdmin && <ManageCEOVideo />}
+        {selectedTab === 'manageMods' && isAdmin && <ManageMods />}
       </div>
     </div>
   );
