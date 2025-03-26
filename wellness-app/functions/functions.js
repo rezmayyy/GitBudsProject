@@ -309,12 +309,32 @@ exports.applyForHealer = functions.https.onCall(async (data, context) => {
 });
 
 exports.reportUser = functions.https.onCall(async (data, context) => {
-  const authInfo = context.auth || data.auth; if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
-  const { ruleViolation, reportDescription, contentUrl, offendingUserId } = data.data || data;
-  const ticket = { category: "report", title: ruleViolation, body: `Offending User: ${offendingUserId}\nOffending URL: ${contentUrl}\nDescription: ${reportDescription}`, createdAt: Timestamp.now(), status: "pending", userId: authInfo.uid, displayName: authInfo.token.name || authInfo.uid };
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError("unauthenticated", "Login required");
+  }
+
+  const {
+    ruleViolation,
+    description,
+    contentUrl,
+    userId: offendingUserId,
+  } = data.data || data;
+
+  const ticket = {
+    category: "report",
+    title: ruleViolation,
+    description: `Offending User: ${offendingUserId}\nOffending URL: ${contentUrl}\nDescription: ${description}`,
+    createdAt: Timestamp.now(),
+    status: "pending",
+    userId: authInfo.uid,
+    displayName: authInfo.token.name || authInfo.uid,
+  };
+
   const ref = await db.collection("tickets").add(ticket);
   return { ticketId: ref.id };
 });
+
 
 // =============================
 // EMAIL CHANGE FUNCTIONS

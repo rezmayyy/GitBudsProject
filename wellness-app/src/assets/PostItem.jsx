@@ -1,22 +1,23 @@
 import React, { useState, useContext, useEffect } from 'react';
-import UserContext from './UserContext'; 
+import UserContext from './UserContext';
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { db } from './Firebase'; 
+import { db } from './Firebase';
 import { FaHeart } from 'react-icons/fa';
-
+import ReportButton from './ReportButton/Report';
 import dummyPic from './dummyPic.jpeg';
 
-const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => { 
+const PostItem = ({ post, preview, onExpand = () => { }, onReplyAdded, expanded }) => {
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [likes, setLikes] = useState(post.likes || 0);
   const [likedByUser, setLikedByUser] = useState(post.likers?.includes(user?.uid));
-  const [replies, setReplies] = useState(post.replies || []); 
+  const [replies, setReplies] = useState(post.replies || []);
   const [profilePicUrl, setProfilePicUrl] = useState(post.profilePicUrl || dummyPic);
-  const [expanded, setExpanded] = useState(false);
+  const isExpanded = preview ? false : expanded;
+
 
   useEffect(() => {
     const fetchUserProfilePic = async () => {
@@ -34,9 +35,9 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
 
   const goToUserProfile = (clickedUser) => {
     navigate(`/profile/${clickedUser}`);
-};
+  };
 
-  
+
   // Toggle like for the main post
   const toggleLike = async (event) => {
     event.stopPropagation();
@@ -98,10 +99,9 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
         setReplies(updatedReplies);
         setReplyText('');
         setShowReplyForm(false);
-        setExpanded(true);
 
         onReplyAdded(post.id, updatedReplies);
-        
+
 
       } catch (error) {
         console.error('Error submitting reply:', error);
@@ -139,24 +139,24 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
 
   // Formatting the timestamp
   const formatDate = (timestamp) => {
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp); 
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })} at ${date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`;
   };
 
   return (
-    <div className="post-item" 
-      onClick={() => { setExpanded(!expanded); onExpand(); }}
+    <div className="post-item"
+      onClick={() => onExpand()}
       style={{
         cursor: 'pointer',
         borderBottom: '1px solid #ddd',
         padding: '10px',
         transition: 'all 0.3s ease-in-out'
-        }}>
+      }}>
 
       <div className="post-header"
-        style={{display: 'flex', alignItems: 'center'}}>
+        style={{ display: 'flex', alignItems: 'center' }}>
         <img
-          src={profilePicUrl} 
+          src={profilePicUrl}
           alt="Profile"
           className="profile-pic"
           onClick={() => goToUserProfile(post.userName)}
@@ -175,9 +175,8 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
         <span>{formatDate(post.timestamp)}</span>
       </div>
 
-      
       <p>
-        {expanded ? post.message : post.message.slice(0, 100)
+        {isExpanded ? post.message : post.message.slice(0, 100)
           + (post.message.length > 100 ? '...' : '')}
       </p>
 
@@ -189,9 +188,17 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
         />
         <span>{likes} {likes === 1 ? 'Like' : 'Likes'}</span>
         <span>{replies.length || 0} {replies.length === 1 ? 'Reply' : 'Replies'}</span>
+        {isExpanded && user?.uid !== post.userId && (
+          <ReportButton
+            contentUrl={`${window.location.href}#post-${post.id}`}
+            profileUrl={`/profile/${post.userName}`}
+            userId={post.userId}
+            iconOnly={true}
+          />
+        )}
       </div>
 
-      {expanded && post.replies?.length > 0 && (
+      {isExpanded && post.replies?.length > 0 && (
         <div className="replies-list">
           {replies.map((reply) => (
             <div key={reply.id} className="reply-item">
@@ -220,9 +227,17 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
               <div className="reply-actions">
                 <FaHeart
                   className={`heart-icon ${reply.likers?.includes(user?.uid) ? 'liked' : ''}`}
-                  onClick={(e) => {e.stopPropagation(); toggleReplyLike(reply.id)}}
+                  onClick={(e) => { e.stopPropagation(); toggleReplyLike(reply.id) }}
                 />
                 <span>{reply.likes || 0} {reply.likes === 1 ? 'Like' : 'Likes'}</span>
+                {isExpanded && user?.uid !== reply.userId && (
+                  <ReportButton
+                    contentUrl={`${window.location.href}#post-${post.id}`}
+                    profileUrl={`/profile/${post.userName}`}
+                    userId={post.userId}
+                    iconOnly={true}
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -232,8 +247,8 @@ const PostItem = ({ post, preview, onExpand = () => {}, onReplyAdded}) => {
       {/* Reply form for the main post */}
       {!preview && (
         <>
-          <div style={{paddingTop: '10px'}}>
-            <button onClick={(e) => {e.stopPropagation(); setShowReplyForm(!showReplyForm)}}>
+          <div style={{ paddingTop: '10px' }}>
+            <button onClick={(e) => { e.stopPropagation(); setShowReplyForm(!showReplyForm) }}>
               {showReplyForm ? 'Cancel' : 'Reply'}
             </button>
           </div>

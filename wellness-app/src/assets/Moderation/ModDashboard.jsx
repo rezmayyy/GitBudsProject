@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import ManageUsers from './ManageUsers';
 import ManagePosts from './ManagePosts';
-import TicketList from '../Ticket/TicketList';
+import Ticket from '../Ticket/Ticket';
 import ManageFAQ from './ManageFAQ';
 import ManageTOS from './ManageTOS';
 import ManageHealerApplications from './ManageHealerApplications';
@@ -39,14 +39,14 @@ const ModDashboard = () => {
           Manage Tickets
         </button>
 
-        
 
-          <button
-              className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
-              onClick={() => setSelectedTab('manageTags')}
-          >
-            Manage Tags
-          </button>
+
+        <button
+          className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('manageTags')}
+        >
+          Manage Tags
+        </button>
 
 
         {/* Only show these tabs if the current user is an admin */}
@@ -78,7 +78,7 @@ const ModDashboard = () => {
       <div className={styles.contentWrapper}>
         {selectedTab === 'manageUsers' && <ManageUsers />}
         {selectedTab === 'managePosts' && <ManagePosts />}
-        {selectedTab === 'manageTickets' && <TicketList />}
+        {selectedTab === 'manageTickets' && <Ticket />}
         {selectedTab === 'manageTags' && <ManageTags />}
         {selectedTab === 'manageHealers' && isAdmin && <ManageHealerApplications />}
         {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}

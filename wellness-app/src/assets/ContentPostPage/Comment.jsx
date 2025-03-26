@@ -255,6 +255,8 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
             <ReportButton
               contentUrl={`${window.location.href}#comment-${comment.id}`}
               profileUrl={`/profile/${comment.userId}`}
+              userId={comment.userId}
+              iconOnly={true}
             />
           </div>
         )
@@ -262,11 +264,9 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
 
       {/* Reply & View Replies Buttons */}
       <div className={styles.replyActions}>
-        {!showReplyBox && (
-          <button onClick={toggleReplyBox} className={styles.smallButton}>
-            Reply
-          </button>
-        )}
+        <button classname={styles.smallButton} onClick={toggleReplyBox}>
+          {showReplyBox ? "Cancel" : "Reply"}
+        </button>
         {replies.length > 0 && (
           <button className={styles.smallButton} onClick={toggleReplies}>
             {showReplies ? 'Hide Replies' : 'View Replies'}
@@ -342,11 +342,6 @@ const Comment = ({ comment, user, currentUser, postId, onDelete }) => {
           </div>
         )
       }
-
-      {/* Reply Button */}
-      <button onClick={toggleReplyBox}>
-        {showReplyBox ? "Cancel" : "Reply"}
-      </button>
 
       {/* Reply Form */}
       {

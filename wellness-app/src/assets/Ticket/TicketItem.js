@@ -6,10 +6,10 @@ function TicketItem({ ticket, onView, onClaim, onClose, view, status }) {
     const ticketClass = ticket.category === 'Premium'
         ? styles.premiumTicket
         : ticket.category === 'VIP'
-        ? styles.vipTicket
-        : ticket.category === 'report'
-        ? styles.reportTicket
-        : styles.normalTicket;
+            ? styles.vipTicket
+            : ticket.category === 'report'
+                ? styles.reportTicket
+                : styles.normalTicket;
 
     return (
         <div className={`${styles.ticketItem} ${ticketClass}`} onClick={() => onView(ticket.id)}>

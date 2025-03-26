@@ -3,7 +3,8 @@
 /* Container Styles */
 .ticketListContainer {
     padding: 30px;
-    background-color: #f0f8ff; /* Alice Blue */
+    background-color: #f0f8ff;
+    /* Alice Blue */
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     max-width: 800px;
@@ -35,7 +36,8 @@
     border: 1px solid #ddd;
     border-radius: 12px;
     margin-bottom: 15px;
-    background-color: #fff9f9; /* Subtle pastel off-white */
+    background-color: #fff9f9;
+    /* Subtle pastel off-white */
     transition: transform 0.2s ease;
 }
 
@@ -58,7 +60,8 @@
 
 /* Back Button Styles */
 .backButton {
-    background-color: #a5d6a7; /* Pastel green */
+    background-color: #a5d6a7;
+    /* Pastel green */
     color: white;
     margin-bottom: 20px;
 }
@@ -69,7 +72,8 @@
 
 /* View Button Styles */
 .viewButton {
-    background-color: #b39ddb; /* Pastel purple */
+    background-color: #b39ddb;
+    /* Pastel purple */
     color: white;
     margin-right: 10px;
 }
@@ -130,7 +134,8 @@
     border-radius: 16px;
     padding: 20px;
     margin: 20px 0;
-    background-color: #fffaf0; /* Light pastel */
+    background-color: #fffaf0;
+    /* Light pastel */
 }
 
 /* Ticket Information Styling */
@@ -233,14 +238,16 @@
 }
 
 .vipTicket {
-    background-color: #fff0f5; /* Light pastel pink */
+    background-color: #fff0f5;
+    /* Light pastel pink */
     border: 1px solid #ffccd5;
     color: #a67c00;
     border-radius: 12px;
 }
 
 .premiumTicket {
-    background-color: #e3f2fd; /* Light pastel blue */
+    background-color: #e3f2fd;
+    /* Light pastel blue */
     border: 1px solid #0d47a1;
     color: #0d47a1;
     border-radius: 12px;
@@ -248,9 +255,12 @@
 
 /* New Report Ticket Style */
 .reportTicket {
-    background-color: #ffe5e5;   /* Light red / pastel red */
-    border: 1px solid #ff0000;     /* Bright red border */
-    color: #b71c1c;                /* Dark red text */
+    background-color: #ffe5e5;
+    /* Light red / pastel red */
+    border: 1px solid #ff0000;
+    /* Bright red border */
+    color: #b71c1c;
+    /* Dark red text */
     border-radius: 12px;
 }
 
@@ -280,4 +290,39 @@
 
 .newTicketButton:hover {
     background-color: #9575cd;
+}
+
+.ticketContentBox {
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    background-color: #ffffff;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.ticketTitle {
+    margin-bottom: 10px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 10px 0;
+}
+
+.ticketDescription {
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.replyList {
+    margin-top: 30px;
+}
+
+.replyItem {
+    background-color: #f9f9ff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
 }

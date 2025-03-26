@@ -17,8 +17,6 @@ import ContentPostPage from './assets/ContentPostPage/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
 import ModView from './assets/Moderation/ModDashboard';
 import Support from './assets/Support';
-import Ticket from './assets/Ticket/TicketList';
-import CreateTicket from "./assets/Ticket/CreateTicket";
 import SearchResults from './assets/SearchResults';
 import ForgotPassword from './assets/Auth/ForgotPassword';
 import Account from './assets/Account';
@@ -36,6 +34,7 @@ import Resources from './assets/Resources';
 import ConfirmEmailChange from './assets/ConfirmEmailChange';
 import VerifyReroute from './assets/Verify/VerifyReroute';
 import Verify from './assets/Verify/Verify';
+import TicketPage from "./assets/Ticket/TicketPage";
 
 function App() {
   // Manages posts and replies
@@ -52,30 +51,28 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/recover" element={<ForgotPassword />} />
 
-            {/* Profile routes */}
-            <Route path="/profile" element={<VerifyReroute element={<Profile />} />} />
+            <Route path="/profile" element={<VerifyReroute component={Profile} />} />
             <Route path="/profile/:username" element={<Profile />} />
 
             {/* Main pages */}
             <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
-            <Route path="/discussion" element={<VerifyReroute element={<DiscussionBoardPage posts={posts} setPosts={setPosts} />} />} />
-            <Route path="/create-post" element={<VerifyReroute element={<CreatePost />} />} />
+            <Route path="/discussion" element={<VerifyReroute component={DiscussionBoardPage} posts={posts} setPosts={setPosts} />} />
+            <Route path="/create-post" element={<VerifyReroute component={CreatePost} />} />
             <Route path="/content/:postId" element={<ContentPostPage />} />
             <Route path="/tos" element={<TOS />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
             <Route path="/contact" element={<Support />} />
-            <Route path="/ticket" element={<VerifyReroute element={<Ticket />} />} />
-            <Route path="/create-ticket" element={<VerifyReroute element={<CreateTicket />} />} />
+            <Route path="/ticket" element={<VerifyReroute component={TicketPage} />} />
             <Route path="/search" element={<SearchResults />} />
-            <Route path="/account" element={<VerifyReroute element={<Account />} />} />
-            <Route path="/profile/diary" element={<VerifyReroute element={<DiaryPage />} />} />
-            <Route path="/profile/diary/editor" element={<VerifyReroute element={<DiaryEditor />} />} />
+            <Route path="/account" element={<VerifyReroute component={Account} />} />
+            <Route path="/profile/diary" element={<VerifyReroute component={DiaryPage} />} />
+            <Route path="/profile/diary/editor" element={<VerifyReroute component={DiaryEditor} />} />
             <Route path="/directory" element={<DirectoryPage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:eventId" element={<EventDetailsPage />} />
-            <Route path="/create-event" element={<VerifyReroute element={<CreateEventPage />} />} />
+            <Route path="/create-event" element={<VerifyReroute component={CreateEventPage} />} />
             <Route path="/about" element={<About />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/blogs" element={<BlogsPage />} />

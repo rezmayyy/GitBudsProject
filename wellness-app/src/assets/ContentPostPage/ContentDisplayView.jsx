@@ -4,6 +4,8 @@ import { doc, getDoc } from "firebase/firestore";
 import DOMPurify from "dompurify";
 import { db } from "../Firebase";
 import styles from "./ContentPostPage.module.css";
+import ReportButton from "../ReportButton/Report";
+
 
 export default function ContentDisplayView({
     post,
@@ -70,6 +72,14 @@ export default function ContentDisplayView({
                             <span>{likes.length}</span>
                             <button className={styles.emojiButton} onClick={() => handleInteraction("dislike")}>👎</button>
                             <span>{dislikes.length}</span>
+                            {post.userId !== undefined && (
+                                <ReportButton
+                                    contentUrl={window.location.href}
+                                    profileUrl={`/profile/${post.userId}`}
+                                    userId={post.userId}
+                                    iconOnly={true}
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,19 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CreateTicket from './CreateTicket';
-import TicketList from './TicketComponents/TicketList';
-//import '../styles/ticket.css'; // Optional: import any relevant styles
+import TicketList from './TicketList';
+import styles from './Ticket.module.css';
 
 function Ticket() {
+    const [creating, setCreating] = useState(false);
+
+    const handleCreateClick = () => setCreating(true);
+    const handleCancel = () => setCreating(false);
+    const handleTicketSubmitted = () => {
+        setCreating(false);
+    };
+
     return (
-        <div className="ticket-container">
-            <h1>Support Tickets</h1>
-            <div className="create-ticket">
-                <h2>Create a New Ticket</h2>
-                <CreateTicket />
-            </div>
-            <div className="ticket-list">
-                <TicketList />
-            </div>
+        <div className={styles.ticketContainer}>
+            {creating ? (
+                <div className={styles.createTicket}>
+                    <CreateTicket onCancel={handleCancel} onSubmitted={handleTicketSubmitted} />
+                </div>
+            ) : (
+                <div className={styles.ticketList}>
+                    <TicketList onCreateTicket={handleCreateClick} />
+                </div>
+            )}
         </div>
     );
 }
