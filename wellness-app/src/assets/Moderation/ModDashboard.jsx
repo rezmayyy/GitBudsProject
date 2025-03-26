@@ -8,6 +8,7 @@ import ManageTOS from './ManageTOS';
 import ManageHealerApplications from './ManageHealerApplications';
 import UserContext from '../UserContext';
 import ManageTags from './ManageTags';
+import ManageCEOVideo from './ManageCEOVideo';
 import styles from '../../styles/ModDashboard.module.css';
 
 const ModDashboard = () => {
@@ -77,6 +78,12 @@ const ModDashboard = () => {
             >
               Edit TOS
             </button>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageCEOVideo' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageCEOVideo')}
+            >
+              Manage CEO Videos
+            </button>
           </>
         )}
       </div>
@@ -91,6 +98,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}
         {selectedTab === 'manageResourcesFAQ' && isAdmin && <ManageResourceFAQ />}
         {selectedTab === 'manageTOS' && isAdmin && <ManageTOS />}
+        {selectedTab === 'manageCEOVideo' && isAdmin && <ManageCEOVideo />}
       </div>
     </div>
   );
