@@ -1,0 +1,176 @@
+/* Main container: larger and flexible */
+.mainContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+    max-width: 1200px;
+    width: 90%;
+    margin: 20px auto;
+}
+
+/* Menu container for post type selection */
+.menuContainer {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.menuTitle {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Menu options: round pastel buttons */
+.menuOptions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.menuOption {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 50px;
+    background-color: #f8c8dc;
+    /* pastel pink */
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.menuOption:hover {
+    background-color: #f6a5b8;
+    transform: translateY(-2px);
+}
+
+.activeOption {
+    background-color: #eac784;
+    color: white;
+}
+
+/* Form container styling */
+.formWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 600px;
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.formLabel {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.contentInput,
+.contentTextarea {
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* A wrapper for the Quill editor label + editor */
+.quillWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Add some style to the Quill editor container */
+.quillEditor .ql-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    min-height: 200px;
+}
+
+.quillEditor .ql-toolbar {
+    border-radius: 8px 8px 0 0;
+}
+
+/* Submit button styling */
+.submitButton {
+    background-color: #EAC784;
+    color: white;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submitButton:hover {
+    background-color: #d4a669;
+}
+
+/* Upload notification */
+.uploadNotification {
+    position: fixed;
+    bottom: 50px;
+    right: 50px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 1.5rem;
+    z-index: 1000;
+    animation: fadeInOut 3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+.descriptionQuillWrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 60px;
+}
+
+.descriptionQuillWrapper .ql-container {
+    border: 1px solid #ccc;
+    border-radius: 0 0 8px 8px;
+    min-height: 20px;
+}
+
+.descriptionQuillWrapper .ql-toolbar {
+    border: 1px solid #ccc;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+}

@@ -7,6 +7,7 @@ import ManageTOS from './ManageTOS';
 import ManageHealerApplications from './ManageHealerApplications';
 import UserContext from '../UserContext';
 import ManageTags from './ManageTags';
+import ManageCEOVideo from './ManageCEOVideo';
 import styles from '../../styles/ModDashboard.module.css';
 
 const ModDashboard = () => {
@@ -39,14 +40,14 @@ const ModDashboard = () => {
           Manage Tickets
         </button>
 
-        
 
-          <button
-              className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
-              onClick={() => setSelectedTab('manageTags')}
-          >
-            Manage Tags
-          </button>
+
+        <button
+          className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('manageTags')}
+        >
+          Manage Tags
+        </button>
 
 
         {/* Only show these tabs if the current user is an admin */}
@@ -70,6 +71,12 @@ const ModDashboard = () => {
             >
               Edit TOS
             </button>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageCEOVideo' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageCEOVideo')}
+            >
+              Manage CEO Videos
+            </button>
           </>
         )}
       </div>
@@ -83,6 +90,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageHealers' && isAdmin && <ManageHealerApplications />}
         {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}
         {selectedTab === 'manageTOS' && isAdmin && <ManageTOS />}
+        {selectedTab === 'manageCEOVideo' && isAdmin && <ManageCEOVideo />}
       </div>
     </div>
   );
