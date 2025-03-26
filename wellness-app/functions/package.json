@@ -10,7 +10,7 @@
     "fix": "eslint --fix ."
   },
   "engines": {
-    "node": "18"
+    "node": "20"
   },
   "main": "index.js",
   "dependencies": {

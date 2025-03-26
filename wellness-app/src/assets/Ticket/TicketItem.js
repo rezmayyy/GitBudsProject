@@ -1,13 +1,15 @@
 import React from 'react';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 
 function TicketItem({ ticket, onView, onClaim, onClose, view, status }) {
-    // Determine the class based on the category
-    const ticketClass = ticket.category === 'Premium' 
-        ? styles.premiumTicket 
-        : ticket.category === 'VIP' 
-        ? styles.vipTicket 
-        : styles.normalTicket;
+    // Determine the class based on the ticket's category.
+    const ticketClass = ticket.category === 'Premium'
+        ? styles.premiumTicket
+        : ticket.category === 'VIP'
+            ? styles.vipTicket
+            : ticket.category === 'report'
+                ? styles.reportTicket
+                : styles.normalTicket;
 
     return (
         <div className={`${styles.ticketItem} ${ticketClass}`} onClick={() => onView(ticket.id)}>

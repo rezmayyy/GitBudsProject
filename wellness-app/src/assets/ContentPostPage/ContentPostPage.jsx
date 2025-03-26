@@ -10,6 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
+import ReportButton from '../ReportButton/Report';
 import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
 import ReactQuill from 'react-quill';
 import TagSelector from '../TagSystem/TagSelector';

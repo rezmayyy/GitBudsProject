@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { auth } from '../Firebase'; // Adjust the import path as needed
+import { auth } from '../Firebase';
 
-const VerifyReroute = ({ element: Element }) => {
+const VerifyReroute = ({ component: Component, ...props }) => {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
 
@@ -16,8 +16,7 @@ const VerifyReroute = ({ element: Element }) => {
 
     if (loading) return <div>Loading...</div>;
     if (!user) return <Navigate to="/login" />;
-
-    return user.emailVerified ? Element : <Navigate to="/verify" />;
+    return user.emailVerified ? <Component {...props} /> : <Navigate to="/verify" />;
 };
 
 export default VerifyReroute;

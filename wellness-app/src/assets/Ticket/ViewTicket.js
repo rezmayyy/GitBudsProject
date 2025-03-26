@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../Firebase';
 import UserContext from '../UserContext';
 import { collection, getDocs, addDoc, doc, getDoc } from 'firebase/firestore';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 
 function ViewTicket({ ticketId, onBack }) {
     const [replies, setReplies] = useState([]);
@@ -59,29 +59,46 @@ function ViewTicket({ ticketId, onBack }) {
     };
 
     return (
-        <div className={styles.ticketViewContainer}>    
+        <div className={styles.ticketViewContainer}>
             {ticket && (
-                <div className={styles.ticketViewContainer}>
-                <button className={styles.backButton} onClick={onBack}>Back</button>
-                <div className={styles.ticketInfo}>
-                    <p>Submitted By: {ticket.displayName}</p>
-                    <p>Assigned Staff: {ticket.staffName}</p>                  
-                </div>
-                <div className={styles.ticketInfo}>
-                    <h3 className={styles.ticketViewTitle}>{ticket.title}</h3>                    
-                </div>
-                <div className={styles.ticketDescription}>
-                    {ticket.description}
-                    <p className={styles.ticketSubmittedDate}>Submitted On: {ticket.createdAt}</p>
-                </div>
-                
-            </div>
+                <>
+                    <button className={styles.backButton} onClick={onBack}>Back</button>
+
+                    {/* Ticket Meta Info */}
+                    <div className={styles.ticketInfo}>
+                        <p><strong>Submitted By:</strong> {ticket.displayName}</p>
+                        {(user?.role === 'admin' || user?.role === 'moderator') && (
+                            <>
+                                <p><strong>User ID:</strong> {ticket.userId}</p>
+                                <p>
+                                    <strong>User Profile:</strong>{' '}
+                                    <a href={`/profile/${ticket.userId}`} target="_blank" rel="noopener noreferrer">
+                                        View Profile
+                                    </a>
+                                </p>
+                            </>
+                        )}
+                        <p><strong>Assigned Staff:</strong> {ticket.staffName || "Unassigned"}</p>
+                        <p className={styles.ticketSubmittedDate}><strong>Submitted On:</strong> {ticket.createdAt}</p>
+                    </div>
+
+                    {/* Ticket Title and Description */}
+                    <div className={styles.ticketContentBox}>
+                        <div className={styles.ticketTitle}><strong>Title</strong><p>{ticket.title}</p></div>
+                        <hr className={styles.divider} />
+                        <div className={styles.ticketDescription}><strong>Description</strong><p>{ticket.description}</p></div>
+                    </div>
+                </>
             )}
+
+            {/* Replies Section */}
             <div className={styles.replyList}>
+                <h4 style={{ marginBottom: "10px" }}>Replies</h4>
                 {replies.length > 0 ? (
                     replies.map(reply => (
                         <div className={styles.replyItem} key={reply.id}>
-                            <p><strong>{reply.displayName}</strong>: {reply.replyText}</p>
+                            <p><strong>{reply.displayName}</strong></p>
+                            <p>{reply.replyText}</p>
                             <p className={styles.ticketSubmittedDate}>{reply.createdAt}</p>
                         </div>
                     ))
@@ -89,8 +106,11 @@ function ViewTicket({ ticketId, onBack }) {
                     <p>No replies yet.</p>
                 )}
             </div>
-            <form onSubmit={handleReplySubmit}>
-                <textarea className={styles.replyTextArea}
+
+            {/* Reply Form */}
+            <form onSubmit={handleReplySubmit} className={styles.replyForm}>
+                <textarea
+                    className={styles.replyTextArea}
                     placeholder="Add a reply..."
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
@@ -98,7 +118,6 @@ function ViewTicket({ ticketId, onBack }) {
                 />
                 <button type="submit" className={styles.button}>Reply</button>
             </form>
-            
         </div>
     );
 }

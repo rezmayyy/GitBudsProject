@@ -1,11 +1,30 @@
+// DiscussionBoard.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
 import UserContext from '../UserContext';
 import PostItem from '../PostItem';
 import { collection, addDoc, Timestamp, getDocs, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../Firebase';
 import { FaArrowLeft } from 'react-icons/fa';
+import ReportButton from '../ReportButton/Report';
 
+// Utility function to safely format a Firestore or non-Firestore timestamp
+function formatTimestamp(timestamp) {
+  if (!timestamp) return 'No date';
+
+  // If it's a Firestore Timestamp object
+  if (timestamp.toDate) {
+    return format(timestamp.toDate(), 'MMM d, yyyy h:mm a');
+  }
+
+  // Otherwise, try converting to a JavaScript Date
+  const dateVal = new Date(timestamp);
+  if (isNaN(dateVal.getTime())) {
+    return 'No date';
+  }
+  return format(dateVal, 'MMM d, yyyy h:mm a');
+}
 const DiscussionBoard = ({ preview }) => {
   const { user } = useContext(UserContext);
   const [newPost, setNewPost] = useState('');
@@ -13,20 +32,22 @@ const DiscussionBoard = ({ preview }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
 
+  // Fetch posts from Firestore
   useEffect(() => {
-      if (!user) return;
+    if (!user) return;
 
-        const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-        
-        const snap = onSnapshot(postsQuery, (snapshot) => {
-          const postsList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-          setPosts(postsList);
-        });
-        
-        return() => snap();
-    
+    const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
+
+    const snap = onSnapshot(postsQuery, (snapshot) => {
+      const postsList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+      setPosts(postsList);
+    });
+
+    return () => snap();
+
   }, [user]);
 
+  // Submit a new post
   const handlePostSubmit = async () => {
     if (!user) {
       alert('You need to log in to post!');
@@ -41,8 +62,6 @@ const DiscussionBoard = ({ preview }) => {
         userName: user.displayName || user.email,
         userId: user.uid,
         replies: [],
-        likes: 0,
-        likedByUser: false,
       };
 
       try {
@@ -65,8 +84,10 @@ const DiscussionBoard = ({ preview }) => {
 
 
   return (
-    <div className="discussion-board">
-      <h2>{preview ? 'Latest Discussions' : 'Discussion Board'}</h2>
+    <div className="discussion-board" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
+        {preview ? 'Latest Discussions' : 'Discussion Board'}
+      </h2>
 
       {user && !preview && !selectedPost && (
         <>
@@ -74,9 +95,30 @@ const DiscussionBoard = ({ preview }) => {
             value={newPost}
             onChange={(e) => setNewPost(e.target.value)}
             placeholder="Share your thoughts..."
-            rows="5"
+            rows="4"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              marginBottom: '0.5rem',
+            }}
           />
-          <button onClick={handlePostSubmit}>Post</button>
+          <br />
+          <button
+            onClick={handlePostSubmit}
+            style={{
+              backgroundColor: '#6c63ff',
+              color: '#fff',
+              padding: '0.6rem 1.2rem',
+              border: 'none',
+              borderRadius: '30px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            Post
+          </button>
         </>
       )}
 
@@ -85,7 +127,11 @@ const DiscussionBoard = ({ preview }) => {
           selectedPost ? (
             <div>
               <button onClick={() => setSelectedPost(null)}><FaArrowLeft /></button>
-              <PostItem post={selectedPost} />
+              <PostItem
+                post={selectedPost}
+                expanded={true}
+                onReplyAdded={handleReplyAdded}
+              />
             </div>
           ) : (
             displayedPosts.length > 0 ? (
@@ -93,9 +139,9 @@ const DiscussionBoard = ({ preview }) => {
                 <PostItem
                   key={post.id}
                   post={post}
-                  onExpand={() => setSelectedPost(selectedPost === post ? null : post)}
+                  onExpand={() => setSelectedPost(post)}
                   preview={preview}
-                  expanded={selectedPost === post} 
+                  expanded={selectedPost === post}
                   onReplyAdded={handleReplyAdded} />
               ))
             ) : (
@@ -103,11 +149,34 @@ const DiscussionBoard = ({ preview }) => {
             )
           )
         ) : (
-          <div>
+          <div style={{ textAlign: 'center' }}>
             <p>You must be a member to see the discussion board.</p>
-            <div className="auth-buttons">
-              <Link to="/login" className="auth-button">Log In</Link>
-              <Link to="/signup" className="auth-button">Sign Up</Link>
+            <div style={{ marginTop: '0.5rem' }}>
+              <Link
+                to="/login"
+                style={{
+                  marginRight: '0.5rem',
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '30px',
+                  backgroundColor: '#6c63ff',
+                  color: '#fff',
+                  textDecoration: 'none',
+                }}
+              >
+                Log In
+              </Link>
+              <Link
+                to="/signup"
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  borderRadius: '30px',
+                  backgroundColor: '#6c63ff',
+                  color: '#fff',
+                  textDecoration: 'none',
+                }}
+              >
+                Sign Up
+              </Link>
             </div>
           </div>
         )}
@@ -118,8 +187,8 @@ const DiscussionBoard = ({ preview }) => {
           <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
         )}
       </div>
-    </div>
-  )
+    </div >
+  );
 };
 
 export default DiscussionBoard;
