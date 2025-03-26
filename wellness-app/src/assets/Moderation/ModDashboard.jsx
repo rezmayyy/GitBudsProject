@@ -3,6 +3,7 @@ import ManageUsers from './ManageUsers';
 import ManagePosts from './ManagePosts';
 import TicketList from '../Ticket/TicketList';
 import ManageFAQ from './ManageFAQ';
+import ManageResourceFAQ from './ManageResourceFAQ';
 import ManageTOS from './ManageTOS';
 import ManageHealerApplications from './ManageHealerApplications';
 import UserContext from '../UserContext';
@@ -39,14 +40,14 @@ const ModDashboard = () => {
           Manage Tickets
         </button>
 
-        
 
-          <button
-              className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
-              onClick={() => setSelectedTab('manageTags')}
-          >
-            Manage Tags
-          </button>
+
+        <button
+          className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
+          onClick={() => setSelectedTab('manageTags')}
+        >
+          Manage Tags
+        </button>
 
 
         {/* Only show these tabs if the current user is an admin */}
@@ -63,6 +64,12 @@ const ModDashboard = () => {
               onClick={() => setSelectedTab('manageFAQ')}
             >
               Edit FAQ
+            </button>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageFAQ' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageResourcesFAQ')}
+            >
+              Edit Resources FAQ
             </button>
             <button
               className={`${styles.sidebarButton} ${selectedTab === 'manageTOS' ? styles.active : ''}`}
@@ -82,6 +89,7 @@ const ModDashboard = () => {
         {selectedTab === 'manageTags' && <ManageTags />}
         {selectedTab === 'manageHealers' && isAdmin && <ManageHealerApplications />}
         {selectedTab === 'manageFAQ' && isAdmin && <ManageFAQ />}
+        {selectedTab === 'manageResourcesFAQ' && isAdmin && <ManageResourceFAQ />}
         {selectedTab === 'manageTOS' && isAdmin && <ManageTOS />}
       </div>
     </div>
