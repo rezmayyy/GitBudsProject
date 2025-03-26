@@ -1,30 +1,38 @@
 import { useState } from "react";
-import { getFunctions, httpsCallable } from "firebase/functions";
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 import { useStripe } from "@stripe/react-stripe-js";
 
 const Donate = ({ recipientId }) => {
   const stripe = useStripe();
   const functions = getFunctions();
-  const createDonationSession = httpsCallable(functions, "createDonationSession");
+  //const createDonationSession = httpsCallable(functions, "createDonationSession");
+  const callFn = (name, payload) => httpsCallable(functions, name)(payload);
 
   const [amount, setAmount] = useState(5);
   const [loading, setLoading] = useState(false);
+
+  if (process.env.REACT_APP_USE_EMULATOR === 'true') {
+    connectFunctionsEmulator(functions, 'localhost', 5001);
+}
 
   const handleDonate = async () => {
     setLoading(true);
     try {
       // Convert amount to cents for Stripe
-      const amountInCents = Math.round(parseFloat(amount) * 100);
+     // const amountInCents = Math.round(parseFloat(amount) * 100);
       
       console.log('Creating donation session with:', { 
         recipientId, 
-        amount: amountInCents 
+        amount: amount 
       });
-
+      /*
       const result = await createDonationSession({ 
         recipientId, 
         amount: amountInCents 
       });
+      */
+      const result = await callFn('createDonationSession', {recipientId: recipientId, amount: amount});
+
 
       console.log('Donation session result:', result);
 

@@ -14,8 +14,11 @@ import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
 import HealerServices from './healerServices'; // New module for healers
 import Donate from '../Stripe/Donate';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import StripeSignup from '../Stripe/StripeSignup';
 
 const Profile = () => {
+ 
   const { user } = useContext(UserContext);
   const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
@@ -315,23 +318,31 @@ const Profile = () => {
           </button>
         )}
       </div>
-      
-       
-      {/* About & Contact Sections */}
-      <div className={styles.aboutContactContainer}>
 
-     
+      {/* About, Contact Sections and Donate section */}
+      <div className={styles.aboutContactContainer}>
+       
          {/* Only show Donate if not viewing own profile */}
         {/*only render if user has associated Stripe id in firestore (todo)*/}
-        {!isCurrentUser && user && (
-           <div className={styles.donateContainer}>
-           <h3>Donate</h3>
-         
-           <Donate recipientId={viewedUserId} />
-         </div>
-          
-        )}
-        {/* About Section */}
+      
+        {/* Only show Donate if not viewing own profile */}
+        {/*only render if user has associated Stripe id in firestore (todo)*/}
+        {user && (!isCurrentUser ? (
+  <div className={styles.donateContainer}>
+    <h3>Donate</h3>
+    <Donate recipientId={viewedUserId} />
+  </div>
+) : (
+  <div className={styles.donateContainer}>
+    <h3>Stripe Integration</h3>
+    {user.stripeOnboarded ? (
+      <p>Your Stripe account is set up! Ready to receive donations.</p>
+    ) : (
+      <StripeSignup />
+    )}
+  </div>
+))}
+         {/* About Section */}
         <div className={styles.aboutSection}>
           <h3>About</h3>
           {isCurrentUser && editingAbout ? (
