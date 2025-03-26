@@ -139,17 +139,17 @@ const BlogsPage = () => {
                 backgroundPosition: 'center',
                 backgroundAttachment: 'fixed',
                 overflow: 'hidden',
-
+                borderRadius: "50px"
             }}>
                 <Row className="g-0 h-100">
                     <Col md={6} className="d-flex flex-column justify-content-center p-4">
                         <Card.Body>
                             <Card.Title className="display-4">Learn, Grow, Heal</Card.Title>
-                            <Card.Title className="display-4">-<span className="text-warning">for Free.</span></Card.Title>
+                            <Card.Title className="display-4">-<span style={{ color: "#f6a5b8" }}>for Free.</span></Card.Title>
                             <Card.Text className="lead">Explore free topics that inspire, educate, and empower your journey.</Card.Text>
                             <div className="d-flex">
                                 <Button as={Link} to="/directory" variant="primary" className="me-3"
-                                    style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4" }}>
+                                    style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4", borderRadius: "50px" }}>
                                     Find a Healer
                                 </Button>
                                 {/*<Button variant="primary">Download our free healing guides</Button>*/}
@@ -241,7 +241,7 @@ const BlogsPage = () => {
                                                 <Card.Text>
                                                     <div className="tags">
                                                         {post.tags.map((tagId, index) => (
-                                                            <span key={index} className="badge bg-warning me-2">
+                                                            <span key={index} className="badge me-2" style={{ backgroundColor: "#f6a5b8", color: "white", borderRadius: "50px" }}>
                                                                 {tagNames[tagId] || "Unknown Tag"}
                                                             </span>
                                                         ))}
@@ -251,14 +251,14 @@ const BlogsPage = () => {
                                                     {post.type === 'article' ? (
                                                         <Link to={`/content/${post.id}`}
                                                             className="stretched-link"
-                                                            style={{ textDecoration: "none" }}>
-                                                            <span className="text-warning">Read article</span>
+                                                            style={{ textDecoration: "none", color: "black" }}>
+                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
                                                         </Link>
                                                     ) : post.type === 'video' ? (
                                                         <Link to={`/content/${post.id}`}
                                                             className="stretched-link"
                                                             style={{ textDecoration: "none" }}>
-                                                            <span className="text-warning">View video</span>
+                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
                                                         </Link>
                                                     ) : null}
 
@@ -267,18 +267,18 @@ const BlogsPage = () => {
                                         </Col>
                                     </Row>
                                 </Card>
-                                <hr style={{ borderStyle: "dashed", color: "orange" }} />
+                                <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
                             </Col>
 
                         ))}
                     </Row>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button onClick={prevPage} variant="primary" disabled={currentPage === 1}>
+                        <Button onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
                             Prev
                         </Button>
                         <span data-testid="page">Page {currentPage}</span>
-                        <Button onClick={nextPage} variant="primary" disabled={contentPosts.length < postsPerPage}>
+                        <Button onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
                             Next
                         </Button>
 
