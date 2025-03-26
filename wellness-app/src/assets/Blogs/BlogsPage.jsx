@@ -7,6 +7,7 @@ import { Card, Button, Container, Row, Col, Nav } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTags } from "../TagSystem/useTags"
+import styles from '../../styles/profile.module.css';
 
 
 const BlogsPage = () => {
@@ -17,6 +18,9 @@ const BlogsPage = () => {
     const navigate = useNavigate();
     const postsPerPage = 10;
     const { tags } = useTags();
+
+    const [isCurrentUser, setIsCurrentUser] = useState(false);
+    const [isAdminOrModerator, setIsAdminOrModerator] = useState(true);
 
     const [activeTab, setActiveTab] = useState("All topics");
     const [activeCategoryTab, setActiveCategoryTab] = useState("All categories");
@@ -48,9 +52,9 @@ const BlogsPage = () => {
                 let q = query(
                     collection(db, 'content-posts'),
                     where('status', '==', 'approved'));
-                
+
                 //filtering by topic/tag
-                if(tagId){
+                if (tagId) {
                     q = query(q, where("tags", "array-contains", tagId));
                 }
 
@@ -120,6 +124,10 @@ const BlogsPage = () => {
         if (currentPage > 1) {
             setCurrentPage(prevPage => prevPage - 1);
         }
+    }
+
+    const handleFlag = () => {
+
     }
 
 
@@ -261,6 +269,11 @@ const BlogsPage = () => {
                                                             <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
                                                         </Link>
                                                     ) : null}
+                                                    {isAdminOrModerator && !isCurrentUser && (
+                                                        <button onClick={handleFlag} className={styles.banButton}>
+                                                            Flag Post
+                                                        </button>
+                                                    )}
 
                                                 </Card.Text>
                                             </Card.Body>
