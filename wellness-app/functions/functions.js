@@ -4,6 +4,7 @@
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { validateUploadedFile } = require("./fileUtils");
 require("dotenv").config();
 //for emulation
 // const serviceAccount = require(process.env.TRIBEWELL_KEY);
@@ -117,9 +118,111 @@ exports.setMod = functions.https.onCall(async (data, context) => {
   }
 });
 
+exports.createTicket = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+  }
+  const userId = authInfo.uid;
+  // Only require title and description from the client.
+  const { title, description } = data.data || data;
+  if (!title || !description) {
+    throw new functions.https.HttpsError("invalid-argument", "Ticket title and description are required.");
+  }
+
+  // Retrieve the user document to get displayName and role.
+  const userDoc = await db.collection("users").doc(userId).get();
+  if (!userDoc.exists) {
+    throw new functions.https.HttpsError("not-found", "User not found.");
+  }
+  const userData = userDoc.data();
+
+  // Determine category based on user role.
+  let category = "normal";
+  if (userData.tier === "VIP") {
+    category = "VIP";
+  } else if (userData.tier === "Premium") {
+    category = "Premium";
+  }
+  // Set status to pending by default.
+  const status = "pending";
+
+  const ticketData = {
+    title,
+    description,
+    createdAt: Timestamp.now(),
+    status,
+    userId,
+    category,
+  };
+
+  const ticketRef = await db.collection("tickets").add(ticketData);
+  return { message: "Ticket created successfully.", ticketId: ticketRef.id };
+});
+
 // =============================
 // CONTENT FUNCTIONS
 // =============================
+exports.moveCeoVideo = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) throw new functions.https.HttpsError("unauthenticated", "Login required");
+  await assertAdmin(authInfo.uid);
+
+  const { filePath, thumbnailPath } = data.data || data;
+  if (!filePath || !thumbnailPath) {
+    throw new functions.https.HttpsError("invalid-argument", "Both video and thumbnail file paths are required");
+  }
+
+  const bucket = admin.storage().bucket();
+  const videoFile = bucket.file(filePath);
+  const thumbFile = bucket.file(thumbnailPath);
+
+  try {
+    // Validate both files first
+    await validateUploadedFile(videoFile, "video", 1024 * 1024 * 1024); // 1 GB limit for video
+    await validateUploadedFile(thumbFile, "image"); // default size for images from util
+
+    // Prepare final destination paths
+    const timestamp = Date.now();
+    const finalVideoPath = `CeoVideos/${timestamp}_${videoFile.name.split("/").pop()}`;
+    const finalThumbnailPath = `CeoVideos/thumbnails/${timestamp}_${thumbFile.name.split("/").pop()}`;
+
+    // Move both files
+    await videoFile.move(finalVideoPath);
+    await thumbFile.move(finalThumbnailPath);
+
+    // Log in Firestore
+    await db.collection("adminSettings").doc("fileUploads").collection("CeoVideos").add({
+      location: finalVideoPath,
+      thumbnail: finalThumbnailPath,
+      timestamp: Timestamp.now(),
+      uploadedBy: authInfo.uid,
+    });
+
+    return {
+      message: "Video and thumbnail successfully processed",
+      path: finalVideoPath,
+      thumbnail: finalThumbnailPath
+    };
+  } catch (error) {
+    console.error("Error processing Ceo video:", error);
+    throw new functions.https.HttpsError("internal", "Failed to process video");
+  }
+});
+
+// Auto-cleanup for TempVideos
+exports.cleanupTempVideos = functions.pubsub.schedule("every 24 hours").onRun(async () => {
+  const bucket = admin.storage().bucket();
+  const [files] = await bucket.getFiles({ prefix: "temp/" });
+  const expirationTime = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
+
+  const deletions = files
+    .filter(file => file.metadata.timeCreated && new Date(file.metadata.timeCreated).getTime() < expirationTime)
+    .map(file => file.delete().catch(err => console.warn(`Failed to delete ${file.name}:`, err)));
+
+  await Promise.all(deletions);
+  return null;
+});
 
 exports.createContentPost = functions.https.onCall(async (data, context) => {
   const authInfo = context.auth || data.auth;
@@ -127,20 +230,46 @@ exports.createContentPost = functions.https.onCall(async (data, context) => {
 
   const { postData, filePath, thumbnailPath } = data.data || data;
   const userId = authInfo.uid;
+  const bucket = admin.storage().bucket();
 
-  // Validate storage paths
+  let finalFileUrl = null;
+  let finalThumbnailUrl = null;
+
+  // For non-article posts, process the uploaded file and thumbnail
   if (postData.type !== "article") {
-    try {
-      const decode = (url) => decodeURIComponent(new URL(url).pathname.split("/o/")[1]);
-      if (
-        !decode(filePath).startsWith(`${postData.type}-uploads/${userId}/`) ||
-        !decode(thumbnailPath).startsWith(`thumbnails/${userId}/`)
-      ) {
-        throw new Error();
-      }
-    } catch {
-      throw new functions.https.HttpsError("permission-denied", "Invalid file URL");
+    // Ensure that the file paths come from the temp folder
+    if (
+      !filePath ||
+      !thumbnailPath ||
+      !filePath.startsWith(`temp/${userId}/`) ||
+      !thumbnailPath.startsWith(`temp/${userId}/`)
+    ) {
+      throw new functions.https.HttpsError("permission-denied", "Invalid file path.");
     }
+
+    const timestamp = Date.now();
+
+    // Process the main media file (video, audio, etc.)
+    const tempMedia = bucket.file(filePath);
+    const mediaFileName = filePath.split("/").pop();
+    // Final destination folder can be organized per type; for example:
+    const finalMediaPath = `content_uploads/${userId}/${timestamp}_${mediaFileName}`;
+    // Set a custom max size based on type (video: 1GB, audio: 100MB, image: 10MB)
+    await validateUploadedFile(tempMedia, postData.type);
+    await tempMedia.move(finalMediaPath);
+    const movedMedia = bucket.file(finalMediaPath);
+    await movedMedia.makePublic();
+    finalFileUrl = `https://storage.googleapis.com/${bucket.name}/${finalMediaPath}`;
+
+    // Process the thumbnail image
+    const tempThumb = bucket.file(thumbnailPath);
+    const thumbFileName = thumbnailPath.split("/").pop();
+    const finalThumbPath = `thumbnails/${userId}/${timestamp}_${thumbFileName}`;
+    await validateUploadedFile(tempThumb, "image");
+    await tempThumb.move(finalThumbPath);
+    const movedThumb = bucket.file(finalThumbPath);
+    await movedThumb.makePublic();
+    finalThumbnailUrl = `https://storage.googleapis.com/${bucket.name}/${finalThumbPath}`;
   }
 
   const settingsSnap = await db.collection("adminSettings").doc("uploadRules").get().catch(() => null);
@@ -151,8 +280,8 @@ exports.createContentPost = functions.https.onCall(async (data, context) => {
     description: postData.description || "",
     body: postData.body || "",
     type: postData.type,
-    fileURL: filePath || null,
-    thumbnailURL: thumbnailPath || null,
+    fileURL: finalFileUrl,       // Will be null for articles
+    thumbnailURL: finalThumbnailUrl, // Will be null for articles
     timestamp: Timestamp.now(),
     status: autoApprove ? "approved" : "pending",
     keywords: Array.isArray(postData.keywords) ? postData.keywords : [],
@@ -161,8 +290,98 @@ exports.createContentPost = functions.https.onCall(async (data, context) => {
   };
 
   const docRef = await db.collection("content-posts").add(newPost);
-
   return { message: "Post created", postId: docRef.id };
+});
+
+exports.createEvent = functions.https.onCall(async (data, context) => {
+  const authInfo = context.auth || data.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+  }
+
+  const userId = authInfo.uid;
+  const {
+    title,
+    description,
+    eventType,
+    location,
+    date,
+    time,
+    endTime,
+    maxParticipants,
+    tempImages,
+    selectedThumbnail
+  } = data.data || data;
+
+  if (!title || !description || !date || !time || !endTime || !eventType || !location || !Array.isArray(tempImages)) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing required event fields.");
+  }
+
+  const parsedMax = maxParticipants === "" ? -1 : parseInt(maxParticipants);
+  if (isNaN(parsedMax)) {
+    throw new functions.https.HttpsError("invalid-argument", "Invalid maxParticipants.");
+  }
+
+  const eventRef = db.collection("events").doc();
+  const eventId = eventRef.id;
+  const bucket = admin.storage().bucket();
+
+  const finalImageUrls = [];
+  let thumbnailUrl = null;
+
+  for (const { name, path } of tempImages) {
+    if (!path.startsWith(`temp/${userId}/`)) {
+      throw new functions.https.HttpsError("permission-denied", "Invalid file path.");
+    }
+
+    const tempFile = bucket.file(path);
+    const fileName = path.split("/").pop();
+    const destPath = `event_images/${eventId}/${fileName}`;
+
+    // Validate and move the file
+    await validateUploadedFile(tempFile, "image", 5 * 1024 * 1024); // 5MB max
+    await tempFile.move(destPath);
+
+    // Get a reference to the moved file
+    const movedFile = bucket.file(destPath);
+
+    // Make the file public
+    await movedFile.makePublic();
+
+    // Generate the public URL for the file
+    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destPath}`;
+
+    // Push the public URL into the array so it can be used in your event page
+    finalImageUrls.push(publicUrl);
+
+    // Set the thumbnail URL if this image is selected as the thumbnail
+    if (selectedThumbnail && name === selectedThumbnail) {
+      thumbnailUrl = publicUrl;
+    }
+  }
+
+  if (!thumbnailUrl && finalImageUrls.length > 0) {
+    thumbnailUrl = finalImageUrls[0];
+  }
+
+  await eventRef.set({
+    title,
+    title_lower: title.toLowerCase(),
+    description,
+    date: new Date(date),
+    time,
+    endTime,
+    eventType,
+    location,
+    maxParticipants: parsedMax,
+    images: finalImageUrls,
+    thumbnail: thumbnailUrl,
+    createdBy: userId,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    attendees: []
+  });
+
+  return { message: "Event created successfully", eventId };
 });
 
 // =============================
@@ -227,6 +446,45 @@ exports.handleUserSignup = functions.https.onCall(async (data, context) => {
     console.error("Error in handleUserSignup:", error);
     throw new functions.https.HttpsError("internal", error.message);
   }
+});
+
+exports.changeProfilePic = functions.https.onCall(async (data, context) => {
+  // Ensure the user is authenticated.
+  const authInfo = context.auth;
+  if (!authInfo) {
+    throw new functions.https.HttpsError("unauthenticated", "User must be authenticated.");
+  }
+  const userId = authInfo.uid;
+
+  // Expect filePath to be provided and from the temp folder.
+  const { filePath } = data;
+  if (!filePath || !filePath.startsWith(`temp/${userId}/`)) {
+    throw new functions.https.HttpsError("permission-denied", "Invalid file path.");
+  }
+
+  const bucket = admin.storage().bucket();
+
+  // Validate the uploaded image.
+  // (This call uses the defaults defined in your server-side fileUtils.)
+  await validateUploadedFile(filePath, "image");
+
+  // Determine the final storage path in profile_pics/{userId}
+  const timestamp = Date.now();
+  const fileName = filePath.split("/").pop();
+  const finalPath = `profile_pics/${userId}/${timestamp}_${fileName}`;
+
+  // Move the file from the temporary location to its final home.
+  await bucket.file(filePath).move(finalPath);
+
+  // Get a reference to the moved file and make it public.
+  const movedFile = bucket.file(finalPath);
+  await movedFile.makePublic();
+  const publicUrl = `https://storage.googleapis.com/${bucket.name}/${finalPath}`;
+
+  // Update the user's Firestore document with the new profilePicUrl.
+  await db.collection("users").doc(userId).set({ profilePicUrl: publicUrl }, { merge: true });
+
+  return { message: "Profile picture updated successfully.", profilePicUrl: publicUrl };
 });
 
 exports.changeDisplayName = functions.https.onCall(async (data, context) => {

@@ -30,7 +30,12 @@ const CommentsSection = ({ postId, currentUser }) => {
       const commentsData = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      }));
+      })).sort((a, b) => {
+        const aTime = a.timestamp?.seconds || 0;
+        const bTime = b.timestamp?.seconds || 0;
+        return bTime - aTime; // newest first
+      });
+
       setComments(commentsData);
     };
 
@@ -42,13 +47,12 @@ const CommentsSection = ({ postId, currentUser }) => {
     e.preventDefault();
     if (newComment.trim()) {
       const localTimestamp = new Date();
+      // Only send the minimal fields; displayName and profilePicUrl will be looked up later.
       const commentData = {
         postId,
         userId: currentUser.uid,
         text: newComment,
         timestamp: serverTimestamp(),
-        displayName: currentUser.displayName || 'Anonymous',
-        profilePicUrl: currentUser.profilePicUrl || dummyPic,
       };
 
       const commentRef = await addDoc(collection(db, 'content-posts', postId, 'comments'), commentData);
@@ -73,7 +77,7 @@ const CommentsSection = ({ postId, currentUser }) => {
             <Comment
               key={comment.id}
               comment={comment}
-              user={user}
+              user={user} // Comment component will use this lookup.
               currentUser={currentUser}
               postId={postId}
               onDelete={handleDeleteComment}

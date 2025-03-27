@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment, setDoc, deleteDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
@@ -26,6 +26,7 @@ const ContentPostPage = () => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [authorName, setAuthorName] = useState('[Deleted]');
+    const [interactionCount, setInteractionCount] = useState(0);
 
     // Editing state (for title, description, body)
     const [isEditing, setIsEditing] = useState('');
@@ -37,16 +38,26 @@ const ContentPostPage = () => {
     const [tags, setTags] = useState([]);
     const [tagNames, setTagNames] = useState({});
 
-    // Interaction state
-    const [likes, setLikes] = useState([]);
-    const [dislikes, setDislikes] = useState([]);
+    // Interaction state for views
     const [views, setViews] = useState(0);
 
-    // For showing messages
+    // For showing messages and errors
     const [showMessage, setShowMessage] = useState(false);
     const [message, setMessage] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [error, setError] = useState(null);
+
+    // Helper function to format timestamps safely.
+    const formatTimestamp = (ts, fmt = 'PP p') => {
+        if (!ts) return 'Unknown Date';
+        let dateObj;
+        if (typeof ts.toDate === 'function') {
+            dateObj = ts.toDate();
+        } else {
+            dateObj = new Date(ts);
+        }
+        return isNaN(dateObj) ? 'Invalid Date' : format(dateObj, fmt);
+    };
 
     const fetchAuthorName = async (userId) => {
         const userSnap = await getDoc(doc(db, 'users', userId));
@@ -67,13 +78,13 @@ const ContentPostPage = () => {
                 setTagNames(tagsMap);
 
                 // Fetch the post document
-                const postDoc = doc(db, 'content-posts', postId);
-                const postSnapshot = await getDoc(postDoc);
+                const postRef = doc(db, 'content-posts', postId);
+                const postSnapshot = await getDoc(postRef);
 
                 if (postSnapshot.exists()) {
                     const postData = { id: postId, ...postSnapshot.data() };
 
-                    // Determine author name
+                    // Determine author name from users collection
                     let fetchedAuthorName;
                     if (postData.userId) {
                         fetchedAuthorName = await fetchAuthorName(postData.userId);
@@ -87,8 +98,6 @@ const ContentPostPage = () => {
                     setEditedTitle(postData.title || "");
                     setEditedDescription(postData.description || "");
                     setEditedBody(postData.body || "");
-                    setLikes(postData.likes || []);
-                    setDislikes(postData.dislikes || []);
                     setViews(postData.views || 0);
 
                     // Process tags for the post: convert tag IDs to { value, label }
@@ -108,7 +117,7 @@ const ContentPostPage = () => {
                         if (userSnap.exists()) {
                             const role = userSnap.data().role;
                             const adminOrMod = role === 'admin' || role === 'moderator';
-                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId || currentUser.displayName === postData.author) {
+                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId) {
                                 setIsAuthorized(true);
                             } else {
                                 setError('You do not have permission to view this post.');
@@ -129,7 +138,7 @@ const ContentPostPage = () => {
 
         fetchData();
 
-        //check if the post is already viewed in this session
+        // Check if the post has already been viewed in this session to update view count.
         const viewedKey = `viewed_${postId}`;
         if (!sessionStorage.getItem(viewedKey)) {
             handleInteraction('view');
@@ -157,20 +166,16 @@ const ContentPostPage = () => {
 
     const selectedTagNames = tags.map(tag => tag.label);
 
+    // Updated interaction handler using subcollections for likes/dislikes.
     const handleInteraction = async (type) => {
         if (type === 'view') {
             const viewedKey = `viewed_${postId}`;
             const lastViewedTime = localStorage.getItem(viewedKey);
             const now = new Date().getTime();
-
-            // Check if it's been more than 24 hours since the last view
             if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
-                localStorage.setItem(viewedKey, now); // Update view timestamp
-
+                localStorage.setItem(viewedKey, now);
                 const postRef = doc(db, 'content-posts', postId);
                 await updateDoc(postRef, { views: increment(1) });
-
-                // Fetch updated post to get the correct views count
                 const updatedPostSnap = await getDoc(postRef);
                 if (updatedPostSnap.exists()) {
                     setViews(updatedPostSnap.data().views || 0);
@@ -178,25 +183,39 @@ const ContentPostPage = () => {
             }
             return;
         }
-
         if (!currentUser) {
             setMessage('You must be logged in.');
-            setShowMessage(true);
             return;
         }
-
-        const postRef = doc(db, 'content-posts', postId);
-        const updatedLikes = [...likes.filter(uid => uid !== currentUser.uid)];
-        const updatedDislikes = [...dislikes.filter(uid => uid !== currentUser.uid)];
-
-        if (type === 'like' && !likes.includes(currentUser.uid)) updatedLikes.push(currentUser.uid);
-        if (type === 'dislike' && !dislikes.includes(currentUser.uid)) updatedDislikes.push(currentUser.uid);
-
-        await updateDoc(postRef, { likes: updatedLikes, dislikes: updatedDislikes });
-
-        setLikes(updatedLikes);
-        setDislikes(updatedDislikes);
-        return;
+        if (type === 'like') {
+            const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
+            const likeSnap = await getDoc(likeRef);
+            if (likeSnap.exists()) {
+                await deleteDoc(likeRef);
+            } else {
+                await setDoc(likeRef, {}); // No timestamp needed.
+                const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
+                const dislikeSnap = await getDoc(dislikeRef);
+                if (dislikeSnap.exists()) {
+                    await deleteDoc(dislikeRef);
+                }
+            }
+        } else if (type === 'dislike') {
+            const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
+            const dislikeSnap = await getDoc(dislikeRef);
+            if (dislikeSnap.exists()) {
+                await deleteDoc(dislikeRef);
+            } else {
+                await setDoc(dislikeRef, {}); // No timestamp needed.
+                const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
+                const likeSnap = await getDoc(likeRef);
+                if (likeSnap.exists()) {
+                    await deleteDoc(likeRef);
+                }
+            }
+        }
+        // Increment the counter so ContentDisplayView re-fetches the counts.
+        setInteractionCount(prev => prev + 1);
     };
 
     const handleSave = async () => {
@@ -221,35 +240,6 @@ const ContentPostPage = () => {
         setIsEditing('');
     };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
-    if (!post) return <div>Post not found</div>;
-
-    const formattedDate = post.timestamp ? format(post.timestamp.toDate(), 'PP p') : 'Unknown Date';
-    let updatedDate = null;
-    let formattedLastUpdated = "Never updated";
-
-    if (post.lastUpdated) {
-        let dateObj;
-
-        // If it’s a Firestore Timestamp
-        if (typeof post.lastUpdated.toDate === "function") {
-            dateObj = post.lastUpdated.toDate();
-        }
-        // If it’s already a Date
-        else if (post.lastUpdated instanceof Date) {
-            dateObj = post.lastUpdated;
-        }
-        // If it’s a parsable string
-        else if (!isNaN(Date.parse(post.lastUpdated))) {
-            dateObj = new Date(post.lastUpdated);
-        }
-
-        if (dateObj instanceof Date && !isNaN(dateObj)) {
-            formattedLastUpdated = format(dateObj, "PP p");
-        }
-    }
-    const canEdit = currentUser?.uid === post.userId;
     const handleQuillImageUpload = () => {
         const input = document.createElement("input");
         input.type = "file";
@@ -274,6 +264,20 @@ const ContentPostPage = () => {
             ['clean'],
         ],
     };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+    if (!post) return <div>Post not found</div>;
+
+    const formattedDate = post.timestamp ? formatTimestamp(post.timestamp, 'PP p') : 'Unknown Date';
+    let formattedLastUpdated = "Never updated";
+
+    if (post.lastUpdated) {
+        formattedLastUpdated = formatTimestamp(post.lastUpdated, 'PP p');
+    }
+
+    const canEdit = currentUser?.uid === post.userId;
+
     return (
         <div className={styles.pageContainer}>
             {isEditing === "content" ? (
@@ -288,21 +292,22 @@ const ContentPostPage = () => {
                     onChangeBody={setEditedBody}
                     onChangeTags={setTags}
                     onSave={handleSave}
-                    onCancel={() => setIsEditing("")}
+                    onCancel={() => setIsEditing('')}
                 />
             ) : (
                 <ContentDisplayView
                     post={post}
                     canEdit={canEdit}
                     onEdit={() => setIsEditing("content")}
-                    likes={likes}
-                    dislikes={dislikes}
                     handleInteraction={handleInteraction}
-                    formattedDate={post.timestamp.toDate().toLocaleString()}
+                    formattedDate={formattedDate}
+                    selectedTagNames={selectedTagNames}
+                    interactionCount={interactionCount}
                 />
             )}
             <CommentsSection postId={post.id} currentUser={currentUser} />
         </div>
     );
-}
+};
+
 export default ContentPostPage;

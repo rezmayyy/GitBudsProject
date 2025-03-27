@@ -158,14 +158,13 @@ function CreatePost() {
         const keywords = getKeywords(postData.title, activeTab !== 'article' ? postData.description : postData.body, user.displayName);
 
         const userId = user.uid;
-        const fileFolder = `${activeTab}-uploads/${userId}`;
-        const thumbFolder = `thumbnails/${userId}`;
+        const tempFolder = `temp/${userId}`;
 
         const fileURL = fileInputs.file
-            ? await uploadFileToStorage(fileInputs.file, fileFolder)
+            ? await uploadFileToStorage(fileInputs.file, tempFolder)
             : null;
         const thumbnailURL = activeTab !== 'article'
-            ? await uploadFileToStorage(fileInputs.thumbnail, thumbFolder)
+            ? await uploadFileToStorage(fileInputs.thumbnail, tempFolder)
             : null;
 
         const payload = {

@@ -3,11 +3,10 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import UserContext from '../UserContext';
-import PostItem from '../PostItem';
-import { collection, addDoc, Timestamp, getDocs, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import PostItem from './PostItem';
+import { collection, addDoc, Timestamp, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../Firebase';
 import { FaArrowLeft } from 'react-icons/fa';
-import ReportButton from '../ReportButton/Report';
 
 // Utility function to safely format a Firestore or non-Firestore timestamp
 function formatTimestamp(timestamp) {

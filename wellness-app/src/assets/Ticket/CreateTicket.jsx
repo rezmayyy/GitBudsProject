@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
-import { db } from '../Firebase';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { functions } from '../Firebase';
+import { httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 import UserContext from '../UserContext'; // Import UserContext
 import styles from './CreateTicket.module.css';
 
@@ -9,22 +9,19 @@ function CreateTicket({ onCancel, onSubmitted }) {
   const [description, setDescription] = useState('');
   const { user } = useContext(UserContext); // Get the user context
 
+  if (process.env.REACT_APP_USE_EMULATOR === "true") {
+    connectFunctionsEmulator(functions, "localhost", 5001);
+  }
+
+  const createTicket = httpsCallable(functions, 'createTicket');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const ticketData = {
-        title,
-        description,
-        createdAt: Timestamp.now(), // Use Firestore's Timestamp
-        status: 'pending', // Set status to pending on creation
-        userId: user.uid, // Attach the user ID
-        displayName: user.displayName, // Attach the user display name
-        category: user.role === 'VIP' ? 'VIP' : user.role === 'Premium' ? 'Premium' : 'normal'
-      };
-      await addDoc(collection(db, 'tickets'), ticketData);
-      // Handle success (reset form or show message)
-      setTitle(''); // Reset title
-      setDescription(''); // Reset description
+      const result = await createTicket({ title, description });
+      // Reset the form and notify the user on success.
+      setTitle('');
+      setDescription('');
       if (onSubmitted) onSubmitted();
     } catch (error) {
       console.error('Error creating ticket:', error);

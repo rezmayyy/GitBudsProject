@@ -1,11 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
-import UserContext from './UserContext';
+import UserContext from '../UserContext';
 import { doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { db } from './Firebase';
+import { db } from '../Firebase';
 import { FaHeart } from 'react-icons/fa';
-import ReportButton from './ReportButton/Report';
-import dummyPic from './dummyPic.jpeg';
+import ReportButton from '../ReportButton/Report';
+import dummyPic from '../dummyPic.jpeg';
 
 const PostItem = ({ post, preview, onExpand = () => { }, onReplyAdded, expanded }) => {
   const { user } = useContext(UserContext);

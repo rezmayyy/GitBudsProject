@@ -1,6 +1,6 @@
 import React from 'react';
 import Subscriptions from './Subscriptions';
-import DiscussionBoard from './DiscussionBoard';
+import DiscussionBoard from '../DiscussionBoard/DiscussionBoard';
 import RecentVideos from './RecentVideos';
 import GigiVideos from './GigiVideos';
 

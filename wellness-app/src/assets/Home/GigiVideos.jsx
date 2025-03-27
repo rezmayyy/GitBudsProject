@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDoc, doc } from 'firebase/firestore';
 import { db } from '../Firebase';
 import '../../styles/Videos.css';
 
@@ -7,29 +7,31 @@ function GigiVideos() {
     const [GigiVideos, setGigiVideos] = useState([]);
 
     useEffect(() => {
-        const fetchGigiVideos = async () => {
-            const q = query(
-                collection(db, 'content-posts'),
-                where('type', '==', 'video'), 
-                where('author', '==', 'Dr. Gigi'), // TODO: Add Gigi's author name here before deployment
-                orderBy('timestamp', 'desc'),
-                limit(5)
-            );
-
-            const querySnapshot = await getDocs(q);
-            const videos = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    title: data.title,
-                    url: data.fileURL
-                };
-            });
-            setGigiVideos(videos);
+        const fetchCeoVideo = async () => {
+            try {
+                const settingsDoc = await getDoc(doc(db, "adminSettings", "fileUploads"));
+                if (settingsDoc.exists()) {
+                    const activeId = settingsDoc.data().activeVideo; // adjust key name
+                    if (activeId) {
+                        const videoDoc = await getDoc(doc(db, "adminSettings/fileUploads/CeoVideos", activeId));
+                        if (videoDoc.exists()) {
+                            const videoData = videoDoc.data();
+                            setGigiVideos([{
+                                id: activeId,
+                                title: videoData.title || "CEO Video",
+                                url: videoData.url || videoData.fileURL || ""
+                            }]);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch CEO video:", err);
+            }
         };
 
-        fetchGigiVideos();
+        fetchCeoVideo();
     }, []);
+
 
     return (
         <div className="gigiVideos">

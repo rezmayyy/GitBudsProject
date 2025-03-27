@@ -1,23 +1,35 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs } from "firebase/firestore";
 import DOMPurify from "dompurify";
 import { db } from "../Firebase";
 import styles from "./ContentPostPage.module.css";
 import ReportButton from "../ReportButton/Report";
 
+// Helper to safely format a Firestore timestamp or date string.
+const formatTimestamp = (ts, fmt = "PP p") => {
+    if (!ts) return "Never updated";
+    let dateObj;
+    if (typeof ts.toDate === "function") {
+        dateObj = ts.toDate();
+    } else {
+        dateObj = new Date(ts);
+    }
+    return isNaN(dateObj) ? "Invalid date" : dateObj.toLocaleString();
+};
 
 export default function ContentDisplayView({
     post,
     canEdit,
     onEdit,
-    likes,
-    dislikes,
     handleInteraction,
     formattedDate,
-    selectedTagNames
+    selectedTagNames,
+    interactionCount
 }) {
     const [profilePic, setProfilePic] = useState(null);
+    const [likeCount, setLikeCount] = useState(0);
+    const [dislikeCount, setDislikeCount] = useState(0);
 
     useEffect(() => {
         const fetchProfilePic = async () => {
@@ -32,6 +44,25 @@ export default function ContentDisplayView({
         };
         fetchProfilePic();
     }, [post.userId]);
+
+    // Fetch likes and dislikes counts from subcollections
+    useEffect(() => {
+        const fetchInteractionCounts = async () => {
+            try {
+                const likesSnapshot = await getDocs(
+                    collection(db, "content-posts", post.id, "likes")
+                );
+                const dislikesSnapshot = await getDocs(
+                    collection(db, "content-posts", post.id, "dislikes")
+                );
+                setLikeCount(likesSnapshot.size);
+                setDislikeCount(dislikesSnapshot.size);
+            } catch (error) {
+                console.error("Error fetching interaction counts: ", error);
+            }
+        };
+        fetchInteractionCounts();
+    }, [post.id, interactionCount]);
 
     return (
         <>
@@ -69,9 +100,9 @@ export default function ContentDisplayView({
                     <div className={styles.centerColumn}>
                         <div className={styles.interactionCenter}>
                             <button className={styles.emojiButton} onClick={() => handleInteraction("like")}>👍</button>
-                            <span>{likes.length}</span>
+                            <span>{likeCount}</span>
                             <button className={styles.emojiButton} onClick={() => handleInteraction("dislike")}>👎</button>
-                            <span>{dislikes.length}</span>
+                            <span>{dislikeCount}</span>
                             {post.userId !== undefined && (
                                 <ReportButton
                                     contentUrl={window.location.href}
@@ -111,7 +142,7 @@ export default function ContentDisplayView({
                             Views: {post.views || 0} • {formattedDate}
                         </div>
                         <div className={styles.descriptionRight}>
-                            edited: {post.lastUpdated?.toDate().toLocaleString()}
+                            edited: {formatTimestamp(post.lastUpdated)}
                         </div>
                     </div>
                     <div

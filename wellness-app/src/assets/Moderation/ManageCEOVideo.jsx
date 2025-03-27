@@ -1,58 +1,38 @@
-import React, { useState, useContext, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
 import { validateFile, uploadFileToStorage } from "../../Utils/fileUtils";
-import { useTags } from "../TagSystem/useTags";
-import TagSelector from '../TagSystem/TagSelector';
 import UserContext from '../UserContext';
-import styles from './create-post.module.css';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
-import DOMPurify from "dompurify";
-
-// Import functions from Firebase Functions SDK
+import styles from '../Create/create-post.module.css';
 import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
-import { functions } from "../Firebase";
+import { functions, db } from "../Firebase";
+import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 function ManageCEOVideo() {
-    // IMPORTANT: Change initial state from 'video' to an empty string
-    // so that the user is first asked what they're uploading.
     const { user } = useContext(UserContext);
-    const navigate = useNavigate();
-    const quillRef = useRef(null);
-    const [quillInstance, setQuillInstance] = useState(null);
     const [showNotification, setShowNotification] = useState(false);
-    const tags = useTags();
-    const [selectedTags, setSelectedTags] = useState([]);
-
-    const MAX_FILE_SIZES = {
-        video: 600 * 1024 * 1024, // 600 MB
-    };
-
-    // Notification function
-    const showUploadingNotification = () => {
-        setShowNotification(true);
-        setTimeout(() => setShowNotification(false), 30000);
-    };
-
-    // Post data state
-    const [postData, setPostData] = useState({
-        title: '',
-        description: '',
-        body: '',
-        tags: [] // store all tags
-    });
-
-    // File inputs state
     const [fileInputs, setFileInputs] = useState({
         file: null,
         thumbnail: null,
         previewFile: '',
         previewThumbnail: ''
     });
+    const [ceoVideos, setCeoVideos] = useState([]);
+    const [activeVideoId, setActiveVideoId] = useState(null);
 
-    const handleInputChange = (e) => {
-        setPostData({ ...postData, [e.target.name]: e.target.value });
+    if (process.env.REACT_APP_USE_EMULATOR === "true") {
+        connectFunctionsEmulator(functions, "localhost", 5001);
+    }
+
+    const moveCeoVideo = httpsCallable(functions, "moveCeoVideo");
+
+    const fetchCeoVideos = async () => {
+        const snapshot = await getDocs(collection(db, "adminSettings", "fileUploads", "CeoVideos"));
+        const vids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setCeoVideos(vids);
     };
+
+    useEffect(() => {
+        fetchCeoVideos();
+    }, []);
 
     const handleFileChange = async (e, type) => {
         const file = e.target.files[0];
@@ -65,166 +45,50 @@ function ManageCEOVideo() {
         }));
     };
 
-    const getKeywords = (title = "", description = "", author = "") => {
-        if (!title && !description && !author) return [];
-
-        const tokenize = (text) => text.toLowerCase().match(/\b\w+\b/g) || [];
-        const stopWords = new Set([
-            "the", "is", "and", "to", "a", "of", "in", "that", "it", "on", "for", "with", "as", "was", "at", "by",
-            "an", "be", "this", "which", "or", "from", "but", "not", "are", "were", "can", "will", "has", "had", "have"
-        ]);
-
-        const words = [
-            ...tokenize(title),
-            ...tokenize(description),
-            ...tokenize(author)
-        ].filter(word => !stopWords.has(word));
-
-        return Array.from(new Set(words));
-    };
-
-    // Initialize Firebase Functions and conditionally connect to emulator
-    if (process.env.REACT_APP_USE_EMULATOR === "true") {
-        connectFunctionsEmulator(functions, "localhost", 5001);
-    }
-    // Create callable instance for Cloud Function
-    const createContentPost = httpsCallable(functions, "createContentPost");
-
-    const minimalModules = {
-        toolbar: [
-            ['bold', 'italic'],
-            ['link'],
-            ['clean']
-        ]
-    };
-
-    // Form submission handler using Cloud Function
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!user) {
-            alert('You must be logged in to submit a post.');
-            return;
-        }
+        if (!user) return alert('You must be logged in to submit a video.');
+        if (!fileInputs.file || !fileInputs.thumbnail) return alert('Both video and thumbnail files are required.');
 
-        if (!fileInputs.file) {
-            alert(`Please select a video file.`);
-            return;
-        }
-
-        if (!postData.tags || postData.tags.length === 0) {
-            alert('Please select at least one tag.');
-            return;
-        }
-
-        // Show upload notification
-        showUploadingNotification();
-
-        // Sanitize the content:
-        const cleanDescription = true
-            ? DOMPurify.sanitize(postData.description)
-            : "";
-
-        const keywords = getKeywords(postData.title, postData.description, user.displayName);
-
-        const userId = user.uid;
-        const fileFolder = `video-uploads/VideosFromOurCEO`;
-        const thumbFolder = `thumbnails/VideosFromOurCEO`;
-
-        const fileURL = fileInputs.file
-            ? await uploadFileToStorage(fileInputs.file, fileFolder)
-            : null;
-        const thumbnailURL = fileInputs.file
-            ? await uploadFileToStorage(fileInputs.thumbnail, thumbFolder)
-            : null;
-
-        const payload = {
-            postData: {
-                title: postData.title,
-                description: true ? cleanDescription : "",
-                body: "",
-                type: 'video',
-                keywords,
-                tags: postData.tags.map(tag => tag.value)
-            },
-            filePath: fileURL,
-            thumbnailPath: thumbnailURL
-        };
+        setShowNotification(true);
 
         try {
-            const result = await createContentPost(payload);
-            console.log(result.data.message);
-            navigate(`/content/${result.data.postId}`);
-            setPostData({ title: '', description: '', body: '' });
-            setFileInputs({ file: null, thumbnail: null, previewFile: '', previewThumbnail: '' });
+            const tempFolder = "Temp";
+            const videoPath = await uploadFileToStorage(fileInputs.file, tempFolder);
+            const thumbPath = await uploadFileToStorage(fileInputs.thumbnail, tempFolder);
+
+            await moveCeoVideo({ filePath: videoPath, thumbnailPath: thumbPath });
+            await fetchCeoVideos();
         } catch (error) {
-            console.error('Error creating post:', error);
+            console.error("Error uploading CEO video:", error);
+            alert("Upload failed");
+        } finally {
+            setShowNotification(false);
         }
     };
 
-    // Quill image upload handler remains the same
-    const handleQuillImageUpload = () => {
-        const input = document.createElement("input");
-        input.setAttribute("type", "file");
-        input.setAttribute("accept", "image/jpeg, image/png, image/bmp");
-        input.click();
-
-        input.onchange = async () => {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const isValid = await validateFile(file, "image");
-                if (!isValid) return;
-                const url = await uploadFileToStorage(file, `article-images/${user.uid}`);
-                if (!url) {
-                    alert("Image upload failed.");
-                    return;
-                }
-                // Append the uploaded image to the appropriate field
-                setPostData(prev => ({
-                    ...prev,
-                    description: prev.description + `<img src="${url}" alt="Uploaded Image"/>`
-                }));
-            }
-        };
+    const setActiveVideo = async (videoId) => {
+        const ref = doc(db, "adminSettings", "fileUploads");
+        await updateDoc(ref, { activeVideo: videoId });
+        setActiveVideoId(videoId);
     };
 
-    useEffect(() => {
-        if (quillInstance) {
-            const toolbar = quillInstance.getModule("toolbar");
-            if (toolbar) {
-                toolbar.addHandler("image", handleQuillImageUpload);
-            }
+    const deleteVideo = async (id, location, thumbnail) => {
+        try {
+            await deleteDoc(doc(db, "adminSettings", "fileUploads", "CeoVideos", id));
+            // We are skipping actual file deletion for brevity
+            setCeoVideos(prev => prev.filter(v => v.id !== id));
+        } catch (err) {
+            console.error("Failed to delete video", err);
         }
-    }, [quillInstance]);
+    };
 
-    const renderForm = () => (
-        <form className={`video-form`} onSubmit={handleSubmit}>
-            <label className={styles.formLabel}>Title</label>
-            <input
-                className={styles.contentInput}
-                type="text"
-                name="title"
-                value={postData.title}
-                onChange={handleInputChange}
-                required
-            />
-
-            <>
-                <div className={styles.descriptionQuillWrapper}>
-                    <label className={styles.formLabel}>Description</label>
-                    <ReactQuill
-                        value={postData.description}
-                        onChange={(content) => setPostData(prev => ({ ...prev, description: content }))}
-                        modules={minimalModules}
-                        theme="snow"
-                    />
-                </div>
-            </>
-
-            <>
-                <label className={styles.formLabel}>
-                    Choose a Video (Max: {MAX_FILE_SIZES['video'] / 1024 / 1024} MB)
-                </label>
+    const uploadForm = (
+        <div className={styles.menuContainer}>
+            <h2 className={styles.menuTitle}>Upload CEO Video</h2>
+            <form className={`video-form`} onSubmit={handleSubmit}>
+                <label className={styles.formLabel}>Choose a Video</label>
                 <input
                     className={styles.contentInput}
                     type="file"
@@ -238,9 +102,7 @@ function ManageCEOVideo() {
                     </video>
                 )}
 
-                <label className={styles.formLabel}>
-                    Choose a Thumbnail (optional)
-                </label>
+                <label className={styles.formLabel}>Choose a Thumbnail</label>
                 <input
                     className={styles.contentInput}
                     type="file"
@@ -251,33 +113,36 @@ function ManageCEOVideo() {
                 {fileInputs.previewThumbnail && (
                     <img src={fileInputs.previewThumbnail} alt="Thumbnail" width="300" />
                 )}
-            </>
 
-            <TagSelector
-                selectedTags={postData.tags || []}
-                setSelectedTags={(selectedTags) =>
-                    setPostData(prevState => ({
-                        ...prevState,
-                        tags: selectedTags
-                    }))
-                }
-            />
+                <button className="tab-button" type="submit">
+                    Submit Video
+                </button>
+            </form>
+        </div>
+    );
 
-            <button className="tab-button" type="submit">
-                Submit Video
-            </button>
-        </form>
+    const manageForm = (
+        <div className={styles.menuContainer}>
+            <h2 className={styles.menuTitle}>Manage CEO Videos</h2>
+            {ceoVideos.map(video => (
+                <div key={video.id} className={styles.videoCard}>
+                    <p><strong>{video.location.split("/").pop()}</strong></p>
+                    <p>Uploaded: {new Date(video.timestamp.seconds * 1000).toLocaleString()}</p>
+                    <button onClick={() => setActiveVideo(video.id)}>
+                        Set Active
+                    </button>
+                    <button onClick={() => deleteVideo(video.id, video.location, video.thumbnail)}>
+                        Delete
+                    </button>
+                </div>
+            ))}
+        </div>
     );
 
     return (
         <div className={styles.mainContainer}>
-            <div className={styles.menuContainer}>
-                <h2 className={styles.menuTitle}>Upload Video</h2>
-
-                <div className={styles.formWrapper}>
-                    {renderForm()}
-                </div>
-            </div>
+            {uploadForm}
+            {manageForm}
             {showNotification && <div className={styles.uploadNotification}>Uploading, this may take a few minutes</div>}
         </div>
     );

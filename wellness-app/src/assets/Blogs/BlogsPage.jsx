@@ -233,8 +233,7 @@ const BlogsPage = () => {
                     <Row className="mt-4">
 
                         {contentPosts.slice(0, visibleContentPosts).map(post => (
-
-                            <Col md={12}>
+                            <Col md={12} key={post.id}>
                                 <Card className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
                                     <Row className="g-0">
                                         <Col md={4}>
@@ -246,35 +245,49 @@ const BlogsPage = () => {
                                             <Card.Body>
                                                 <Card.Title className="fw-bold">{post.title}</Card.Title>
                                                 <Card.Text className="text-muted small">{post.postDate}</Card.Text>
-                                                <Card.Text>
-                                                    <div className="tags">
-                                                        {post.tags.map((tagId, index) => (
-                                                            <span key={index} className="badge me-2" style={{ backgroundColor: "#f6a5b8", color: "white", borderRadius: "50px" }}>
-                                                                {tagNames[tagId] || "Unknown Tag"}
-                                                            </span>
-                                                        ))}
-                                                    </div>
 
-                                                    {/*display text depending on post type*/}
-                                                    {post.type === 'article' ? (
-                                                        <Link to={`/content/${post.id}`}
+                                                {/* ✅ Move tags outside of Card.Text */}
+                                                <div className="tags mb-2">
+                                                    {post.tags.map((tagId, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="badge me-2"
+                                                            style={{
+                                                                backgroundColor: "#f6a5b8",
+                                                                color: "white",
+                                                                borderRadius: "50px"
+                                                            }}
+                                                        >
+                                                            {tagNames[tagId] || "Unknown Tag"}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <Card.Text>
+                                                    {/* display text depending on post type */}
+                                                    {post.type === "article" ? (
+                                                        <Link
+                                                            to={`/content/${post.id}`}
                                                             className="stretched-link"
-                                                            style={{ textDecoration: "none", color: "black" }}>
+                                                            style={{ textDecoration: "none", color: "black" }}
+                                                        >
                                                             <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
                                                         </Link>
-                                                    ) : post.type === 'video' ? (
-                                                        <Link to={`/content/${post.id}`}
+                                                    ) : post.type === "video" ? (
+                                                        <Link
+                                                            to={`/content/${post.id}`}
                                                             className="stretched-link"
-                                                            style={{ textDecoration: "none" }}>
+                                                            style={{ textDecoration: "none" }}
+                                                        >
                                                             <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
                                                         </Link>
                                                     ) : null}
+
                                                     {isAdminOrModerator && !isCurrentUser && (
                                                         <button onClick={handleFlag} className={styles.banButton}>
                                                             Flag Post
                                                         </button>
                                                     )}
-
                                                 </Card.Text>
                                             </Card.Body>
                                         </Col>

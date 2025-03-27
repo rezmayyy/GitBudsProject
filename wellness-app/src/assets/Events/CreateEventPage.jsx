@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { db, auth, storage } from '../Firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { v4 as uuidv4 } from 'uuid';
 import { useNavigate } from "react-router-dom";
-import styles from "../../styles/Events.css";
+import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
+import { auth, functions } from '../Firebase';
+import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
 
 function CreateEventPage() {
     const [title, setTitle] = useState('');
@@ -12,24 +10,30 @@ function CreateEventPage() {
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [endTime, setEndTime] = useState('');
-    const [eventType, setEventType] = useState("Local Gathering"); // Default to one type
+    const [eventType, setEventType] = useState("Local Gathering");
     const EVENT_TYPES = ["Local Gathering", "Workshop", "Retreat", "Webinar"];
     const [location, setLocation] = useState('');
     const [maxParticipants, setMaxParticipants] = useState('');
-    const [images, setImages] = useState([]); // Store selected images
+    const [images, setImages] = useState([]);
     const [uploading, setUploading] = useState(false);
-    const [thumbnail, setThumbnail] = useState(null); // Selected thumbnail
+    const [thumbnail, setThumbnail] = useState(null);
     const navigate = useNavigate();
 
-    const DEFAULT_THUMBNAIL = '../Logo.png'; // Replace with actual Firebase Storage URL. nah we hardcoding 
+    const DEFAULT_THUMBNAIL = '../Logo.png';
+
+    if (process.env.REACT_APP_USE_EMULATOR === "true") {
+        connectFunctionsEmulator(functions, "localhost", 5001);
+    }
+
+    const createEvent = httpsCallable(functions, 'createEvent');
 
     const handleImageChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
         setImages((prevImages) => {
-            const newImages = [...prevImages, ...selectedFiles].slice(0, 5); // Append new images while keeping max 5
+            const newImages = [...prevImages, ...selectedFiles].slice(0, 5);
             return newImages;
         });
-        setThumbnail(null); // Reset thumbnail selection when new images are uploaded
+        setThumbnail(null);
     };
 
     const handleRemoveImage = (index) => {
@@ -37,7 +41,6 @@ function CreateEventPage() {
             const updatedImages = prevImages.filter((_, i) => i !== index);
             return updatedImages;
         });
-        // Reset thumbnail if the removed image was set as the thumbnail
         if (thumbnail && images[index] === thumbnail) {
             setThumbnail(null);
         }
@@ -70,46 +73,41 @@ function CreateEventPage() {
                 return;
             }
 
-            const eventRef = doc(collection(db, 'events'));
-            const eventId = eventRef.id; // Get the generated event ID
-            const imageUrls = [];
-            let thumbnailUrl = DEFAULT_THUMBNAIL;
+            const userId = auth.currentUser?.uid;
+            const tempFolder = `temp/${userId}`;
+            const tempPaths = [];
 
             for (const image of images) {
-                const imageRef = ref(storage, `event_images/${eventId}/${uuidv4()}_${image.name}`);
-                await uploadBytes(imageRef, image);
-                const imageUrl = await getDownloadURL(imageRef);
-                imageUrls.push(imageUrl);
-
-                if (thumbnail && image.name === thumbnail.name) {
-                    thumbnailUrl = imageUrl;
+                const isValid = await validateFile(image, "image");
+                if (!isValid) {
+                    alert("Invalid file format or size.");
+                    setUploading(false);
+                    return;
                 }
+                const tempPath = await uploadFileToStorage(image, tempFolder);
+                tempPaths.push({ name: image.name, path: tempPath });
             }
 
-            const parsedMaxParticipants = maxParticipants === "" ? -1 : parseInt(maxParticipants);
+            const parsedMax = maxParticipants === "" ? -1 : parseInt(maxParticipants);
+            const selectedThumbnail = thumbnail?.name || null;
 
-            await setDoc(eventRef, {
+            const payload = {
                 title,
-                title_lower: title.toLowerCase(),
                 description,
-                date: eventDateTime,
+                date,
                 time,
                 endTime,
                 eventType,
                 location,
-                maxParticipants: parsedMaxParticipants,
-                images: imageUrls,
-                thumbnail: thumbnailUrl,
-                createdBy: auth.currentUser?.uid || 'anonymous',
-                createdAt: serverTimestamp(),
-                attendees: []
-            });
+                maxParticipants: parsedMax,
+                tempImages: tempPaths,
+                selectedThumbnail,
+            };
 
+            const response = await createEvent(payload);
+            const eventId = response.data.eventId;
             alert('Event Created Successfully!');
-
-            // Redirect user to the newly created event's details page
             navigate(`/events/${eventId}`);
-
         } catch (error) {
             console.error('Error creating event:', error);
             alert('Failed to create event.');
