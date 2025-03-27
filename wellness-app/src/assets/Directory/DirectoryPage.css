@@ -2,148 +2,215 @@
 .directory-page {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0px;
 }
 
-.banner {
-    text-align: center;
-    background-color: #f4f4f4;
-    padding: 40px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.banner h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-}
-
-.banner p {
-    font-size: 1.2rem;
-    margin-bottom: 20px;
-}
-
-.join-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.join-button:hover {
-    background-color: #0056b3;
-}
-
-/* Stack the heading vertically */
-.nav-link-container {
+.background {
+    position: relative; 
+    width: 100%;
+    height: 400px;
+    background: radial-gradient(circle at 100% 50%, #F4A623 0%, black 50%);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    margin-bottom: 30px;
-    width: 60%;
-    margin: 0 auto;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 20px;
+    margin-bottom: 40px;
+    overflow: hidden; 
 }
 
-/* Use row layout for nav-links */
-.nav-link-wrapper {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
+.verify-container {
+    position: absolute;
+    top: 50%; 
+    right: 10%; 
+    transform: translateY(-50%); 
 }
 
-.nav-link {
-    flex: 1;
+.verify-container img {
+    width: 200px; 
+    height: auto;
+    border-radius: 50%; 
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); 
+}
+
+.title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 130%;
+    color: #FFFFFF;
+    margin-bottom: 20px;
     text-align: center;
-    margin: 0 10px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
 }
 
-.nav-link:hover {
-    transform: translateY(-5px); /* Lift effect */
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2); /* Increased shadow on hover */
+.description {
+    font-family: 'Lora', serif;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 160%;
+    color: #CCCCCC;
+    text-align: center;
+    margin-bottom: 30px;
+    width: 600px;
 }
 
-.nav-link a {
-    font-size: 1.5rem;
-    color: #333;
+.button-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.button {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 100%;
+    color: #F4A623;
     text-decoration: none;
-    display: block;
-    margin-bottom: 10px;
+    text-align: center;
+    background: #F4A623;
+    padding: 16px 24px;
+    border-radius: 6px;
 }
 
-.nav-link a:hover {
-    color: #007bff;
+.button.alternative {
+    text-decoration: underline;
+    background: none;
 }
 
-.nav-link p {
-    font-size: 1.3rem;
-    color: #666;
+.how-it-works {
+    text-align: left;
+    margin-left: 20px;
+    border-bottom: 10px solid #F4A623;
+    padding-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    display: inline-block;
+}
+
+.text-center img {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.text-center img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.healer-search-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; 
+    background: #fff; 
+    padding: 10px 15px;
+    border-radius: 8px; 
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); 
+    width: 100%;
+    max-width: 400px; 
+    margin: 20px auto; 
+}
+
+.healer-search-container input {
+    flex: 1; 
+    padding: 8px 12px;
+    border: 1px solid #ddd; 
+    border-radius: 5px;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border 0.2s ease-in-out;
+}
+
+.healer-search-container input:focus {
+    border-color: #5954A6; 
+}
+
+.find-healer-title {
+    text-align: left;
+    margin-left: 20px;
+    border-bottom: 10px solid #F4A623;
+    padding-bottom: 10px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    display: inline-block;
+}
+
+.healer-profile-img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #F4A623;
+    margin-bottom: 16px;
+    box-shadow: 0px 10px 10px rgba(0, 0, 0, 0.2);
 }
 
 .healer-list {
     text-align: center;
-    width: 80%;
+    width: 100%;
     margin: 0 auto;
+    padding: 50px 10px;
+    /* Adds some padding for better spacing */
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFECFF 5%, #FFECFF 20%, #FFFFFF 65%);
 }
 
-.healer-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 100px;
+.card-wrapper {
     margin-bottom: 20px;
 }
 
-.healer-card {
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+.healer-profile-card {
+    min-width: 250px;
+    flex-grow: 1;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #FAFAFA;
+    /* Light, warm off-white */
+    border-radius: 10px;
+    /* Smooth edges for a softer look */
+    box-shadow: 0 5px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.healer-card:hover {
-    transform: translateY(-5px);
+.healer-profile-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.healer-link {
-    color: inherit;
-    text-decoration: none;
-}
-
-.healer-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-.healer-card h3 {
-    font-size: 1.2rem;
+.healer-profile-card .card-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #333;
     margin-top: 10px;
+    margin-bottom: 6px;
+    text-transform: capitalize;
+    text-decoration: underline;
+    text-decoration-color: #F4A623;
 }
 
-.healer-card p {
-    font-size: 1rem;
-    color: #555;
+.card-wrapper p {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    color: #777777;
+    line-height: 1.5;
+    margin-bottom: 12px;
 }
 
-button {
+.card-wrapper button {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
     padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    font-size: 1rem;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
+    color: #FFFFFF;
+    background: #5954A6;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #0056b3;
+.card-wrapper button:hover {
+    background: #473D8C;
 }

@@ -4,7 +4,29 @@ import { collection, getDocs, query, where, limit, startAfter, doc, getDoc } fro
 import { Link } from "react-router-dom";
 import { getAuth } from "firebase/auth";
 import HealerSearch from "./HealerSearch";
-import dummyPic from "../dummyPic.jpeg";
+import { Card, Button, Container, Row, Col } from "react-bootstrap";
+
+function ProfileCard({ healer }) {
+    return (
+        <Card className="healer-profile-card" style={{ width: "18rem", marginBottom: "20px" }}>
+            <Link to={`/profile/${healer.id}`}>
+                <Card.Img variant="top" className="healer-profile-img" src={healer.profilePicUrl} alt={healer.displayName} />
+            </Link>
+            <Card.Body>
+                <Card.Title>{healer.displayName}</Card.Title>
+                <Card.Text>
+                    {healer.title}
+                    <br />
+                    {healer.location}
+                </Card.Text>
+                <Link to={`/profile/${healer.id}`}>
+                    <Button variant="primary">Follow</Button>
+                </Link>
+            </Card.Body>
+        </Card>
+    );
+}
+
 
 function HealerList() {
     const [healers, setHealers] = useState([]);
@@ -22,8 +44,8 @@ function HealerList() {
         if (searchTerm) {
             healerQuery = query(
                 healerQuery,
-                where("searchName", ">=", searchTerm.toLowerCase()),
-                where("searchName", "<=", searchTerm.toLowerCase() + "\uf8ff"),
+                where("displayNameLowercase", ">=", searchTerm),
+                where("displayNameLowercase", "<=", searchTerm + "\uf8ff"),
                 limit(8)
             );
         } else {
@@ -35,35 +57,19 @@ function HealerList() {
         }
 
         const healerSnapshot = await getDocs(healerQuery);
-        const healerList = [];
-        const lastVisibleDoc = healerSnapshot.docs[healerSnapshot.docs.length - 1];
+        const healerList = healerSnapshot.docs.map((docSnapshot) => ({
+            id: docSnapshot.id,
+            displayName: docSnapshot.data().displayName,
+            title: docSnapshot.data().title,
+            location: docSnapshot.data().location,
+            profilePicUrl: docSnapshot.data().profilePicUrl || "default-image-url.jpg",
+        }));
 
-        for (const docSnapshot of healerSnapshot.docs) {
-            const healerData = docSnapshot.data();
-            const userRef = doc(db, "users", docSnapshot.id);
-            const userSnap = await getDoc(userRef);
-            const userData = userSnap.exists() ? userSnap.data() : {};
-
-            healerList.push({
-                id: docSnapshot.id,
-                firstName: healerData.firstName,
-                lastName: healerData.lastName,
-                title: healerData.title,
-                location: healerData.location,
-                healingTags: healerData.healingTags,
-                displayName: userData.displayName || "[Deleted]",
-                profilePicUrl: userData.profilePicUrl || dummyPic,
-            });
-        }
-
-        setHealers((prev) => {
-            const combined = searchTerm ? healerList : [...prev, ...healerList];
-            return Array.from(new Set(combined.map(h => h.id))).map(
-                id => combined.find(h => h.id === id)
-            );
+        setHealers((prevHealers) => {
+            return searchTerm ? healerList : [...prevHealers, ...healerList];
         });
 
-        setLastVisible(lastVisibleDoc);
+        setLastVisible(healerSnapshot.docs[healerSnapshot.docs.length - 1]);
         setHasMore(healerList.length === 8);
         setLoading(false);
         setInitialLoading(false);
@@ -71,7 +77,7 @@ function HealerList() {
 
     useEffect(() => {
         const auth = getAuth();
-        const unsubscribe = auth.onAuthStateChanged(user => {
+        const unsubscribe = auth.onAuthStateChanged((user) => {
             setIsSignedIn(!!user);
         });
         return unsubscribe;
@@ -85,43 +91,38 @@ function HealerList() {
 
     return (
         <div className="healer-list">
-            <h2>Meet Our Healers</h2>
+
             <HealerSearch setSearchTerm={setSearchTerm} />
-            <br /><br />
-            <div className="healer-container">
-                {isSignedIn ? (
-                    initialLoading ? (
-                        <p>Loading healers...</p>
-                    ) : (
-                        healers.length > 0 ? (
+
+            <h1 className="find-healer-title mb-5">Meet Our Healers</h1>
+            <Container fluid>
+                <Row className="g-4">
+                    {isSignedIn ? (
+                        initialLoading ? (
+                            <p>Loading healers...</p>
+                        ) : healers.length > 0 ? (
                             healers.map((healer) => (
-                                <div key={healer.id} className="healer-card">
-                                    <Link to={`/profile/${healer.id}`} className="healer-link">
-                                        <img
-                                            src={healer.profilePicUrl}
-                                            alt={`${healer.firstName} ${healer.lastName}`}
-                                            className="healer-image"
-                                        />
-                                    </Link>
-                                    <Link to={`/profile/${healer.id}`} className="healer-link">
-                                        <h3>{healer.displayName}</h3>
-                                    </Link>
-                                    <p>{healer.firstName} {healer.lastName}</p>
-                                    <p><strong>Title: </strong>{healer.title}</p>
-                                    <p><strong>Location: </strong>{healer.location}</p>
-                                </div>
+                                <Col key={healer.id} sm={6} md={4} lg={3}>
+                                    <div className="card-wrapper">
+                                        <ProfileCard healer={healer} />
+                                    </div>
+                                </Col>
                             ))
                         ) : (
                             <p>No healers found.</p>
                         )
-                    )
-                ) : (
-                    <p>Please sign in to view the healers.</p>
-                )}
-            </div>
+                    ) : (
+                        <p>Please sign in to view the healers.</p>
+                    )}
+                </Row>
+            </Container>
 
             {!loading && hasMore && isSignedIn && (
-                <button onClick={() => fetchHealers(searchTerm)}>Load More</button>
+                <div className="text-center">
+                    <Button variant="warning" onClick={() => fetchHealers(searchTerm)} style={{ marginTop: "20px" }}>
+                        Load More
+                    </Button>
+                </div>
             )}
             {loading && <p>Loading more healers...</p>}
         </div>
