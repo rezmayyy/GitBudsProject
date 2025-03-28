@@ -1,6 +1,7 @@
 /* Add styles for your modal */
 .modal {
-    display: block; /* Always display the modal when rendered */
+    display: block;
+    /* Always display the modal when rendered */
     position: fixed;
     z-index: 1;
     left: 0;
@@ -9,15 +10,18 @@
     height: 100%;
     overflow: auto;
     background-color: rgb(0, 0, 0);
-    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
 }
 
 .modal-content {
     background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
+    margin: 15% auto;
+    /* 15% from the top and centered */
     padding: 20px;
     border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
+    width: 80%;
+    /* Could be more or less, depending on screen size */
 }
 
 .close {
@@ -70,87 +74,305 @@ button:hover {
 }
 
 /* Start EventsPage *******************************/
-/* Container for the entire events page */
-.events-page {
-    max-width: 2000px;
-    margin: 0 auto;
+
+/* Imma just add the new design stuff even tho the file is already
+        long. I should have broken it up into three separate files */
+.event-page-title {
+    display: inline-block;
+    background-color: rgba(99, 227, 104, 0.25);
+    color: #003700;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 140%;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.information-box {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.event-page-title {
+    display: inline-block;
+    background-color: rgba(99, 227, 104, 0.25);
+    color: #003700;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 140%;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 8px 16px;
+    border-radius: 12px;
+}
+
+.healing-connect {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.experience-healing {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 48px;
+    line-height: 130%;
+    letter-spacing: 0px;
+    color: #F4A623;
+    padding: 10px 0;
+}
+
+.learn-connect {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 48px;
+    line-height: 130%;
+    letter-spacing: 0px;
+    color: #141414;
+    padding: 10px 0;
+}
+
+.description {
+    color: #878787;
+}
+
+.buttons {
+    justify-content: center;
+    gap: 15px;
+}
+
+.buttons button:not(:last-child) {
+    margin-right: 20px;
+}
+
+.buttons .upcoming-events {
+    padding: 12px 24px;
+    border-radius: 6px;
+    background: #5954A6;
+    color: #FFFFFF;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+}
+
+.buttons .upcoming-events:hover {
+    background: #6b66cc;
+    box-shadow: 0 4px 10px rgba(89, 84, 166, 0.3);
+    transition: all 0.3s ease-in-out;
+}
+
+.buttons .host-event {
+    padding: 12px 24px;
+    border-radius: 6px;
+    background: transparent;
+    color: #5954A6;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border: 2px solid #5954A6;
+    cursor: pointer;
+}
+
+.buttons .host-event:hover {
+    background: #5954A6;
+    color: #FFFFFF;
+    transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.image-container {
+    position: relative;
+    margin-bottom: 400px;
+}
+
+.event-categories {
+    text-align: center;
+}
+
+.categories-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 36px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #003700;
+}
+
+.categories-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: #141414;
+    margin-bottom: 30px;
+}
+
+.category-box {
+    background-color: #FFC1591A;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    font-family: Arial, sans-serif;
+    width: 100%;
+    /* Ensures consistent sizing */
+    text-align: left;
+}
+
+.category-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #F4A623;
+    margin-bottom: 10px;
+}
+
+.category-description {
+    font-family: 'Lora', serif;
+    font-size: 16px;
+    color: #141414;
 }
 
 .event-search-container {
     display: flex;
-    justify-content: center; /* Center it horizontally */
-    margin-bottom: 20px; /* Add some spacing */
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+    margin-top: 50px;
+    align-items: center;
 }
+
+.search-bar-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
 .event-search-container input {
-    width: 500px; /* Adjust to match filter buttons */
+    width: 500px;
     padding: 8px;
     font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
 }
 
+.nav-tab {
+    font-family: "Poppins", sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 100%;
+    letter-spacing: 0px;
+    color: #878787;
+    text-align: center;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.nav-tab:hover {
+    text-decoration: underline;
+    color: #F4A623;
+}
+
+.nav-tab.active,
+.active-tab {
+    color: #F4A623 !important;
+    font-weight: 400;
+    border: none !important;
+    border-bottom: 2px solid #F4A623;
+    box-shadow: none !important;
+    background: none !important;
+    outline: none !important;
+    text-decoration: underline;
+}
+
+
 /* Title styling */
 .events-title {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 130%;
+    letter-spacing: 0px;
+    color: #141414;
     text-align: center;
-    font-size: 28px;
-    font-weight: bold;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 /* Create Event button */
 .create-event-button {
     display: block;
-    width: 200px;
     margin: 0 auto 20px;
-    padding: 10px;
-    background-color: #007bff;
+    width: 200px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    line-height: 100%;
     color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
+    text-decoration: none;
     text-align: center;
+    background: #F4A623;
+    padding: 16px 24px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
 }
 
 .create-event-button:hover {
-    background-color: #0056b3;
+    background-color: #D68920;
 }
 
 /* Loading and No Events messages */
-.loading-message, .no-events-message {
+.loading-message,
+.no-events-message {
     text-align: center;
     font-size: 18px;
     font-weight: bold;
     margin-top: 20px;
 }
 
+.upcoming-events-section {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFECFF 5%, #FFECFF 20%, #FFFFFF 65%);
+    width: 100%;
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
 /* Events list container */
 .events-list {
     list-style: none;
     padding: 0;
-}
-
-/* Ensure consistent height to prevent shifting */
-.events-list-container {
-    min-height: 400px; /* Adjust based on typical content height */
+    width: 1040px;
+    height: 1600px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    gap: 40px;
+    border-radius: 40px;
+    background-color: #ffffff;
+    margin: 0 auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     align-items: center;
 }
+
 
 /* Individual event item */
-.event-item {
-    width: 1000px;
+.event-card {
     display: flex;
-    align-items: center;
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    transition: transform 0.2s ease-in-out;
+    gap: 20px;
+    border-radius: 24px;
+    overflow: hidden;
+    background-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    padding: 16px;
 }
 
 .event-item:hover {
@@ -159,16 +381,18 @@ button:hover {
 
 /* Event thumbnail image */
 .event-thumbnail {
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
+    border-radius: 24px;
     object-fit: cover;
-    border-radius: 8px;
-    margin-right: 15px;
 }
 
 /* Event details container */
 .event-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .event-info-no-title {
@@ -178,43 +402,86 @@ button:hover {
 
 /* Event title */
 .event-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 5px 0;
-    text-align: center;
-    text-decoration: underline;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    line-height: 100%;
+    color: #141414;
+    margin: 16px 0 8px;
+}
+
+.event-date {
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 100%;
+    color: #141414;
+    margin-bottom: 16px;
 }
 
 /* Event description */
 .event-description {
-    font-size: 16px;
-    color: #555;
-    margin: 5px 0;
-    padding-bottom: 10px;
-    font-style: italic;
+    font-family: "Lora", serif;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 160%;
+    color: #878787;
+    margin-bottom: 24px;
 }
 
-/* Event metadata (date, time, location, type) */
-.event-date, .event-time, .event-type, .event-location {
+.event-type {
+    background-color: #FFFBF2;
+    font-family: "Poppins", sans-serif;
+    font-weight: 500;
     font-size: 14px;
-    margin: 3px 0;
+    line-height: 100%;
+    color: #141414;
+    text-align: left;
+    padding: 4px 8px;
+    border-radius: 6px;
+    align-self: flex-start;
+    margin-bottom: 16px;
+    display: inline-block;
 }
 
 /* View Details button */
 .event-details-button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 5px;
+    width: 153px;
+    height: 42px;
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
     font-size: 14px;
+    line-height: 100%;
+    color: #ffffff;
+    background-color: #5954A6;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
+    align-self: flex-start;
+    padding: 8px 16px;
 }
 
 .event-details-button:hover {
-    background-color: #218838;
+    background-color: #463b94;
 }
+
+.load-more-button {
+    display: block;
+    margin: 20px auto;
+    /* Center the button horizontally */
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.load-more-button:hover {
+    background-color: #005fa3;
+}
+
 /* End Events Page */
 
 /* Start CreateEventPage Styling *******************************/
@@ -253,13 +520,17 @@ button:hover {
 .form-group {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centers inputs and labels */
+    align-items: center;
+    /* Centers inputs and labels */
 }
+
 .form-group input,
 .form-group textarea,
 .form-group select {
-    width: 60%; /* Adjusts input width */
-    text-align: center; /* Centers text inside input */
+    width: 60%;
+    /* Adjusts input width */
+    text-align: center;
+    /* Centers text inside input */
 }
 
 
@@ -319,16 +590,21 @@ button:hover {
 
 .image-preview-container-images {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping if there are too many images */
-    gap: 15px; /* Adds space between images */
+    flex-wrap: wrap;
+    /* Allows wrapping if there are too many images */
+    gap: 15px;
+    /* Adds space between images */
     justify-content: center;
 }
 
 .image-preview {
     display: flex;
-    flex-direction: column; /* Stack items vertically */
-    align-items: center; /* Center everything */
-    gap: 5px; /* Space between elements */
+    flex-direction: column;
+    /* Stack items vertically */
+    align-items: center;
+    /* Center everything */
+    gap: 5px;
+    /* Space between elements */
 }
 
 
@@ -382,6 +658,7 @@ button:hover {
 .submit-button:hover:not(:disabled) {
     background-color: #218838;
 }
+
 /* End CreateEventPage Styling */
 
 /* Start EventDetails Page ******************************/
@@ -449,7 +726,8 @@ button:hover {
 .event-creator {
     display: inline-flex;
     align-items: center;
-    gap: 8px; /* Adds spacing between elements */
+    gap: 8px;
+    /* Adds spacing between elements */
     padding: 10px;
     background: #f8f9fa;
     border-radius: 5px;
@@ -475,7 +753,8 @@ button:hover {
     border-radius: 50%;
     margin-left: 8px;
     border: 2px solid #ddd;
-    object-fit: cover; /* Ensures the image maintains aspect ratio */
+    object-fit: cover;
+    /* Ensures the image maintains aspect ratio */
 }
 
 .creator-placeholder {
@@ -535,25 +814,34 @@ button:hover {
 /* Event Images */
 .event-images-container {
     display: flex;
-    flex-wrap: wrap; /* Allows images to move to the next row if needed */
-    justify-content: center; /* Centers images */
-    gap: 15px; /* Space between images */
+    flex-wrap: wrap;
+    /* Allows images to move to the next row if needed */
+    justify-content: center;
+    /* Centers images */
+    gap: 15px;
+    /* Space between images */
     margin-top: 15px;
     padding-bottom: 10px;
 }
 
 .event-image {
-    width: 400px; /* Increase width */
-    height: 300px; /* Increase height */
-    object-fit: cover; /* Ensures the image is properly cropped without distortion */
-    border-radius: 10px; /* Slightly round edges for a polished look */
+    width: 400px;
+    /* Increase width */
+    height: 300px;
+    /* Increase height */
+    object-fit: cover;
+    /* Ensures the image is properly cropped without distortion */
+    border-radius: 10px;
+    /* Slightly round edges for a polished look */
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 
 .event-image:hover {
-    transform: scale(1.08); /* Slight zoom effect */
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); /* Adds depth */
+    transform: scale(1.08);
+    /* Slight zoom effect */
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    /* Adds depth */
 }
 
 /* Responsive Design */
