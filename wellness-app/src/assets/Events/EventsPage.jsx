@@ -140,20 +140,19 @@ function EventsPage() {
                 </div>
             </div>
 
-            <div className="picture-container mt-5">
+            <div className="picture-container mt-5 justify-content-center">
                 <div className="row justify-content-center">
-                    <div className="col-md-6 image-container">
+                    <div className="col-md-6 image-container position-relative d-flex justify-content-center">
                         <img
                             src={frame1}
                             alt="Pic 1"
                             className="img-fluid position-absolute"
-                            style={{ top: "0px", left: "-250px", zIndex: 2 }}
-                        />
+                            style={{ top: "0px", left: "25%", transform: "translateX(-50%)", zIndex: 2 }} />
                         <img
                             src={frame2}
                             alt="Pic 2"
                             className="img-fluid position-absolute"
-                            style={{ top: "30px", left: "250px", zIndex: 1 }}
+                            style={{ top: "30px", left: "75%", transform: "translateX(-50%)", zIndex: 1 }}
                         />
                     </div>
                 </div>
