@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { collection, query, orderBy, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../Firebase";
+import { Container, Row, Col } from 'react-bootstrap';
 import logo from '../Logo.png';
+import frame1 from './frame1.png';
+import frame2 from './frame2.png';
 import EventSearch from "./EventSearch";
 import styles from "../../styles/Events.css";
 
@@ -36,7 +39,7 @@ function getThumbnail(event) {
 function EventsPage() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
-    const [filteredEvents, setFilteredEvents] = useState([]);
+    const [displayedEvents, setDisplayedEvents] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -63,7 +66,7 @@ function EventsPage() {
                     return {
                         id: doc.id,
                         ...event,
-                        titleLower: event.title ? event.title.toLowerCase() : "", // Ensure titleLower is always defined
+                        titleLower: event.title ? event.title.toLowerCase() : "",
                         date: eventDate,
                         localTime: formatToLocalTime(eventDate),
                         endTimeFormatted: event.endTime
@@ -71,11 +74,10 @@ function EventsPage() {
                             : null,
                         thumbnail: getThumbnail(event),
                     };
-
                 });
 
                 setEvents(eventsList);
-                setFilteredEvents(eventsList);
+                setDisplayedEvents(eventsList);
             } catch (error) {
                 console.error("Error fetching events:", error);
             } finally {
@@ -86,31 +88,139 @@ function EventsPage() {
         fetchEvents();
     }, []);
 
-    return (
-        <div className="events-page">
+    const scrollToUpcomingEvents = () => {
+        const section = document.getElementById("upcoming-events");
+        if (section) {
+            section.scrollIntoView({ behavior: "smooth" });
+        }
+    };
 
-            <div className="event-search-container">
-                <EventSearch events={events} setFilteredEvents={setFilteredEvents} />
+
+    return (
+        <div className="events-page mt-5">
+            <style>
+                {`
+                @keyframes fadeIn {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                `}
+            </style>
+
+            <div className="information-box" style={{
+                opacity: 0,
+                transform: 'translateY(20px)',
+                animation: 'fadeIn 1s ease-out forwards'
+            }}>
+                <div className="title-box">
+                    <h1 className="event-page-title">EVENTS & WORKSHOPS</h1>
+                </div>
+                <div className="healing-connect">
+                    <h2 className="experience-healing">Experience Healing,</h2>
+                    <h2 className="learn-connect">Learn, and Connect</h2>
+                </div>
+                <div className="d-flex justify-content-center">
+                    <p className="description">
+                        Attend workshops, retreats, and webinars that honor your cultural and spiritual journey.
+                    </p>
+                </div>
+                <div className="buttons">
+                    <button className="upcoming-events mb-5" onClick={scrollToUpcomingEvents}>
+                        See Upcoming Events
+                    </button>
+                    <Link to="/create-event">
+                        <button className="host-event">Host an Event</button>
+                    </Link>
+                </div>
             </div>
 
-            <h1 className="events-title">Upcoming Events</h1>
-            <button className="create-event-button" onClick={() => navigate("/create-event")}>
-                Create Event
-            </button>
+            <div className="picture-container mt-5">
+                <div className="row justify-content-center">
+                    <div className="col-md-6 image-container">
+                        <img
+                            src={frame1}
+                            alt="Pic 1"
+                            className="img-fluid position-absolute"
+                            style={{ top: "0px", left: "-250px", zIndex: 2 }}
+                        />
+                        <img
+                            src={frame2}
+                            alt="Pic 2"
+                            className="img-fluid position-absolute"
+                            style={{ top: "30px", left: "250px", zIndex: 1 }}
+                        />
+                    </div>
+                </div>
+            </div>
 
-            <div className="events-list-container">
+            <Container className="event-categories my-5">
+                <h2 className="categories-title mb-3">Event Categories</h2>
+                <p className="categories-subtitle">
+                    Foster meaningful conversations around holistic healing practices, cultural roots, and shared experiences.
+                </p>
+                <Row className="justify-content-center gy-4">
+                    <Col md={6} lg={6} className="d-flex">
+                        <div className="category-box">
+                            <h3 className="category-title">Local Gatherings</h3>
+                            <p className="category-description">
+                                Connect with like-minded individuals in your community for shared experiences and growth.
+                            </p>
+                        </div>
+                    </Col>
+                    <Col md={6} lg={6} className="d-flex">
+                        <div className="category-box">
+                            <h3 className="category-title">Cultural Healing Workshops</h3>
+                            <p className="category-description">
+                                Connecting ancestral traditions with modern practices.
+                            </p>
+                        </div>
+                    </Col>
+                    <Col md={6} lg={6} className="d-flex">
+                        <div className="category-box">
+                            <h3 className="category-title">Holistic Healing Retreats</h3>
+                            <p className="category-description">
+                                Escape, rejuvenate, and reconnect with yourself in serene settings.
+                            </p>
+                        </div>
+                    </Col>
+                    <Col md={6} lg={6} className="d-flex">
+                        <div className="category-box">
+                            <h3 className="category-title">Expert-Led Webinars</h3>
+                            <p className="category-description">
+                                Insights from globally recognized healers and coaches.
+                            </p>
+                        </div>
+                    </Col>
+                </Row>
+            </Container>
+
+            <div id="upcoming-events" className="event-search-container">
+                <EventSearch events={events} setFilteredEvents={setDisplayedEvents} />
+            </div>
+
+            <div id="upcoming-events" className="upcoming-events-section">
+                <h1 className="events-title">Upcoming Events.</h1>
+                <button className="create-event-button" onClick={() => navigate("/create-event")}>
+                    Create Event
+                </button>
                 {loading ? (
                     <div className="loading-message">
                         <p>Loading...</p>
                     </div>
-                ) : filteredEvents.length === 0 ? (
+                ) : displayedEvents.length === 0 ? (
                     <div className="no-events-message">
                         <p>No events found.</p>
                     </div>
                 ) : (
                     <ul className="events-list">
-                        {filteredEvents.map(event => (
-                            <li key={event.id} className="event-item">
+                        {displayedEvents.map(event => (
+                            <li key={event.id} className="event-card mt-3">
                                 <img
                                     className="event-thumbnail"
                                     src={event.thumbnail}
@@ -118,15 +228,14 @@ function EventsPage() {
                                     onError={(e) => { e.target.onerror = null; e.target.src = defaultThumbnail; }}
                                 />
                                 <div className="event-info">
-                                    <h2 className="event-title">{event.title}</h2>
                                     <div className="event-info-no-title">
-                                        <p className="event-description">{truncateText(event.description, 100)}</p>
-                                        <p className="event-date"><strong>Date:</strong> {event.date instanceof Date ? event.date.toLocaleDateString() : "Invalid Date"}</p>
-                                        <p className="event-time"><strong>Time:</strong> {event.localTime} {event.endTime ? ` - ${event.endTimeFormatted}` : ""}</p>
-                                        <p className="event-type"><strong>Event Type:</strong> {event.eventType || "Not specified"}</p>
+                                        <p className="event-type">{event.eventType || "Not specified"}</p>
+                                        <h3 className="event-title">{event.title} </h3>
+                                        <p className="event-date">{event.date instanceof Date ? event.date.toLocaleDateString() : "Invalid Date"} ~ {event.localTime} {event.endTime ? ` to ${event.endTimeFormatted}` : ""}</p>
+                                        <p className="event-description">{/*{truncateText(*/}{event.description}{/*}, 100)}*/}</p>
                                         <p className="event-location"><strong>Location:</strong> {event.location}</p>
                                         <button className="event-details-button" onClick={() => navigate(`/events/${event.id}`)}>
-                                            View Details
+                                            Register Now
                                         </button>
                                     </div>
                                 </div>
@@ -134,10 +243,11 @@ function EventsPage() {
                         ))}
                     </ul>
                 )}
+
             </div>
         </div>
-    );
 
+    );
 }
 
 export { formatToLocalTime };

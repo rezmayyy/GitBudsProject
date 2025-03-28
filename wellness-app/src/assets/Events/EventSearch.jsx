@@ -1,20 +1,27 @@
 import React, { useState } from "react";
+import { Nav } from "react-bootstrap";
 
 const EventSearch = ({ events, setFilteredEvents }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("All");
+  const [activeTab, setActiveTab] = useState("all");
 
-  const eventTypes = ["All", "Local Gathering", "Workshop", "Retreat", "Webinar"];
+  const eventTypes = {
+    all: "All",
+    local: "Local Gathering",
+    workshop: "Workshop",
+    retreat: "Retreat",
+    webinar: "Webinar",
+  };
 
   const handleSearch = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
-    filterEvents(query, selectedType);
+    filterEvents(query, activeTab);
   };
 
-  const handleFilter = (type) => {
-    setSelectedType(type);
-    filterEvents(searchQuery, type);
+  const handleTabChange = (selectedTab) => {
+    setActiveTab(selectedTab);
+    filterEvents(searchQuery, selectedTab);
   };
 
   const filterEvents = (query, type) => {
@@ -22,12 +29,14 @@ const EventSearch = ({ events, setFilteredEvents }) => {
 
     // Apply search filter
     if (query) {
-      filtered = filtered.filter(event => event.titleLower && event.titleLower.includes(query));
+      filtered = filtered.filter(
+        (event) => event.titleLower && event.titleLower.includes(query)
+      );
     }
 
     // Apply event type filter
-    if (type !== "All") {
-      filtered = filtered.filter(event => event.eventType === type);
+    if (type !== "all") {
+      filtered = filtered.filter((event) => event.eventType === eventTypes[type]);
     }
 
     setFilteredEvents(filtered);
@@ -44,25 +53,24 @@ const EventSearch = ({ events, setFilteredEvents }) => {
         className="search-input"
       />
 
-      {/* Filter Buttons */}
-      <div style={{ marginTop: "10px" }}>
-        {eventTypes.map(type => (
-          <button
-            key={type}
-            onClick={() => handleFilter(type)}
-            style={{
-              marginRight: "10px",
-              padding: "8px 15px",
-              cursor: "pointer",
-              backgroundColor: selectedType === type ? "#007BFF" : "#ddd",
-              color: selectedType === type ? "#fff" : "#000",
-              border: "none",
-              borderRadius: "5px"
-            }}
-          >
-            {type}
-          </button>
-        ))}
+      {/* Styled Filter Tabs */}
+      <div className="nav-tabs-container" style={{ marginTop: "10px" }}>
+        <Nav
+          className="custom-nav-tabs justify-content-center"
+          activeKey={activeTab}
+          onSelect={handleTabChange}
+        >
+          {Object.keys(eventTypes).map((key) => (
+            <Nav.Item key={key}>
+              <Nav.Link
+                eventKey={key}
+                className={`nav-tab ${activeTab === key ? "active-tab" : ""}`}
+              >
+                {eventTypes[key]}
+              </Nav.Link>
+            </Nav.Item>
+          ))}
+        </Nav>
       </div>
     </div>
   );
