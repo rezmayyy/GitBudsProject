@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { getAuth } from 'firebase/auth';
 import { Link } from "react-router-dom";
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, deleteDoc, updateDoc } from "firebase/firestore";
+import { getStorage, ref as storageRef, deleteObject } from "firebase/storage";
 import DOMPurify from "dompurify";
 import { db } from "../Firebase";
 import styles from "./ContentPostPage.module.css";
 import ReportButton from "../ReportButton/Report";
+import UserContext from '../UserContext';
 
 // Helper to safely format a Firestore timestamp or date string.
 const formatTimestamp = (ts, fmt = "PP p") => {
@@ -15,7 +18,7 @@ const formatTimestamp = (ts, fmt = "PP p") => {
     } else {
         dateObj = new Date(ts);
     }
-    return isNaN(dateObj) ? "Invalid date" : dateObj.toLocaleString();
+    return isNaN(dateObj) ? "Just now" : dateObj.toLocaleString();
 };
 
 export default function ContentDisplayView({
@@ -27,6 +30,7 @@ export default function ContentDisplayView({
     selectedTagNames,
     interactionCount
 }) {
+    const { user } = useContext(UserContext);
     const [profilePic, setProfilePic] = useState(null);
     const [likeCount, setLikeCount] = useState(0);
     const [dislikeCount, setDislikeCount] = useState(0);
@@ -92,6 +96,80 @@ export default function ContentDisplayView({
 
             {/* Title & Metadata */}
             <div className={styles.contentHeader}>
+                {(user?.role === 'admin' || user?.role === 'moderator') && (
+                    <div className={styles.modTools}>
+                        {user.role === 'admin' && (
+                            <button
+                                className={styles.deleteButton}
+                                onClick={async () => {
+                                    if (window.confirm("Are you sure you want to permanently delete this post?")) {
+                                        try {
+                                            const storage = getStorage();
+
+                                            // Delete main file
+                                            try {
+                                                const filePath = new URL(post.fileURL).pathname.split('/o/')[1].split('?')[0];
+                                                const decodedPath = decodeURIComponent(filePath);
+                                                const fileRef = storageRef(storage, decodedPath);
+                                                await deleteObject(fileRef);
+                                            } catch (err) {
+                                                if (err.code === 'storage/object-not-found') {
+                                                    console.warn("Main file already deleted.");
+                                                } else {
+                                                    console.error("Error deleting main file:", err);
+                                                }
+                                            }
+
+                                            // Delete thumbnail if present
+                                            if (post.thumbnailURL) {
+                                                try {
+                                                    const thumbPath = new URL(post.thumbnailURL).pathname.split('/o/')[1].split('?')[0];
+                                                    const decodedThumb = decodeURIComponent(thumbPath);
+                                                    const thumbRef = storageRef(storage, decodedThumb);
+                                                    await deleteObject(thumbRef);
+                                                } catch (err) {
+                                                    if (err.code === 'storage/object-not-found') {
+                                                        console.warn("Thumbnail already deleted.");
+                                                    } else {
+                                                        console.error("Error deleting thumbnail:", err);
+                                                    }
+                                                }
+                                            }
+
+                                            // Delete Firestore post doc
+                                            await deleteDoc(doc(db, 'content-posts', post.id));
+                                            alert("Post deleted.");
+                                        } catch (err) {
+                                            console.error("Final deletion error:", err);
+                                            alert("Something went wrong during deletion.");
+                                        }
+                                    }
+                                }}
+                            >
+                                🗑️ Delete Post
+                            </button>
+                        )}
+
+                        <button
+                            className={styles.rejectButton}
+                            onClick={async () => {
+                                if (window.confirm("Hide this post by marking it as rejected?")) {
+                                    try {
+                                        const postRef = doc(db, 'content-posts', post.id);
+                                        await updateDoc(postRef, { status: 'rejected' });
+                                        alert("Post hidden.");
+                                    } catch (err) {
+                                        console.error("Error updating status:", err);
+                                        alert("Error hiding post.");
+                                    }
+                                }
+                            }}
+                        >
+                            🚫 Hide Post
+                        </button>
+                    </div>
+                )}
+
                 <div className={styles.topRow}>
                     <div className={styles.leftColumn}>
                         <h2 className={styles.titleLeft}>{post.title}</h2>

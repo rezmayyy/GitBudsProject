@@ -49,7 +49,6 @@ const CommentsSection = ({ postId, currentUser }) => {
       const localTimestamp = new Date();
       // Only send the minimal fields; displayName and profilePicUrl will be looked up later.
       const commentData = {
-        postId,
         userId: currentUser.uid,
         text: newComment,
         timestamp: serverTimestamp(),

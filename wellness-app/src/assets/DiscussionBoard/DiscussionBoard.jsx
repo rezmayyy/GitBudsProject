@@ -4,26 +4,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import UserContext from '../UserContext';
 import PostItem from './PostItem';
-import { collection, addDoc, Timestamp, query, orderBy, onSnapshot, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../Firebase';
 import { FaArrowLeft } from 'react-icons/fa';
 
-// Utility function to safely format a Firestore or non-Firestore timestamp
+// Utility function to safely format a timestamp
 function formatTimestamp(timestamp) {
   if (!timestamp) return 'No date';
-
-  // If it's a Firestore Timestamp object
   if (timestamp.toDate) {
     return format(timestamp.toDate(), 'MMM d, yyyy h:mm a');
   }
-
-  // Otherwise, try converting to a JavaScript Date
   const dateVal = new Date(timestamp);
-  if (isNaN(dateVal.getTime())) {
-    return 'No date';
-  }
-  return format(dateVal, 'MMM d, yyyy h:mm a');
+  return isNaN(dateVal.getTime()) ? 'No date' : format(dateVal, 'MMM d, yyyy h:mm a');
 }
+
 const DiscussionBoard = ({ preview }) => {
   const { user } = useContext(UserContext);
   const [newPost, setNewPost] = useState('');
@@ -31,38 +25,30 @@ const DiscussionBoard = ({ preview }) => {
   const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch posts from Firestore
+  // Subscribe to posts
   useEffect(() => {
     if (!user) return;
-
     const postsQuery = query(collection(db, 'posts'), orderBy('timestamp', 'desc'));
-
-    const snap = onSnapshot(postsQuery, (snapshot) => {
-      const postsList = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+    const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
+      const postsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setPosts(postsList);
     });
-
-    return () => snap();
-
+    return () => unsubscribe();
   }, [user]);
 
-  // Submit a new post
+  // Submit a new post (only saving minimal fields)
   const handlePostSubmit = async () => {
     if (!user) {
       alert('You need to log in to post!');
       navigate('/login');
       return;
     }
-
     if (newPost.trim()) {
       const newPostItem = {
         message: newPost,
-        timestamp: Timestamp.now(),
-        userName: user.displayName || user.email,
+        timestamp: serverTimestamp(),
         userId: user.uid,
-        replies: [],
       };
-
       try {
         const docRef = await addDoc(collection(db, 'posts'), newPostItem);
         setPosts([{ ...newPostItem, id: docRef.id }, ...posts]);
@@ -74,13 +60,6 @@ const DiscussionBoard = ({ preview }) => {
   };
 
   const displayedPosts = preview ? posts.slice(0, 3) : posts;
-
-  const handleReplyAdded = async (postId, updatedReplies) => {
-    const postRef = doc(db, 'posts', postId);
-    await updateDoc(postRef, { replies: updatedReplies });
-  };
-
-
 
   return (
     <div className="discussion-board" style={{ maxWidth: '900px', margin: '0 auto' }}>
@@ -126,11 +105,7 @@ const DiscussionBoard = ({ preview }) => {
           selectedPost ? (
             <div>
               <button onClick={() => setSelectedPost(null)}><FaArrowLeft /></button>
-              <PostItem
-                post={selectedPost}
-                expanded={true}
-                onReplyAdded={handleReplyAdded}
-              />
+              <PostItem post={selectedPost} expanded={true} />
             </div>
           ) : (
             displayedPosts.length > 0 ? (
@@ -141,7 +116,7 @@ const DiscussionBoard = ({ preview }) => {
                   onExpand={() => setSelectedPost(post)}
                   preview={preview}
                   expanded={selectedPost === post}
-                  onReplyAdded={handleReplyAdded} />
+                />
               ))
             ) : (
               <p>No posts yet. Be the first to share!</p>
@@ -186,7 +161,7 @@ const DiscussionBoard = ({ preview }) => {
           <button onClick={() => navigate('/discussion')}>View Discussion Board</button>
         )}
       </div>
-    </div >
+    </div>
   );
 };
 

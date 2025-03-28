@@ -11,7 +11,7 @@ import Footer from './assets/Footer';
 import Profile from './assets/Profile/Profile';
 import TOS from './assets/TOS';
 import PrivacyPolicy from './assets/PrivacyPolicy';
-import DiscussionBoardPage from './assets/DiscussionBoardPage';
+import DiscussionBoardPage from './assets/DiscussionBoard/DiscussionBoardPage';
 import CreatePost from './assets/Create/CreatePost';
 import ContentPostPage from './assets/ContentPostPage/ContentPostPage';
 import ProtectedRoute from './assets/ProtectedRoute';
@@ -27,7 +27,7 @@ import EventsPage from './assets/Events/EventsPage';
 import EventDetailsPage from './assets/Events/EventDetailsPage';
 import CreateEventPage from './assets/Events/CreateEventPage';
 import DirectoryPage from './assets/Directory/DirectoryPage';
-import About from './assets/About';
+import About from './assets/Home/About';
 import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
 import Resources from './assets/Resources';
@@ -52,7 +52,7 @@ function App() {
             <Route path="/recover" element={<ForgotPassword />} />
 
             <Route path="/profile" element={<VerifyReroute component={Profile} />} />
-            <Route path="/profile/:username" element={<Profile />} />
+            <Route path="/profile/:username" element={<VerifyReroute component={Profile} />} />
 
             {/* Main pages */}
             <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />

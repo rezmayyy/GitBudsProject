@@ -54,7 +54,7 @@ function ManageCEOVideo() {
         setShowNotification(true);
 
         try {
-            const tempFolder = "Temp";
+            const tempFolder = "temp";
             const videoPath = await uploadFileToStorage(fileInputs.file, tempFolder);
             const thumbPath = await uploadFileToStorage(fileInputs.thumbnail, tempFolder);
 

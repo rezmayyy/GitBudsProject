@@ -220,11 +220,6 @@ const ContentPostPage = () => {
 
     const handleSave = async () => {
         if (!post) return;
-        const slurRegex = /\b(?:nigger|kike|chink|spic|gook)\b/i;
-        if (slurRegex.test(editedTitle) || slurRegex.test(editedDescription)) {
-            setError("Your update contains inappropriate language.");
-            return;
-        }
 
         const postRef = doc(db, 'content-posts', postId);
         const updatedData = {

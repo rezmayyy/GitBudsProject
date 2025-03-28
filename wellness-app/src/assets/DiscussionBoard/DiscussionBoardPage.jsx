@@ -1,5 +1,5 @@
 import React from 'react';
-import DiscussionBoard from './DiscussionBoard/DiscussionBoard';
+import DiscussionBoard from './DiscussionBoard';
 
 const DiscussionBoardPage = ({ posts, setPosts }) => {
   return (

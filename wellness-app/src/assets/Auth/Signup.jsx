@@ -57,6 +57,14 @@ function Signup() {
       setPasswordError("");
     }
 
+    const displayNameRegex = /^[A-Za-z0-9_-]{3,20}$/;
+    if (!displayNameRegex.test(displayName)) {
+      setError(
+        "Display name must be 3–20 characters long and contain only letters, numbers, hyphens or underscores."
+      );
+      return;
+    }
+
     try {
       // Call Cloud Function with payload containing email, password, and displayName.
       const result = await handleUserSignupCallable({

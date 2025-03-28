@@ -1,99 +1,56 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
-import { db, functions } from '../Firebase'; // Adjust the path as needed
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../Firebase'; // Make sure functions is exported from your Firebase.js
 import styles from '../../styles/ModDashboard.module.css';
 
 const ManageMods = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [users, setUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
-    const [message, setMessage] = useState('');
 
     useEffect(() => {
-        if (searchQuery.length > 2) {
-            searchUsers(searchQuery);
-        } else {
-            setUsers([]);
-        }
+        if (searchQuery.length > 2) searchUsers(searchQuery);
+        else setUsers([]);
     }, [searchQuery]);
 
-    const searchUsers = async (queryStr) => {
-        try {
-            const userRef = collection(db, 'users');
+    const searchUsers = async (qStr) => {
+        const userRef = collection(db, 'users');
+        const emailQ = query(userRef, where('email', '>=', qStr), where('email', '<=', qStr + '\uf8ff'));
+        const nameQ = query(userRef, where('displayName', '>=', qStr), where('displayName', '<=', qStr + '\uf8ff'));
+        const [emailSnap, nameSnap] = await Promise.all([getDocs(emailQ), getDocs(nameQ)]);
+        const byId = (await getDocs(userRef)).docs
+            .filter(docSnap => docSnap.id.includes(qStr))
+            .map(docSnap => ({ ...docSnap.data(), id: docSnap.id }));
 
-            // Search by email
-            const emailQuery = query(
-                userRef,
-                where('email', '>=', queryStr),
-                where('email', '<=', queryStr + '\uf8ff')
-            );
-
-            // Search by displayName
-            const displayNameQuery = query(
-                userRef,
-                where('displayName', '>=', queryStr),
-                where('displayName', '<=', queryStr + '\uf8ff')
-            );
-
-            const [emailResults, displayNameResults] = await Promise.all([
-                getDocs(emailQuery),
-                getDocs(displayNameQuery)
-            ]);
-
-            // Also filter by user ID (document ID) if it includes the query string
-            const allDocsSnap = await getDocs(userRef);
-            const userIdResults = allDocsSnap.docs
-                .filter(docSnap => docSnap.id.includes(queryStr))
-                .map(docSnap => ({ ...docSnap.data(), id: docSnap.id }));
-
-            const matchingUsers = [
-                ...emailResults.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id })),
-                ...displayNameResults.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id })),
-                ...userIdResults
-            ];
-
-            setUsers(matchingUsers);
-        } catch (error) {
-            console.error('Error searching users:', error);
-        }
+        setUsers([
+            ...emailSnap.docs.map(d => ({ ...d.data(), id: d.id })),
+            ...nameSnap.docs.map(d => ({ ...d.data(), id: d.id })),
+            ...byId,
+        ]);
     };
 
     const handleViewUser = async (userId) => {
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        if (userSnap.exists()) setSelectedUser({ id: userId, ...userSnap.data() });
+    };
+
+    const changeRole = async (userId, newRole) => {
+        if (!window.confirm(`Set user as ${newRole}?`)) return;
+
         try {
-            const userDocRef = doc(db, 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-                setSelectedUser({ ...userDocSnap.data(), id: userId });
+            await updateDoc(doc(db, 'users', userId), { role: newRole });
+
+            if (newRole === 'admin') {
+                const setAdminFn = httpsCallable(functions, 'setAdmin');
+                await setAdminFn({ uid: userId });
             }
-        } catch (error) {
-            console.error('Error viewing user:', error);
-        }
-    };
 
-    const handleSetAdmin = async (userId) => {
-        const confirm = prompt('Are you sure you want to make this user an Admin?');
-        if (!confirm) return;
-        const setAdmin = httpsCallable(functions, 'setAdmin');
-        try {
-            const result = await setAdmin({ userId });
-            alert(result.data.message);
-        } catch (error) {
-            console.error('Error adding Admin to user:', error);
-            alert('Failed to add Admin to the user.');
-        }
-    };
-
-    const handleSetMod = async (userId) => {
-        const confirm = prompt('Are you sure you want to make this user a Mod?');
-        if (!confirm) return;
-        const setMod = httpsCallable(functions, 'setMod');
-        try {
-            const result = await setMod({ userId });
-            alert(result.data.message);
-        } catch (error) {
-            console.error('Error adding Mod to user:', error);
-            alert('Failed to add Mod to the user.');
+            alert(`User is now ${newRole}`);
+            setSelectedUser(prev => prev && { ...prev, role: newRole });
+        } catch (err) {
+            console.error(`Failed to set ${newRole}`, err);
+            alert('Error updating role.');
         }
     };
 
@@ -101,19 +58,20 @@ const ManageMods = () => {
         <div className={styles.manageUsers}>
             <h2>Manage Admins & Mods</h2>
             <input
+                className={styles.searchInput}
                 type="text"
                 placeholder="Search by email, display name, or user ID"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={styles.searchInput}
+                onChange={e => setSearchQuery(e.target.value)}
             />
+
             <div className={styles.userList}>
                 {users.length > 0 && (
                     <ul>
-                        {users.map((user) => (
-                            <li key={user.id} className={styles.userItem}>
-                                <span>{user.email}</span>
-                                <button onClick={() => handleViewUser(user.id)} className={styles.viewButton}>
+                        {users.map(u => (
+                            <li key={u.id} className={styles.userItem}>
+                                <span>{u.email}</span>
+                                <button onClick={() => handleViewUser(u.id)} className={styles.viewButton}>
                                     View User
                                 </button>
                             </li>
@@ -126,19 +84,17 @@ const ManageMods = () => {
                 <div className={styles.userDetails}>
                     <h3>{selectedUser.displayName}'s Profile</h3>
                     <p>Email: {selectedUser.email}</p>
-                    <p>Bio: {selectedUser.bio}</p>
+                    <p>Bio: {selectedUser.bio || '—'}</p>
                     <div>
-                        <button onClick={() => handleSetAdmin(selectedUser.id)} className={styles.unbanButton}>
+                        <button onClick={() => changeRole(selectedUser.id, 'admin')} className={styles.unbanButton}>
                             Set As Admin
                         </button>
-                        <button onClick={() => handleSetMod(selectedUser.id)} className={styles.unbanButton}>
+                        <button onClick={() => changeRole(selectedUser.id, 'moderator')} className={styles.unbanButton}>
                             Set As Moderator
                         </button>
                     </div>
                 </div>
             )}
-
-            {message && <p className={styles.message}>{message}</p>}
         </div>
     );
 };

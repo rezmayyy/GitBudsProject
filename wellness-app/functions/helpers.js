@@ -23,58 +23,29 @@ async function assertAdmin(uid) {
     }
 }
 
-async function deleteCollectionDocs(collectionName, uid) {
+// Deletes documents in a collection where userId === uid
+async function deleteByUserField(collectionName, uid) {
     const snap = await db.collection(collectionName).where("userId", "==", uid).get();
     for (const doc of snap.docs) {
         await doc.ref.delete();
     }
 }
 
-async function maskContentPost(docSnap, uid) {
-    const data = docSnap.data();
-    if (data.userId === uid) {
-        await docSnap.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
-    }
-    const comments = await docSnap.ref.collection("comments").get();
-    for (const comment of comments.docs) {
-        const cData = comment.data();
-        if (cData.userId === uid) {
-            await comment.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
+// Deletes subcollection documents where userId === uid (e.g. replies under a post)
+async function deleteRepliesInPosts(uid) {
+    const postsSnap = await db.collection("posts").get();
+    for (const postDoc of postsSnap.docs) {
+        const repliesRef = postDoc.ref.collection("replies");
+        const repliesSnap = await repliesRef.where("userId", "==", uid).get();
+        for (const reply of repliesSnap.docs) {
+            await reply.ref.delete();
         }
-        const replies = await comment.ref.collection("replies").get();
-        for (const reply of replies.docs) {
-            if (reply.data().userId === uid) {
-                await reply.ref.update({ userId: null, userName: "[Deleted]", message: "[deleted]" });
-            }
-        }
-    }
-}
-
-async function maskDiscussionPost(docSnap, uid) {
-    const data = docSnap.data();
-    const update = {};
-    if (data.userId === uid) {
-        Object.assign(update, { userId: null, userName: "[Deleted]", message: "[deleted]" });
-    }
-    if (Array.isArray(data.replies)) {
-        const newReplies = data.replies.map((reply) =>
-            reply.userId === uid
-                ? { ...reply, userId: null, userName: "[Deleted]", message: "[deleted]" }
-                : reply
-        );
-        if (JSON.stringify(newReplies) !== JSON.stringify(data.replies)) {
-            update.replies = newReplies;
-        }
-    }
-    if (Object.keys(update).length) {
-        await docSnap.ref.update(update);
     }
 }
 
 module.exports = {
     assertAdminOrModerator,
     assertAdmin,
-    deleteCollectionDocs,
-    maskContentPost,
-    maskDiscussionPost,
+    deleteByUserField,
+    deleteRepliesInPosts,
 };
