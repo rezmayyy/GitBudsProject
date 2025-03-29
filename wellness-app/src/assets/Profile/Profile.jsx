@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
-import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import {
   doc, getDoc, setDoc, Timestamp, deleteDoc,
   collection, query, where, getDocs
@@ -15,10 +15,6 @@ import HealerServices from './healerServices';
 import ReportButton from '../ReportButton/Report';
 import { uploadFileToStorage, validateFile } from '../../Utils/fileUtils';
 
-// Start functions emulator if needed.
-if (process.env.REACT_APP_USE_EMULATOR === "true") {
-  connectFunctionsEmulator(functions, "localhost", 5001);
-}
 
 const Profile = () => {
   const { user } = useContext(UserContext);

@@ -47,7 +47,8 @@ export async function validateFile(file, type) {
 export async function uploadFileToStorage(file, folder) {
     if (!file) return null;
     const storage = getStorage();
-    const storageRef = ref(storage, `${folder}/${file.name}`);
+    const path = `${folder}/${file.name}`;
+    const storageRef = ref(storage, path);
     await uploadBytes(storageRef, file);
-    return getDownloadURL(storageRef);
+    return path; // ✅ Return raw path, NOT download URL
 }

@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { validateFile, uploadFileToStorage } from "../../Utils/fileUtils";
 import UserContext from '../UserContext';
 import styles from '../Create/create-post.module.css';
-import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { functions, db } from "../Firebase";
 import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
@@ -18,9 +18,6 @@ function ManageCEOVideo() {
     const [ceoVideos, setCeoVideos] = useState([]);
     const [activeVideoId, setActiveVideoId] = useState(null);
 
-    if (process.env.REACT_APP_USE_EMULATOR === "true") {
-        connectFunctionsEmulator(functions, "localhost", 5001);
-    }
 
     const moveCeoVideo = httpsCallable(functions, "moveCeoVideo");
 

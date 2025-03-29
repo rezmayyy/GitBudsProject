@@ -10,7 +10,7 @@ import 'react-quill/dist/quill.snow.css';
 import DOMPurify from "dompurify";
 
 // Import functions from Firebase Functions SDK
-import { connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { functions } from "../Firebase";
 
 function CreatePost() {
@@ -86,10 +86,6 @@ function CreatePost() {
         return Array.from(new Set(words));
     };
 
-    // Initialize Firebase Functions and conditionally connect to emulator
-    if (process.env.REACT_APP_USE_EMULATOR === "true") {
-        connectFunctionsEmulator(functions, "localhost", 5001);
-    }
     // Create callable instance for Cloud Function
     const createContentPost = httpsCallable(functions, "createContentPost");
 

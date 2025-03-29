@@ -37,17 +37,20 @@ export default function ContentDisplayView({
 
     useEffect(() => {
         const fetchProfilePic = async () => {
-            if (post.userId) {
+            try {
+                if (!user || !post.userId) return;
                 const userRef = doc(db, "users", post.userId);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                     const data = userSnap.data();
                     if (data.profilePicUrl) setProfilePic(data.profilePicUrl);
                 }
+            } catch (err) {
+                console.warn("Could not fetch profile picture:", err.message);
             }
         };
         fetchProfilePic();
-    }, [post.userId]);
+    }, [post.userId, user]);
 
     // Fetch likes and dislikes counts from subcollections
     useEffect(() => {

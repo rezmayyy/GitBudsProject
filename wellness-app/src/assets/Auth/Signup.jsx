@@ -5,8 +5,9 @@ import "../../styles/guide.css";
 import { FaUser, FaLock, FaEnvelope } from "react-icons/fa";
 import { auth } from "../Firebase";
 import UserContext from "../UserContext";
-import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
+import { httpsCallable } from "firebase/functions";
 import { signInWithCustomToken, sendEmailVerification } from "firebase/auth";
+import { functions } from "../Firebase";
 
 function Signup() {
   const navigate = useNavigate();
@@ -18,11 +19,6 @@ function Signup() {
   const [passwordError, setPasswordError] = useState('');
   const { setUser } = useContext(UserContext);
 
-  // Initialize Firebase Functions and connect to emulator if needed
-  const functions = getFunctions();
-  if (process.env.REACT_APP_USE_EMULATOR === "true") {
-    connectFunctionsEmulator(functions, "localhost", 5001);
-  }
 
   const handleUserSignupCallable = httpsCallable(functions, "handleUserSignup");
 

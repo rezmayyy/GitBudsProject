@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { functions } from '../Firebase';
-import { httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import UserContext from '../UserContext'; // Import UserContext
 import styles from './CreateTicket.module.css';
 
@@ -8,10 +8,6 @@ function CreateTicket({ onCancel, onSubmitted }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const { user } = useContext(UserContext); // Get the user context
-
-  if (process.env.REACT_APP_USE_EMULATOR === "true") {
-    connectFunctionsEmulator(functions, "localhost", 5001);
-  }
 
   const createTicket = httpsCallable(functions, 'createTicket');
 

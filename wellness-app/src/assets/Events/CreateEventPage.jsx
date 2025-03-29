@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { connectFunctionsEmulator, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { auth, functions } from '../Firebase';
 import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
 
@@ -21,9 +21,6 @@ function CreateEventPage() {
 
     const DEFAULT_THUMBNAIL = '../Logo.png';
 
-    if (process.env.REACT_APP_USE_EMULATOR === "true") {
-        connectFunctionsEmulator(functions, "localhost", 5001);
-    }
 
     const createEvent = httpsCallable(functions, 'createEvent');
 
@@ -84,8 +81,9 @@ function CreateEventPage() {
                     setUploading(false);
                     return;
                 }
-                const tempPath = await uploadFileToStorage(image, tempFolder);
-                tempPaths.push({ name: image.name, path: tempPath });
+                const fullPath = await uploadFileToStorage(image, tempFolder);
+
+                tempPaths.push({ name: image.name, path: fullPath });
             }
 
             const parsedMax = maxParticipants === "" ? -1 : parseInt(maxParticipants);
