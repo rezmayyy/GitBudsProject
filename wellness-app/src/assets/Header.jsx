@@ -250,7 +250,7 @@ function Header() {
             <li><Link to="/blogs" onClick={closeMenu}>Blogs</Link></li>
             <li><Link to="/profile" onClick={closeMenu}>Profile</Link></li>
             <li><Link to="/discussion" onClick={closeMenu}>Discussion Board</Link></li>
-            <li><Link to="/create" onClick={closeMenu}>Create</Link></li>
+            <li><Link to="/create-post" onClick={closeMenu}>Create</Link></li>
             <li><Link to="/contact" onClick={closeMenu}>Contact</Link></li>
           </ul>
         )}
