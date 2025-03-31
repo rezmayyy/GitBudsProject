@@ -183,6 +183,14 @@ function Header() {
               </li>
               <li>
                 <NavLink
+                  to="/membership"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Membership
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
                   to="/contact"
                   className={({ isActive }) => (isActive ? 'active-tab' : '')}
                 >

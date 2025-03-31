@@ -1,0 +1,285 @@
+/* Page Container */
+.membershipContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: "Poppins", sans-serif;
+}
+
+/* --- Title Section --- */
+.titleSection {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.titleSection h1 {
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+    line-height: 1.2;
+}
+
+.titleSection p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+}
+
+.orangeBougie {
+    color: #ff8c00;
+    font-weight: bold;
+}
+
+.topButtons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.topButtons button {
+    background-color: #1e0e54;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.topButtons button:hover {
+    background-color: #3e1cc2;
+}
+
+/* --- Cards Container --- */
+.cardsContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+}
+
+.card {
+    background-color: #fff;
+    border-radius: 16px;
+    padding: 2rem 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 540px;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.price {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #6e4af0;
+    margin-bottom: 1rem;
+}
+
+.price span {
+    font-size: 0.9rem;
+    color: #999;
+    margin-left: 0.2rem;
+}
+
+.featuresList {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+    text-align: left;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.featuresList li {
+    margin: 0.3rem 0;
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.featuresList li:before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #00c851;
+}
+
+.card button:not(.basicButton):not(.premiumButton):not(.vipButton) {
+    margin-top: auto;
+    background-color: #5429ed;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.card button:not(.basicButton):not(.premiumButton):not(.vipButton):hover {
+    background-color: #3e1cc2;
+}
+
+.basicButton {
+    margin-top: auto;
+    background-color: #1e0e54;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.basicButton:hover {
+    background-color: #3e1cc2;
+}
+
+/* --- Premium Card Styling --- */
+.recommended {
+    border: 2px solid #daa520;
+    /* Golden border */
+    background: linear-gradient(135deg, #fff8dc, #ffd700);
+}
+
+/* Premium button with a gold look */
+.premiumButton {
+    margin-top: auto;
+    background-color: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.premiumButton:hover {
+    background-color: #ffc107;
+}
+
+/* --- VIP Card Styling --- */
+.vipCard {
+    background: linear-gradient(135deg, #2c3e50, #000);
+    color: #ffd700;
+    /* Gold text */
+    border: 2px solid #8b0000;
+    border-radius: 16px;
+    padding: 2rem 1rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 540px;
+}
+
+.vipCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+.vipButton {
+    margin-top: auto;
+    background-color: #8b0000;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.vipButton:hover {
+    background-color: #a52a2a;
+}
+
+/* --- Selected Card --- */
+.selected {
+    border: 2px solid #ffbf00;
+}
+
+/* --- Recommended Badge --- */
+.recommendedTag {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #00c851;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Compare Plans Table --- */
+.comparePlans {
+    text-align: center;
+    margin-top: 3rem;
+}
+
+.comparePlans h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.comparePlans p {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+.compareTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.compareTable thead {
+    background-color: #f7f7f7;
+}
+
+.compareTable th,
+.compareTable td {
+    border: 1px solid #ddd;
+    padding: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.compareTable th {
+    color: #333;
+    font-weight: 600;
+}
+
+.compareTable td {
+    text-align: center;
+    color: #555;
+}
+
+.compareTable tr:nth-child(even) {
+    background-color: #fafafa;
+}

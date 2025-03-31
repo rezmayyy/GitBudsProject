@@ -35,6 +35,7 @@ import ConfirmEmailChange from './assets/ConfirmEmailChange';
 import VerifyReroute from './assets/Verify/VerifyReroute';
 import Verify from './assets/Verify/Verify';
 import TicketPage from "./assets/Ticket/TicketPage";
+import Membership from './assets/Membership/Membership';
 
 function App() {
   // Manages posts and replies
@@ -79,6 +80,7 @@ function App() {
             <Route path="/resources" element={<Resources />} />
             <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
             <Route path="/verify" element={<Verify />} />
+            <Route path="/membership" element={<Membership />} />
           </Routes>
           <Footer />
         </Router>
