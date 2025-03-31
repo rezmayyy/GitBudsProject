@@ -7,6 +7,7 @@ import { Card, Button, Container, Row, Col, Nav } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { format } from "date-fns";
 import { useTags } from "../TagSystem/useTags"
+import styles from '../../styles/profile.module.css';
 
 
 const BlogsPage = () => {
@@ -17,6 +18,9 @@ const BlogsPage = () => {
     const navigate = useNavigate();
     const postsPerPage = 10;
     const { tags } = useTags();
+
+    const [isCurrentUser, setIsCurrentUser] = useState(false);
+    const [isAdminOrModerator, setIsAdminOrModerator] = useState(true);
 
     const [activeTab, setActiveTab] = useState("All topics");
     const [activeCategoryTab, setActiveCategoryTab] = useState("All categories");
@@ -48,9 +52,9 @@ const BlogsPage = () => {
                 let q = query(
                     collection(db, 'content-posts'),
                     where('status', '==', 'approved'));
-                
+
                 //filtering by topic/tag
-                if(tagId){
+                if (tagId) {
                     q = query(q, where("tags", "array-contains", tagId));
                 }
 
@@ -122,6 +126,10 @@ const BlogsPage = () => {
         }
     }
 
+    const handleFlag = () => {
+
+    }
+
 
     // const filteredPosts = contentPosts.filter(post => {
     //     const matchesTopic = activeTab === "All topics" || post.tags.some(tagId => tagNames[tagId] === activeTab);
@@ -139,17 +147,17 @@ const BlogsPage = () => {
                 backgroundPosition: 'center',
                 backgroundAttachment: 'fixed',
                 overflow: 'hidden',
-
+                borderRadius: "50px"
             }}>
                 <Row className="g-0 h-100">
                     <Col md={6} className="d-flex flex-column justify-content-center p-4">
                         <Card.Body>
                             <Card.Title className="display-4">Learn, Grow, Heal</Card.Title>
-                            <Card.Title className="display-4">-<span className="text-warning">for Free.</span></Card.Title>
+                            <Card.Title className="display-4">-<span style={{ color: "#f6a5b8" }}>for Free.</span></Card.Title>
                             <Card.Text className="lead">Explore free topics that inspire, educate, and empower your journey.</Card.Text>
                             <div className="d-flex">
                                 <Button as={Link} to="/directory" variant="primary" className="me-3"
-                                    style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4" }}>
+                                    style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4", borderRadius: "50px" }}>
                                     Find a Healer
                                 </Button>
                                 {/*<Button variant="primary">Download our free healing guides</Button>*/}
@@ -225,8 +233,7 @@ const BlogsPage = () => {
                     <Row className="mt-4">
 
                         {contentPosts.slice(0, visibleContentPosts).map(post => (
-
-                            <Col md={12}>
+                            <Col md={12} key={post.id}>
                                 <Card className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
                                     <Row className="g-0">
                                         <Col md={4}>
@@ -238,47 +245,66 @@ const BlogsPage = () => {
                                             <Card.Body>
                                                 <Card.Title className="fw-bold">{post.title}</Card.Title>
                                                 <Card.Text className="text-muted small">{post.postDate}</Card.Text>
-                                                <Card.Text>
-                                                    <div className="tags">
-                                                        {post.tags.map((tagId, index) => (
-                                                            <span key={index} className="badge bg-warning me-2">
-                                                                {tagNames[tagId] || "Unknown Tag"}
-                                                            </span>
-                                                        ))}
-                                                    </div>
 
-                                                    {/*display text depending on post type*/}
-                                                    {post.type === 'article' ? (
-                                                        <Link to={`/content/${post.id}`}
+                                                {/* ✅ Move tags outside of Card.Text */}
+                                                <div className="tags mb-2">
+                                                    {post.tags.map((tagId, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className="badge me-2"
+                                                            style={{
+                                                                backgroundColor: "#f6a5b8",
+                                                                color: "white",
+                                                                borderRadius: "50px"
+                                                            }}
+                                                        >
+                                                            {tagNames[tagId] || "Unknown Tag"}
+                                                        </span>
+                                                    ))}
+                                                </div>
+
+                                                <Card.Text>
+                                                    {/* display text depending on post type */}
+                                                    {post.type === "article" ? (
+                                                        <Link
+                                                            to={`/content/${post.id}`}
                                                             className="stretched-link"
-                                                            style={{ textDecoration: "none" }}>
-                                                            <span className="text-warning">Read article</span>
+                                                            style={{ textDecoration: "none", color: "black" }}
+                                                        >
+                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
                                                         </Link>
-                                                    ) : post.type === 'video' ? (
-                                                        <Link to={`/content/${post.id}`}
+                                                    ) : post.type === "video" ? (
+                                                        <Link
+                                                            to={`/content/${post.id}`}
                                                             className="stretched-link"
-                                                            style={{ textDecoration: "none" }}>
-                                                            <span className="text-warning">View video</span>
+                                                            style={{ textDecoration: "none" }}
+                                                        >
+                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
                                                         </Link>
                                                     ) : null}
 
+                                                    {isAdminOrModerator && !isCurrentUser && (
+                                                        <button onClick={handleFlag} className={styles.banButton}>
+                                                            Flag Post
+                                                        </button>
+                                                    )}
                                                 </Card.Text>
                                             </Card.Body>
                                         </Col>
                                     </Row>
                                 </Card>
-                                <hr style={{ borderStyle: "dashed", color: "orange" }} />
+                                <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
                             </Col>
 
                         ))}
                     </Row>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button onClick={prevPage} variant="primary" disabled={currentPage === 1}>
+                        <Button onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
                             Prev
                         </Button>
                         <span data-testid="page">Page {currentPage}</span>
-                        <Button onClick={nextPage} variant="primary" disabled={contentPosts.length < postsPerPage}>
+                        <Button onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
                             Next
                         </Button>
 

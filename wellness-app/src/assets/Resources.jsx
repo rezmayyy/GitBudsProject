@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from '../styles/Legal.module.css'; // Adjust the path as necessary
-import DiscussionBoard from './Home/DiscussionBoard';
-import FAQ from './FAQ';
+import DiscussionBoard from './DiscussionBoard/DiscussionBoard';
+import FAQ from './ResourceFAQ';
 
 function Resources() {
     return (

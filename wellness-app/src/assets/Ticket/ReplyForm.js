@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 
 function ReplyForm({ onAddReply }) {
     const [replyText, setReplyText] = useState('');

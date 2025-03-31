@@ -2,13 +2,13 @@ import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../Firebase';
 import UserContext from '../UserContext';
 import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
-import styles from '../../styles/TicketList.module.css';
+import styles from './TicketList.module.css';
 import TicketFilters from './TicketFilters';
 import TicketItem from './TicketItem';
 import ViewTicket from './ViewTicket';
 import { useNavigate } from "react-router-dom";  // Import navigation
 
-function TicketList() {
+function TicketList({ onCreateTicket }) {
     const [tickets, setTickets] = useState([]);
     const { user } = useContext(UserContext);
     const [view, setView] = useState('assigned');
@@ -67,31 +67,42 @@ function TicketList() {
     };
 
     const filteredTickets = tickets
-    .filter(ticket => {
-        if (user.role === 'admin' || user.role === 'moderator') {
-            if (view === 'assigned') return ticket.staffId === user.uid && ticket.status !== 'closed';
-            if (view === 'unassigned') return !ticket.staffId && ticket.status === 'pending';
-            return ticket.status === 'closed';
-        }
-        return ticket.userId === user.uid;
-    })
-    .sort((a, b) => {
-        // Category priority: Premium > VIP > normal
-        const categoryPriority = { 'Premium': 1, 'VIP': 2, 'normal': 3 };
-        const categoryOrder = categoryPriority[a.category || 'normal'] - categoryPriority[b.category || 'normal'];
-        
-        // If categories are the same, sort by status and then createdAt (newest first)
-        if (categoryOrder === 0) {
-            const statusPriority = { 'assigned': 1, 'pending': 2, 'closed': 3 };
-            const statusOrder = statusPriority[a.status] - statusPriority[b.status];
-            if (statusOrder === 0) {
-                return b.createdAt - a.createdAt;
+        .filter(ticket => {
+            if (user.role === 'admin' || user.role === 'moderator') {
+                if (view === 'assigned') {
+                    return ticket.staffId === user.uid && ticket.status !== 'closed';
+                }
+                if (view === 'unassigned') {
+                    return !ticket.staffId && ticket.status === 'pending' && ticket.category !== 'report';
+                }
+                if (view === 'reports') {
+                    return ticket.category === 'report';
+                }
+                return ticket.status === 'closed';
             }
-            return statusOrder;
-        }
-        
-        return categoryOrder;
-    });
+            return ticket.userId === user.uid;
+        })
+        .sort((a, b) => {
+            // Prioritize report tickets at the top of assigned
+            if (view === 'assigned') {
+                if (a.category === 'report' && b.category !== 'report') return -1;
+                if (a.category !== 'report' && b.category === 'report') return 1;
+            }
+
+            const categoryPriority = { 'report': 0, 'Premium': 1, 'VIP': 2, 'normal': 3 };
+            const categoryOrder = categoryPriority[a.category || 'normal'] - categoryPriority[b.category || 'normal'];
+
+            if (categoryOrder === 0) {
+                const statusPriority = { 'assigned': 1, 'pending': 2, 'closed': 3 };
+                const statusOrder = statusPriority[a.status] - statusPriority[b.status];
+                if (statusOrder === 0) {
+                    return b.createdAt - a.createdAt;
+                }
+                return statusOrder;
+            }
+
+            return categoryOrder;
+        });
 
     // Calculate the tickets to display based on pagination
     const indexOfLastTicket = currentPage * ticketsPerPage;
@@ -105,11 +116,11 @@ function TicketList() {
             ) : (
                 <>
                     <h2>{user.role === 'admin' || user.role === 'moderator' ? "All Tickets" : "Your Tickets"}</h2>
-                    
+
                     {/* Add "New Ticket" Button */}
-                    <button 
-                        className={styles.newTicketButton} 
-                        onClick={() => navigate("/create-ticket")}
+                    <button
+                        className={styles.newTicketButton}
+                        onClick={onCreateTicket}
                     >
                         + New Ticket
                     </button>
@@ -123,14 +134,14 @@ function TicketList() {
                                     <p>No {view} tickets available.</p>
                                 ) : (
                                     currentTickets.map(ticket => (
-                                        <TicketItem 
-                                            key={ticket.id} 
-                                            ticket={ticket} 
-                                            onClaim={handleClaim} 
-                                            onClose={handleClose} 
-                                            onView={onView} 
+                                        <TicketItem
+                                            key={ticket.id}
+                                            ticket={ticket}
+                                            onClaim={handleClaim}
+                                            onClose={handleClose}
+                                            onView={onView}
                                             view={view}
-                                            status={ticket.status} 
+                                            status={ticket.status}
                                         />
                                     ))
                                 )}
@@ -143,13 +154,13 @@ function TicketList() {
                                 <p>No tickets available.</p>
                             ) : (
                                 currentTickets.map(ticket => (
-                                    <TicketItem 
-                                        key={ticket.id} 
-                                        ticket={ticket} 
-                                        onClose={handleClose} 
-                                        view="assigned" 
+                                    <TicketItem
+                                        key={ticket.id}
+                                        ticket={ticket}
+                                        onClose={handleClose}
+                                        view="assigned"
                                         onView={onView}
-                                        status={ticket.status} 
+                                        status={ticket.status}
                                     />
                                 ))
                             )}
@@ -167,7 +178,7 @@ function TicketList() {
                 </button>
             </div>
         </div>
-    );    
+    );
 }
 
 export default TicketList;

@@ -1,8 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import React, { useContext, useState, useEffect, useRef } from "react";
 import "../styles/header.css"; // General styles
 import styles from "../styles/HamburgerMenu.module.css"; // Hamburger Menu styles
-import logo from "./Logo.png";
+import logo from "./TribeWellLogo.png";
 import UserContext from "./UserContext";
 import Signout from "./Auth/Signout";
 import { db } from "./Firebase";
@@ -132,13 +132,71 @@ function Header() {
           {/* Nav Links */}
           <nav className="main-nav">
             <ul className="nav-links">
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/directory">Directory</Link></li>
-              <li><Link to="/blogs">Blogs</Link></li>
-              <li><Link to="/profile" onClick={handleProfileClick}>Profile</Link></li>
-              <li><Link to="/discussion">Discussion Board</Link></li>
-              <li><Link to="/create-post">Create</Link></li>
-              <li><Link to="/contact">Contact</Link></li>
+              <li>
+                <NavLink
+                  to="/"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Home
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/directory"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Directory
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/blogs"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Blogs
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/profile"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                  onClick={handleProfileClick}
+                >
+                  Profile
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/discussion"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Discussion Board
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/create-post"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Create
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/membership"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Membership
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/contact"
+                  className={({ isActive }) => (isActive ? 'active-tab' : '')}
+                >
+                  Contact
+                </NavLink>
+              </li>
             </ul>
           </nav>
         </div>
@@ -200,7 +258,7 @@ function Header() {
             <li><Link to="/blogs" onClick={closeMenu}>Blogs</Link></li>
             <li><Link to="/profile" onClick={closeMenu}>Profile</Link></li>
             <li><Link to="/discussion" onClick={closeMenu}>Discussion Board</Link></li>
-            <li><Link to="/create" onClick={closeMenu}>Create</Link></li>
+            <li><Link to="/create-post" onClick={closeMenu}>Create</Link></li>
             <li><Link to="/contact" onClick={closeMenu}>Contact</Link></li>
           </ul>
         )}

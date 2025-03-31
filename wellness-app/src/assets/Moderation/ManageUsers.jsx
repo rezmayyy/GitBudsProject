@@ -49,16 +49,33 @@ const ManageUsers = () => {
         .map(docSnap => ({ ...docSnap.data(), id: docSnap.id }));
 
       const matchingUsers = [
-        ...emailResults.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id })),
-        ...displayNameResults.docs.map(docSnap => ({ ...docSnap.data(), id: docSnap.id })),
-        ...userIdResults
+        ...emailResults.docs,
+        ...displayNameResults.docs,
+        ...userIdResults.map(docSnap => ({ ...docSnap.data(), id: docSnap.id }))
       ];
 
-      setUsers(matchingUsers);
+      const uniqueUserIds = [...new Set(matchingUsers.map(user => user.id))];
+
+      const enrichedUsers = await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          const userDoc = await getDoc(doc(db, 'users', uid));
+          const privateDoc = await getDoc(doc(db, 'users', uid, 'privateInfo', 'info'));
+
+          return {
+            id: uid,
+            ...userDoc.data(),
+            email: privateDoc.exists() ? privateDoc.data().email : 'Unavailable'
+          };
+        })
+      );
+
+      setUsers(enrichedUsers);
     } catch (error) {
       console.error('Error searching users:', error);
     }
   };
+
+
 
   const handleViewUser = async (userId) => {
     try {
@@ -78,17 +95,20 @@ const ManageUsers = () => {
   };
 
   const handleBanUser = async (userId) => {
+
     const duration = prompt('Enter ban duration in days:');
     if (!duration) return;
-
+    const reason = prompt('Enter a reason for the ban:');
+    if (!reason) return;
     const banUser = httpsCallable(functions, 'banUser');
     try {
-      const result = await banUser({ userId, duration: parseInt(duration) });
+      const result = await banUser({ userId, duration: parseInt(duration), reason });
       alert(result.data.message);
     } catch (error) {
       console.error('Error banning user:', error);
-      alert('Failed to ban user.');
+      alert('Failed to ban the user.');
     }
+
   };
 
   const handleUnbanUser = async (userId) => {
@@ -138,9 +158,13 @@ const ManageUsers = () => {
               <ul>
                 {userPunishments.map((punishment) => (
                   <li key={punishment.id} className={styles.punishmentItem}>
-                    <p>Duration: {punishment.duration} days</p>
-                    <p>Reason: {punishment.reason}</p>
-                    <p>Status: {punishment.status}</p>
+                    <p><strong>Reason:</strong> {punishment.Reason || 'N/A'}</p>
+                    {punishment.Message && <p><strong>Message:</strong> {punishment.Message}</p>}
+                    {punishment.timestamp && (
+                      <p><strong>Date:</strong> {new Date(punishment.timestamp.seconds * 1000).toLocaleString()}</p>
+                    )}
+                    {punishment.Status && <p><strong>Status:</strong> {punishment.Status}</p>}
+                    {punishment.duration && <p><strong>Duration:</strong> {punishment.duration} days</p>}
                   </li>
                 ))}
               </ul>

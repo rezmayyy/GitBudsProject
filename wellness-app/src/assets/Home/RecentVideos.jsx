@@ -1,9 +1,10 @@
-// RecentVideos.jsx
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../Firebase';
 import { Link } from 'react-router-dom';
 import '../../styles/Videos.css';
+import { getUserById } from '../../Utils/firebaseUtils';
+import dummyPic from '../dummyPic.jpeg';
 
 const RecentVideos = () => {
   const [videos, setVideos] = useState([]);
@@ -12,7 +13,6 @@ const RecentVideos = () => {
   useEffect(() => {
     const fetchRecentVideos = async () => {
       try {
-        // Create a query to get approved video posts ordered by timestamp descending.
         const videosRef = collection(db, 'content-posts');
         const q = query(
           videosRef,
@@ -22,19 +22,31 @@ const RecentVideos = () => {
           limit(10)
         );
         const querySnapshot = await getDocs(q);
-        const fetchedVideos = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            title: data.title,
-            url: data.fileURL,
-            thumbnail: data.thumbnailURL, // Assumes a thumbnailURL field exists
-            likes: Array.isArray(data.likes) ? data.likes.length : 0,
-            views: typeof data.views === 'number' ? data.views : 0,
-            author: data.author // The displayName of the author
-          };
-        });
-        setVideos(fetchedVideos);
+
+        const enrichedVideos = await Promise.all(
+          querySnapshot.docs.map(async docSnap => {
+            const data = docSnap.data();
+            const authorId = data.userId;
+            const user = await getUserById(authorId);
+
+            // Fetch likes subcollection
+            const likesSnap = await getDocs(collection(db, 'content-posts', docSnap.id, 'likes'));
+            const likeCount = likesSnap.size;
+
+            return {
+              id: docSnap.id,
+              title: data.title,
+              url: data.fileURL,
+              thumbnail: data.thumbnailURL,
+              likes: likeCount,
+              views: typeof data.views === 'number' ? data.views : 0,
+              authorName: user?.displayName || 'Unknown User',
+              authorPic: user?.profilePicUrl || dummyPic,
+            };
+          })
+        );
+
+        setVideos(enrichedVideos);
       } catch (error) {
         console.error("Error fetching recent videos: ", error);
       }
@@ -43,6 +55,10 @@ const RecentVideos = () => {
     fetchRecentVideos();
   }, []);
 
+  const handleLoadMore = () => {
+    setVisibleVideos(prev => prev + 4);
+  };
+
   return (
     <div className="video-container">
       <h2 className="section-title">Recent Videos</h2>
@@ -50,24 +66,24 @@ const RecentVideos = () => {
         {videos.length > 0 ? (
           videos.slice(0, visibleVideos).map(video => (
             <div key={video.id} className="video-card">
-              {/* Title as a hyperlink to the content post */}
-              <a href={`/content/${video.id}`} className="video-title">
-                {video.title}
-              </a>
-              {/* Thumbnail or a placeholder */}
+              <a href={`/content/${video.id}`} className="video-title">{video.title}</a>
               {video.thumbnail ? (
                 <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
               ) : (
                 <div className="no-thumbnail">No Thumbnail</div>
               )}
-              {/* Stats: Likes and Views */}
               <div className="video-stats">
                 <span>{video.likes} Likes</span>
                 <span>{video.views} Views</span>
               </div>
-              {/* Author as a link to their profile */}
-              <div className="video-author">
-                <Link to={`/profile/${video.author}`}>{video.author}</Link>
+              <div className="video-author" style={{ display: 'flex', alignItems: 'center' }}>
+                <img
+                  src={video.authorPic}
+                  alt={video.authorName}
+                  style={{ width: '25px', height: '25px', borderRadius: '50%', marginRight: '8px' }}
+                  onError={(e) => { e.target.src = dummyPic; }}
+                />
+                <Link to={`/profile/${video.authorName}`}>{video.authorName}</Link>
               </div>
             </div>
           ))
@@ -75,10 +91,13 @@ const RecentVideos = () => {
           <p>No recent videos available.</p>
         )}
       </div>
+
       {visibleVideos < videos.length && (
-        <button className="load-btn" onClick={() => setVisibleVideos(visibleVideos + 4)}>
-          Load More
-        </button>
+        <div className="load-more-container">
+          <button className="load-more-btn" onClick={handleLoadMore}>
+            Load More
+          </button>
+        </div>
       )}
     </div>
   );

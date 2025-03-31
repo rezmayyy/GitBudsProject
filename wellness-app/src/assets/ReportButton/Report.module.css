@@ -1,0 +1,118 @@
+/* Report.module.css */
+
+/* Fullscreen overlay that covers the entire viewport */
+.reportModalOverlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  
+  /* Use flexbox to center the modal */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  z-index: 9999 !important;
+}
+
+/* The modal content box */
+.reportModalContent {
+  position: relative !important;
+  background-color: #fff5f7 !important; /* Soft pastel pink */
+  border-radius: 16px !important;
+  width: 90% !important;           /* Responsive width */
+  max-width: 500px !important;      /* Maximum width */
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2) !important;
+  padding: 2rem !important;
+  z-index: 10000 !important;
+  
+  /* Force left alignment to override any inherited center alignment */
+  text-align: left !important;
+}
+
+/* Force the form inside the modal to be a block element */
+.reportModalContent form {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* Modal title */
+.reportModalContent h2 {
+  margin-top: 0 !important;
+  margin-bottom: 1rem !important;
+  text-align: center !important;
+}
+
+/* Label styling */
+.reportModalContent label {
+  display: block !important;
+  margin-bottom: 0.5rem !important;
+  font-weight: bold !important;
+  color: #555 !important;
+}
+
+/* Textarea for the report description */
+.reportDescriptionTextarea {
+  width: 100% !important;
+  padding: 0.75rem !important;
+  border-radius: 8px !important;
+  border: 1px solid #ccc !important;
+  font-size: 1rem !important;
+  background-color: #fff !important;
+  resize: none !important;
+  margin-bottom: 1rem !important;
+  box-sizing: border-box !important;
+}
+
+/* Offending link label and link styling */
+.offendingLinkLabel {
+  font-weight: bold !important;
+  margin-bottom: 0.25rem !important;
+  color: #555 !important;
+}
+
+.offendingLink {
+  color: #007bff !important;
+  text-decoration: none !important;
+  word-wrap: break-word !important;
+}
+.offendingLink:hover {
+  text-decoration: underline !important;
+}
+
+/* Button row at the bottom of the modal */
+.reportButtons {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 1rem !important;
+}
+
+/* Submit and Cancel buttons styling */
+.reportButtonSubmit,
+.reportButtonCancel {
+  padding: 0.6rem 1.2rem !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-weight: bold !important;
+  font-size: 0.95rem !important;
+  color: #fff !important;
+}
+
+.reportButtonSubmit {
+  background: linear-gradient(45deg, #ffb3ba, #ffdfba) !important;
+}
+
+.reportButtonCancel {
+  background: linear-gradient(45deg, #bae1ff, #baffc9) !important;
+}
+
+/* Small icon variant for iconOnly prop */
+.smallReportIcon {
+  cursor: pointer !important;
+  font-size: 1.3rem !important;
+  margin-left: 8px !important;
+}

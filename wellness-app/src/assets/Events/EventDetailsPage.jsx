@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, deleteDoc, onSnapshot, updateDoc, arrayRemove } from "firebase/firestore";
-import { getStorage, ref, deleteObject } from "firebase/storage";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../Firebase";
 import { formatToLocalTime } from "./EventsPage";
 import dummyPic from "../dummyPic.jpeg"; // Replace with your default profile pic
 import RegistrationForm from "./RegistrationForm";
 import ParticipantList from "./ParticipantList";
-import styles from "../../styles/Events.css";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "../Firebase";
 
 function EventDetailsPage() {
     const { eventId } = useParams();
@@ -146,24 +146,8 @@ function EventDetailsPage() {
         if (!confirmDelete) return;
 
         try {
-            const storage = getStorage();
-
-            // Delete event images from Firebase Storage
-            if (event.images?.length > 0) {
-                await Promise.all(
-                    event.images.map(async (imageUrl) => {
-                        const imageRef = ref(storage, imageUrl);
-                        try {
-                            await deleteObject(imageRef);
-                        } catch (error) {
-                            console.error("Error deleting image:", error);
-                        }
-                    })
-                );
-            }
-
-            // Delete event from Firestore
-            await deleteDoc(doc(db, "events", eventId));
+            const deleteEvent = httpsCallable(functions, "deleteEvent");
+            await deleteEvent({ eventId });
 
             alert("Event deleted successfully.");
             navigate("/events");
@@ -184,24 +168,24 @@ function EventDetailsPage() {
             <div className="event-info-details">
                 <h1 className="event-title-details">{event.title}</h1>
                 {userRegistered ? (
-                <button className="unregister-button" onClick={handleUnregister}>
-                    Unregister from Event
-                </button>
-            ) : (
-                <button className="register-button" onClick={handleRegisterClick}>
-                    Register for Event
-                </button>
-            )}
+                    <button className="unregister-button" onClick={handleUnregister}>
+                        Unregister from Event
+                    </button>
+                ) : (
+                    <button className="register-button" onClick={handleRegisterClick}>
+                        Register for Event
+                    </button>
+                )}
 
-            {showRegistrationForm && (
-                <RegistrationForm eventId={eventId} onClose={handleCloseForm} />
-            )}
+                {showRegistrationForm && (
+                    <RegistrationForm eventId={eventId} onClose={handleCloseForm} />
+                )}
 
-            {user?.uid === event.createdBy && (
-                <button className="delete-button" onClick={handleDelete}>
-                    Delete Event
-                </button>
-            )}
+                {user?.uid === event.createdBy && (
+                    <button className="delete-button" onClick={handleDelete}>
+                        Delete Event
+                    </button>
+                )}
                 <p><strong>Date:</strong> {event.date?.toLocaleDateString() || "Date unavailable"}</p>
                 <p><strong>Time:</strong> {event.localTime} {event.endTime ? ` - ${formatToLocalTime(new Date(`1970-01-01T${event.endTime}`))}` : ""}</p>
                 <p><strong>Event Type:</strong> {event.eventType || "Not specified"}</p>
@@ -209,7 +193,7 @@ function EventDetailsPage() {
                 <p><strong>Participants:</strong> {participants} {event.maxParticipants === -1 ? "(Unlimited)" : `/${event.maxParticipants}`}</p>
                 <ParticipantList attendees={event.attendees || []} />
                 <br></br><br></br>
-                <strong>Description:</strong><br></br> 
+                <strong>Description:</strong><br></br>
                 <div className="event-info-description">
                     {event.description}
                 </div>

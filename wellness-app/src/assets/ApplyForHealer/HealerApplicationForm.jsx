@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { db } from '../Firebase';
-import { collection, query, where, getDocs, addDoc, deleteDoc, Timestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, deleteDoc, Timestamp } from 'firebase/firestore';
 import UserContext from '../UserContext';
 import './ApplyForHealer.css';
 
@@ -44,7 +44,6 @@ function HealerApplicationForm() {
         setSubmitting(true);
 
         try {
-            // Check if user is already an approved healer
             const healersRef = collection(db, 'healers');
             const healerQuery = query(healersRef, where('userId', '==', user.uid));
             const healerSnapshot = await getDocs(healerQuery);
@@ -55,49 +54,24 @@ function HealerApplicationForm() {
                 return;
             }
 
-            // Check if user has a pending or rejected application
             const applicationsRef = collection(db, 'healerApplications');
             const applicationQuery = query(applicationsRef, where('userId', '==', user.uid));
             const applicationSnapshot = await getDocs(applicationQuery);
 
             if (!applicationSnapshot.empty) {
-                const existingApplication = applicationSnapshot.docs[0];
-                const existingData = existingApplication.data();
-
-                if (existingData.status === 'pending') {
-                    alert('You have already submitted an application. Please wait for approval.');
-                    setSubmitting(false);
-                    return;
-                } else if (existingData.status === 'rejected') {
-                    // Delete previous rejected application before submitting a new one
-                    await deleteDoc(existingApplication.ref);
-                }
+                alert('You have already submitted an application. Please wait for approval.');
+                setSubmitting(false);
+                return;
             }
 
-            // Fetch the user's profile picture URL from the users collection
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-
-            let profilePicUrl = null;
-            if (userDoc.exists()) {
-                const userData = userDoc.data();
-                profilePicUrl = userData.profilePicUrl;
-            }
-
-            // Submit a new healer application with profilePicUrl
             const healerApplication = {
                 ...formData,
                 userId: user.uid,
-                displayName: user.displayName,
-                profilePicUrl: profilePicUrl, // Include the profilePicUrl
-                status: 'pending',
                 createdAt: Timestamp.now()
             };
 
-            // Add the application to the 'healerApplications' collection
             await addDoc(collection(db, 'healerApplications'), healerApplication);
 
-            // Reset form data and alert success
             setFormData({ firstName: '', lastName: '', title: '', location: '', healingTags: [] });
             alert('Application submitted successfully!');
         } catch (error) {
@@ -116,15 +90,15 @@ function HealerApplicationForm() {
                 <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} maxLength={50} required />
                 <input type="text" name="title" placeholder="Title (e.g., Healing Master)" value={formData.title} onChange={handleChange} maxLength={100} required />
                 <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} maxLength={100} required />
-                
+
                 <div>
                     <p>Select up to 5 Healing Focus Tags:</p>
                     <div className="tag-selection">
                         {availableTags.map(tag => (
                             <label key={tag} className={`tag ${formData.healingTags.includes(tag) ? 'selected' : ''}`}>
-                                <input 
-                                    type="checkbox" 
-                                    checked={formData.healingTags.includes(tag)} 
+                                <input
+                                    type="checkbox"
+                                    checked={formData.healingTags.includes(tag)}
                                     onChange={() => handleTagSelection(tag)}
                                 />
                                 {tag}

@@ -1,14 +1,13 @@
-// Profile.jsx
 import React, { useState, useContext, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import UserContext from '../UserContext';
 import { db, storage, functions } from '../Firebase';
+import { httpsCallable } from 'firebase/functions';
 import {
   doc, getDoc, setDoc, Timestamp, deleteDoc,
   collection, query, where, getDocs
 } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { httpsCallable } from 'firebase/functions';
+import { ref } from 'firebase/storage';
 import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
@@ -17,6 +16,9 @@ import Donate from '../Stripe/Donate';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import StripeSignup from '../Stripe/StripeSignup';
 import StripeAccount from '../Stripe/StripeAccount';
+import ReportButton from '../ReportButton/Report';
+import { uploadFileToStorage, validateFile } from '../../Utils/fileUtils';
+
 
 const Profile = () => {
  
@@ -49,7 +51,9 @@ const Profile = () => {
   const [editingContact, setEditingContact] = useState(false);
   const [contacts, setContacts] = useState([]);
 
-  // 1. If user typed a UID in the URL, redirect to the displayName-based URL
+
+
+  // 1. Redirect if a UID is provided in the URL
   useEffect(() => {
     if (username && /^[A-Za-z0-9]{20,}$/.test(username)) {
       const fetchUserById = async () => {
@@ -69,7 +73,7 @@ const Profile = () => {
     }
   }, [username, navigate]);
 
-  // 2. Fetch visited user's document based on username
+  // 2. Fetch visited user's document based on displayName
   useEffect(() => {
     const fetchVisitedUser = async () => {
       if (!username) return;
@@ -100,7 +104,7 @@ const Profile = () => {
     fetchVisitedUser();
   }, [username]);
 
-  // 3. Check if this is the current user's profile and fetch subscription/role info
+  // 3. Check if this is the current user's profile and get subscription/role info
   useEffect(() => {
     if (viewedUserId && user) {
       setIsCurrentUser(viewedUserId === user.uid);
@@ -129,19 +133,19 @@ const Profile = () => {
     }
   }, [viewedUserId, user]);
 
-  // 4. If no username is provided, redirect to current user's profile
+  // 4. If no username is provided, redirect to the current user's profile
   useEffect(() => {
     if (!username && user?.displayName) {
       navigate(`/profile/${user.displayName}`);
     }
   }, [user, username, navigate]);
 
-  // 5. Don't render until profileData is loaded
+  // 5. Don’t render until profileData is loaded
   if (!profileData) {
     return <div>Loading profile...</div>;
   }
 
-  // 6. Profile Picture Handling
+  // Profile Picture Handling
   const handleProfilePictureChange = (e) => {
     if (e.target.files[0]) {
       const file = e.target.files[0];
@@ -150,17 +154,36 @@ const Profile = () => {
     }
   };
 
+  // Updated handleSave that uses the /temp/{userId} pattern and calls changeProfilePic function
   const handleSave = async () => {
     try {
       const docRef = doc(db, 'users', user.uid);
+      // First, merge any other profile changes
       await setDoc(docRef, profileData, { merge: true });
+
       if (profilePictureFile) {
-        const profilePictureRef = ref(storage, `profile_pics/${user.uid}/${profilePictureFile.name}`);
-        await uploadBytes(profilePictureRef, profilePictureFile);
-        const profilePicUrl = await getDownloadURL(profilePictureRef);
+        const isValid = await validateFile(profilePictureFile, "image");
+        if (!isValid) {
+          alert("Invalid profile picture file.");
+          return;
+        }
+        // Upload the new file to the temporary folder.
+        const tempFolder = `temp/${user.uid}`;
+        // Note: uploadFileToStorage from your client utils returns the download URL,
+        // but here we need the storage path. Since you know the file name, we can build it.
+        await uploadFileToStorage(profilePictureFile, tempFolder);
+        const tempFilePath = `${tempFolder}/${profilePictureFile.name}`;
+
+        // Call the Cloud Function to change the profile picture.
+        const changeProfilePic = httpsCallable(functions, 'changeProfilePic');
+        const result = await changeProfilePic({ filePath: tempFilePath });
+        const profilePicUrl = result.data.profilePicUrl;
+
+        // Update the user's document with the new profilePicUrl.
         await setDoc(docRef, { profilePicUrl }, { merge: true });
         setProfileData(prev => ({ ...prev, profilePicUrl }));
       }
+
       setMessage('Profile updated successfully!');
       setTimeout(() => window.location.reload(), 500);
     } catch (error) {
@@ -194,20 +217,7 @@ const Profile = () => {
     }
   };
 
-  // 8. Report, Ban, and Unban
-  const handleReport = async () => {
-    const reason = prompt('Enter a reason for the report:');
-    if (!reason) return;
-    const reportUser = httpsCallable(functions, 'reportUser');
-    try {
-      const result = await reportUser({ userId: viewedUserId, reason });
-      alert(result.data.message);
-    } catch (error) {
-      console.error('Error reporting user:', error);
-      alert('Failed to report the user.');
-    }
-  };
-
+  // 8. Ban/Unban functions for moderators/admins
   const handleBanUser = async () => {
     const duration = prompt('Enter ban duration in days:');
     if (!duration) return;
@@ -270,7 +280,7 @@ const Profile = () => {
             className={styles.profileImage}
           />
         </div>
-        
+
         {/* Show "Save Changes" if a new file has been chosen */}
         {isCurrentUser && profilePictureFile && (
           <button className={styles.profileButton} onClick={handleSave}>
@@ -288,9 +298,11 @@ const Profile = () => {
         />
       </div>
 
-      {/* Profile Header */}
+      {/* Profile Header: Centered profile name; Report button absolutely positioned on the right */}
       <div className={styles.profileHeader}>
         <h2>{profileData.displayName || 'User Profile'}</h2>
+
+        {/* If it's the current user, show diary button; otherwise, show subscribe/unsubscribe */}
         {isCurrentUser ? (
           <button className={styles.diaryButton} onClick={() => navigate('/profile/diary')}>
             View My Diary
@@ -306,17 +318,29 @@ const Profile = () => {
                 }
                 onClick={handleSubscribe}
               >
-                {isSubscribed ? 'Unsubscribe' : 'Subscribe'}
+                {isSubscribed ? 'Unfollow' : 'Follow'}
               </button>
             ) : (
-              <p className="login-message">Please log in to subscribe.</p>
+              <p className="login-message">Please log in to follow.</p>
             )}
           </>
         )}
+
         {isAdminOrModerator && !isCurrentUser && (
           <button onClick={handleBanUser} className={styles.banButton}>
             Ban User
           </button>
+        )}
+
+        {/* Absolutely positioned Report button on the right */}
+        {!isCurrentUser && (
+          <div className={styles.profileReport}>
+            <ReportButton
+              contentUrl={window.location.href}
+              profileUrl={window.location.href}
+              iconOnly={true}
+            />
+          </div>
         )}
       </div>
 

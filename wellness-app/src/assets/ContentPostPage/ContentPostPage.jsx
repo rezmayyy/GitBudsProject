@@ -1,128 +1,151 @@
 import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment, setDoc, deleteDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
 import { db } from '../Firebase';
 import { format } from "date-fns";
-import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
 import { useTags } from "../TagSystem/useTags";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import DOMPurify from 'dompurify';
 import CommentsSection from './CommentsSection';
+import ReportButton from '../ReportButton/Report';
+import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
+import ReactQuill from 'react-quill';
 import TagSelector from '../TagSystem/TagSelector';
-
+import styles from './ContentPostPage.module.css';
+import ContentDisplayView from './ContentDisplayView';
+import ContentEditForm from './ContentEditForm';
 
 const ContentPostPage = () => {
     const { postId } = useParams();
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedTitle, setEditedTitle] = useState("");
-    const [editedDescription, setEditedDescription] = useState("");
-    const [editedBody, setEditedBody] = useState("");
-    const [editedTags, setEditedTags] = useState([]);
-
-    const [tags, setTags] = useState([]);
-    const [tagNames, setTagNames] = useState({});
-
-    const [likes, setLikes] = useState([]);
-    const [dislikes, setDislikes] = useState([]);
-
-    const [showMessage, setShowMessage] = useState(false);
-    const [message, setMessage] = useState("");
-
     const auth = getAuth();
     const currentUser = auth.currentUser;
 
-    const [uid, setUid] = useState("");
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [authorName, setAuthorName] = useState('[Deleted]');
+    const [interactionCount, setInteractionCount] = useState(0);
+
+    // Editing state (for title, description, body)
+    const [isEditing, setIsEditing] = useState('');
+    const [editedTitle, setEditedTitle] = useState('');
+    const [editedDescription, setEditedDescription] = useState('');
+    const [editedBody, setEditedBody] = useState('');
+
+    // Tag-related state
+    const [tags, setTags] = useState([]);
+    const [tagNames, setTagNames] = useState({});
+
+    // Interaction state for views
+    const [views, setViews] = useState(0);
+
+    // For showing messages and errors
+    const [showMessage, setShowMessage] = useState(false);
+    const [message, setMessage] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [error, setError] = useState(null);
 
-    //error handling
+    // Helper function to format timestamps safely.
+    const formatTimestamp = (ts, fmt = 'PP p') => {
+        if (!ts) return 'Unknown Date';
+        let dateObj;
+        if (typeof ts.toDate === 'function') {
+            dateObj = ts.toDate();
+        } else {
+            dateObj = new Date(ts);
+        }
+        return isNaN(dateObj) ? 'Invalid Date' : format(dateObj, fmt);
+    };
+
+    const fetchAuthorName = async (userId) => {
+        const userSnap = await getDoc(doc(db, 'users', userId));
+        return userSnap.exists() ? userSnap.data().displayName : '[Deleted]';
+    };
+
     useEffect(() => {
         const fetchData = async () => {
-          setLoading(true);
-          
-          try {
+            setLoading(true);
+            try {
+                // Fetch tags from 'tags' collection and build a mapping (id -> name)
+                const tagsCollection = await getDocs(collection(db, 'tags'));
+                const tagsMap = {};
+                tagsCollection.forEach(tagDoc => {
+                    const tagData = tagDoc.data();
+                    tagsMap[tagDoc.id] = tagData.name;
+                });
+                setTagNames(tagsMap);
 
-            const tagsCollection = await getDocs(collection(db, 'tags'));
-            const tagsMap = {};
-            tagsCollection.forEach(tagDoc => {
-              const tagData = tagDoc.data();
-              tagsMap[tagDoc.id] = tagData.name;
-            });
-            setTagNames(tagsMap);
+                // Fetch the post document
+                const postRef = doc(db, 'content-posts', postId);
+                const postSnapshot = await getDoc(postRef);
 
-            const postDoc = doc(db, 'content-posts', postId);
-            const postSnapshot = await getDoc(postDoc);
-            if (postSnapshot.exists()) {
-              const postData = { id: postId, ...postSnapshot.data() };
-              setPost(postData);
-              setEditedTitle(postData.title || "");
-              setEditedDescription(postData.description || "");
-              setEditedBody(postData.body || "");
-              setLikes(postData.likes || []);
-              setDislikes(postData.dislikes || []);
-              setEditedTags(postData.tags || []);
-    
-              const postTags = postData.tags || [];
-              const tagObjects = postTags.map((tagId) => {
-                return { value: tagId, label: tagsMap[tagId] || tagId }; //match tag id and name
-              });
-              setTags(tagObjects);
-    
-              const id = await getUserIdByDisplayName(postData.author);
-              setUid(id);
+                if (postSnapshot.exists()) {
+                    const postData = { id: postId, ...postSnapshot.data() };
 
-              if (postData.status === 'approved') {
-                setIsAuthorized(true);
-              } else if (currentUser) {
-                const userRef = doc(db, 'users', currentUser.uid);
-                const userSnap = await getDoc(userRef);
-    
-                if (userSnap.exists()) {
-                  const role = userSnap.data().role;
-                  const isAuthorized = role === 'admin' || role === 'moderator';
-    
-                  if (postData.status === 'approved' || isAuthorized || currentUser.displayName === postData.author) {
-                    setIsAuthorized(true);
-                  } else {
-                    setError('You do not have permission to view this post.');
-                  }
+                    // Determine author name from users collection
+                    let fetchedAuthorName;
+                    if (postData.userId) {
+                        fetchedAuthorName = await fetchAuthorName(postData.userId);
+                    } else if (postData.author) {
+                        fetchedAuthorName = postData.author;
+                    } else {
+                        fetchedAuthorName = '[Deleted]';
+                    }
+
+                    setPost({ ...postData, authorName: fetchedAuthorName });
+                    setEditedTitle(postData.title || "");
+                    setEditedDescription(postData.description || "");
+                    setEditedBody(postData.body || "");
+                    setViews(postData.views || 0);
+
+                    // Process tags for the post: convert tag IDs to { value, label }
+                    const postTags = postData.tags || [];
+                    const tagObjects = postTags.map((tagId) => ({
+                        value: tagId,
+                        label: tagsMap[tagId] || tagId
+                    }));
+                    setTags(tagObjects);
+
+                    // Check authorization: if post status is approved or user is admin/moderator or author.
+                    if (postData.status === 'approved') {
+                        setIsAuthorized(true);
+                    } else if (currentUser) {
+                        const userRef = doc(db, 'users', currentUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        if (userSnap.exists()) {
+                            const role = userSnap.data().role;
+                            const adminOrMod = role === 'admin' || role === 'moderator';
+                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId) {
+                                setIsAuthorized(true);
+                            } else {
+                                setError('You do not have permission to view this post.');
+                            }
+                        }
+                    }
+                } else {
+                    setError('Post does not exist.');
                 }
-              }
-            } else {
-              console.error('No such document!');
+
+                setLoading(false);
+            } catch (err) {
+                console.error(err);
+                setError('Failed to fetch data.');
+                setLoading(false);
             }
-          } catch (err) {
-            console.error('Error fetching data:', err);
-            setError('An error occurred while fetching the data.');
-          }
-    
-          setLoading(false);
         };
-    
+
         fetchData();
-      }, [postId, currentUser]);
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-    if (!post) {
-        return <div>Error loading post</div>
-    }
-    const isAuthor = currentUser?.displayName === post.author;
-    if (!isAuthorized) {
-        return <div>Page is private</div>
-    }
-
+        // Check if the post has already been viewed in this session to update view count.
+        const viewedKey = `viewed_${postId}`;
+        if (!sessionStorage.getItem(viewedKey)) {
+            handleInteraction('view');
+        }
+    }, [postId, currentUser]);
 
     const handleSaveTags = async () => {
-
         if (!post) return;
         const postRef = doc(db, "content-posts", post.id);
         const tagIds = tags.map(tag => tag.value);
@@ -132,415 +155,152 @@ const ContentPostPage = () => {
             ...prev,
             tags: tagIds
         }));
-        setIsEditing(false);
+        setIsEditing('');
     };
 
     const handleEditTags = () => {
-        if(isEditing !== "tags"){
+        if (isEditing !== "tags") {
             setIsEditing("tags");
         }
-        
-    }
+    };
 
-    //use tag name instead of tag id
     const selectedTagNames = tags.map(tag => tag.label);
 
-    const handleLike = async () => {
-
-        if (!currentUser) {
-            setMessage("You need to be logged in to like to a post.")
-            setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000)
+    // Updated interaction handler using subcollections for likes/dislikes.
+    const handleInteraction = async (type) => {
+        if (type === 'view') {
+            const viewedKey = `viewed_${postId}`;
+            const lastViewedTime = localStorage.getItem(viewedKey);
+            const now = new Date().getTime();
+            if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
+                localStorage.setItem(viewedKey, now);
+                const postRef = doc(db, 'content-posts', postId);
+                await updateDoc(postRef, { views: increment(1) });
+                const updatedPostSnap = await getDoc(postRef);
+                if (updatedPostSnap.exists()) {
+                    setViews(updatedPostSnap.data().views || 0);
+                }
+            }
             return;
         }
-
-        const postRef = doc(db, "content-posts", post.id);
-
-        let updatedLikes = [...likes];
-        let updatedDislikes = [...dislikes];
-
-        if (likes.includes(currentUser.uid)) {
-            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
-        }
-        else {
-            updatedLikes.push(currentUser.uid);
-            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
-        }
-
-        await updateDoc(postRef, {
-            likes: updatedLikes,
-            dislikes: updatedDislikes,
-        })
-
-        setLikes(updatedLikes);
-        setDislikes(updatedDislikes);
-    }
-
-
-    const handleDislike = async () => {
-
         if (!currentUser) {
-            setMessage("You need to be logged in to dislike to a post.")
-            setShowMessage(true);
-            setTimeout(() => setShowMessage(false), 3000)
+            setMessage('You must be logged in.');
             return;
         }
-
-        const postRef = doc(db, "content-posts", post.id);
-
-        let updatedLikes = [...likes];
-        let updatedDislikes = [...dislikes];
-
-        if (dislikes.includes(currentUser.uid)) {
-            updatedDislikes = updatedDislikes.filter((uid) => uid !== currentUser.uid);
+        if (type === 'like') {
+            const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
+            const likeSnap = await getDoc(likeRef);
+            if (likeSnap.exists()) {
+                await deleteDoc(likeRef);
+            } else {
+                await setDoc(likeRef, {}); // No timestamp needed.
+                const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
+                const dislikeSnap = await getDoc(dislikeRef);
+                if (dislikeSnap.exists()) {
+                    await deleteDoc(dislikeRef);
+                }
+            }
+        } else if (type === 'dislike') {
+            const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
+            const dislikeSnap = await getDoc(dislikeRef);
+            if (dislikeSnap.exists()) {
+                await deleteDoc(dislikeRef);
+            } else {
+                await setDoc(dislikeRef, {}); // No timestamp needed.
+                const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
+                const likeSnap = await getDoc(likeRef);
+                if (likeSnap.exists()) {
+                    await deleteDoc(likeRef);
+                }
+            }
         }
-        else {
-            updatedDislikes.push(currentUser.uid);
-            updatedLikes = updatedLikes.filter((uid) => uid !== currentUser.uid);
-        }
-
-        await updateDoc(postRef, {
-            likes: updatedLikes,
-            dislikes: updatedDislikes,
-        })
-
-        setLikes(updatedLikes);
-        setDislikes(updatedDislikes);
-
-    }
-
-
-    const handleEdit = () => {
-        if (isAuthor) {
-            setIsEditing(true);
-        }
-    }
+        // Increment the counter so ContentDisplayView re-fetches the counts.
+        setInteractionCount(prev => prev + 1);
+    };
 
     const handleSave = async () => {
-        try {
-            if (!post) {
-                return;
-            }
-            const postRef = doc(db, "content-posts", post.id);
-            const updatedData = {};
-            if (editedTitle) updatedData.title = editedTitle;
-            if (editedDescription) updatedData.description = editedDescription;
-            if (editedBody) updatedData.body = editedBody;
-            updatedData.lastUpdated = serverTimestamp();
+        if (!post) return;
 
-            await updateDoc(postRef, updatedData);
+        const postRef = doc(db, 'content-posts', postId);
+        const updatedData = {
+            title: editedTitle,
+            description: editedDescription,
+            body: editedBody,
+            tags: tags.map(t => t.value),
+            lastUpdated: serverTimestamp(),
+        };
 
-            const updatedPostSnapshot = await getDoc(postRef);
-            const updatedPostData = updatedPostSnapshot.data();
-            setPost((prev) => ({
-                ...prev,
-                ...updatedPostData
-            }))
-            setIsEditing("");
-        } catch (error) {
-            console.error("Error updating post ", error);
-        }
-    }
+        await updateDoc(postRef, updatedData);
+        setPost({ ...post, ...updatedData });
+        setIsEditing('');
+    };
 
-    const formattedDate = post.timestamp ? format(post.timestamp.toDate(), "PP p") : "Unknown Date";
-    const formattedLastUpdated = post.lastUpdated && post.lastUpdated.toDate ? format(post.lastUpdated.toDate(), "PP p") : "Unknown Date";
+    const handleQuillImageUpload = () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/jpeg,image/png,image/bmp";
+        input.click();
 
-    const modules = {
+        input.onchange = async () => {
+            const file = input.files[0];
+            if (!(await validateFile(file, 'image'))) return;
+            const url = await uploadFileToStorage(file, `article-images/${currentUser.uid}`);
+            setEditedBody(prev => prev + `<img src="${url}" alt="Uploaded Image"/>`);
+        };
+    };
+
+    const quillModules = {
         toolbar: [
-            [{ 'header': [3, 4, 5, 6, false] }],
-            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ header: [3, 4, 5, 6, false] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'align': [] }],
+            [{ color: [] }, { background: [] }, { align: [] }],
             ['link', 'image'],
-            ['clean']
+            ['clean'],
         ],
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>{error}</div>;
+    if (!post) return <div>Post not found</div>;
+
+    const formattedDate = post.timestamp ? formatTimestamp(post.timestamp, 'PP p') : 'Unknown Date';
+    let formattedLastUpdated = "Never updated";
+
+    if (post.lastUpdated) {
+        formattedLastUpdated = formatTimestamp(post.lastUpdated, 'PP p');
     }
 
+    const canEdit = currentUser?.uid === post.userId;
 
     return (
-        <div className="content-page">
-            <div className="container d-flex justify-content-center align-items-center" style={{ marginTop: '50px', marginBottom: '50px' }}>
-                <div className={`card ${post.type}-post`} style={{ maxWidth: '800px', width: '100%' }}>
-
-                    {/* video posts */}
-
-                    {post.type === 'video' && (
-                        <div>
-                            <div className="card-header">
-                                <video className="card-img-top" controls poster={post.thumbnailURL}>
-                                    <source src={post.fileURL} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-
-                            <div className="card-body">
-                                <button className="btn btn-light" onClick={handleLike}>
-                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                </button>
-                                <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                </button>
-                            </div>
-
-
-                            {/* title and description */}
-                            <div className="card-body">
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
-                                )) : (
-                                    <h5 className="card-title">{post.title}</h5>
-                                )}
-
-                                {isAuthor ? (isEditing === "description" ? (
-                                    <textarea
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedDescription}
-                                        onChange={(e) => setEditedDescription(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-
-                                ) : (
-                                    <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
-                                )) : (
-                                    <p className="card-text">{post.description}</p>
-                                )}
-
-                                {isEditing && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
-                            </div>
-
-                            {/* author section */}
-                            <div className="card-footer">
-                                <h6>About the Author</h6>
-                                <p className="text-muted">Short section about the author.</p>
-                            </div>
-                        </div>
-                    )}
-
-
-                    {/* audio posts */}
-
-                    {post.type === 'audio' && (
-                        <div>
-                            {/* thumbnail */}
-                            <div className="card-header">
-                                <img
-                                    src={post.thumbnailURL}
-                                    alt="Audio Thumbnail"
-                                    className="card-img-top"
-                                    style={{ height: 'auto' }}
-                                />
-                            </div>
-
-                            {/* audio controls */}
-                            <div className="card-body">
-                                <audio controls className="w-100">
-                                    <source src={post.fileURL} type="audio/mpeg" />
-                                    Your browser does not support the audio tag.
-                                </audio>
-
-                            </div>
-
-
-                            <div className="card-body">
-                                <button className="btn btn-light" onClick={handleLike}>
-                                    <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                </button>
-                                <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                    <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                </button>
-                            </div>
-
-
-                            {/* title and description */}
-                            <div className="card-body">
-
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h5 className="card-title" onDoubleClick={() => setIsEditing("title")}>{post.title}</h5>
-                                )) : (
-                                    <h5 className="card-title">{post.title}</h5>
-                                )}
-
-                                {isAuthor ? (isEditing === "description" ? (
-                                    <textarea
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedDescription}
-                                        onChange={(e) => setEditedDescription(e.target.value)}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                    />
-
-                                ) : (
-                                    <p className="card-text" onDoubleClick={() => setIsEditing("description")}>{post.description}</p>
-                                )) : (
-                                    <p className="card-text">{post.description}</p>
-                                )}
-
-                                {isEditing && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-                                <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${uid || post.author}`}>{post.author}</Link> | Date: {formattedDate} </h6> {/* will need to add author field to the db */}
-
-                            </div>
-
-                            {/* author section */}
-                            <div className="card-footer">
-                                <h6>About the Author</h6>
-                                <p className="text-muted">Short section about the author.</p>
-                            </div>
-                        </div>
-                    )}
-
-
-                    {/* article posts */}
-                    {post.type === 'article' && (
-                        <div>
-                            <div className="article-header">
-
-                                {isAuthor ? (isEditing === "title" ? (
-                                    <input
-                                        type="text"
-                                        className="form-control mb-2"
-                                        value={editedTitle}
-                                        onChange={(e) => setEditedTitle(e.target.value)}
-                                        onBlur={handleSave} //stop edititng when clicked away
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <h2 className="card-title mb-2" onDoubleClick={() => setIsEditing("title")}>{post.title}</h2>
-                                )) : (
-                                    <h2 className="card-title mb-2">{post.title}</h2>
-                                )}
-
-                                {isEditing === "title" && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-
-                                <div className="d-flex align-items-center justify-content-between">
-                                    <h6 className="card-subtitle text-muted"> By: <Link to={`/profile/${post.author}`}>{post.author}</Link> | Date: {formattedDate}  | Last update: {formattedLastUpdated}</h6> {/* will need to add author field to the db */}
-                                    <div className="d-flex align-items-center gap-2">
-                                        <button className="btn btn-light" onClick={handleLike}>
-                                            <i className="bi bi-hand-thumbs-up"></i> {likes.length}
-                                        </button>
-                                        <button className="btn btn-light ms-2" onClick={handleDislike}>
-                                            <i className="bi bi-hand-thumbs-down"></i> {dislikes.length}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="card-body">
-
-                                {post.thumbnailURL && (
-                                    <img src={post.thumbnailURL} alt="Article thumbnail" className="card-img-top" style={{ maxHeight: "800px", objectFit: "cover" }} />
-                                )}
-
-                                {isAuthor ? (isEditing === "body" ? (
-                                    <ReactQuill
-                                        value={editedBody}
-                                        onChange={setEditedBody}
-                                        onBlur={handleSave}
-                                        autoFocus
-                                        modules={modules}
-                                    />
-                                ) : (
-                                    <div className="article-body" onDoubleClick={() => setIsEditing("body")} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
-                                )) : (
-                                    <div className="article-body" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.body) }} />
-                                )}
-
-                                {isEditing === "body" && (
-                                    <button className="btn btn-success" onClick={handleSave}>
-                                        Save
-                                    </button>
-                                )}
-
-
-                            </div>
-                        </div>
-                    )}
-
-                    {/* tags section */}
-            <div className="card-body">
-                {isEditing === "tags" ? (
-                    <div>
-                        <TagSelector
-                            selectedTags={tags}  // Ensuring tags is an array
-                            setSelectedTags={setTags}
-                        />
-                        <button className="btn btn-success" onClick={handleSaveTags}>
-                            Save Tags
-                        </button>
-                    </div>
-                ) : (
-                    <div onDoubleClick={handleEditTags}>
-                        <strong>Tags:</strong> {selectedTagNames.join(', ')}
-                    </div>
-                )}
-            </div>
-
-                </div>
-
-
-                {showMessage && (
-                    <div className="modal show d-block" tabIndex="-1">
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Notice</h5>
-                                    <button type="button" className="btn-close" onClick={() => setShowMessage(false)}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>{message}</p>
-                                    <Link to="/login" className="btn btn-primary">Log In</Link>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            
-            
-
-
-            <div className='comments-section'>
-                <CommentsSection postId={post.id} currentUser={currentUser} />
-            </div>
-
+        <div className={styles.pageContainer}>
+            {isEditing === "content" ? (
+                <ContentEditForm
+                    type={post.type}
+                    title={editedTitle}
+                    description={editedDescription}
+                    body={editedBody}
+                    tags={tags}
+                    onChangeTitle={setEditedTitle}
+                    onChangeDescription={setEditedDescription}
+                    onChangeBody={setEditedBody}
+                    onChangeTags={setTags}
+                    onSave={handleSave}
+                    onCancel={() => setIsEditing('')}
+                />
+            ) : (
+                <ContentDisplayView
+                    post={post}
+                    canEdit={canEdit}
+                    onEdit={() => setIsEditing("content")}
+                    handleInteraction={handleInteraction}
+                    formattedDate={formattedDate}
+                    selectedTagNames={selectedTagNames}
+                    interactionCount={interactionCount}
+                />
+            )}
+            <CommentsSection postId={post.id} currentUser={currentUser} />
         </div>
     );
 };

@@ -10,7 +10,7 @@
     backdrop-filter: blur(10px);
     border-radius: 20px;
     box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
-    text-align: center;
+    /* Removed global text-align: center to avoid affecting child modals */
     border: 2px solid #f8c8dc; /* Soft pastel cute border */
   }
   
@@ -35,12 +35,11 @@
     right: 10px;
   }
   
-  /* Pastel pink button with darker text */
   .dropdownButton {
-    background-color: #f8c8dc;   /* pastel pink */
+    background-color: #f8c8dc; /* pastel pink */
     border: none;
     border-radius: 8px;
-    color: #333;                 /* darker text for contrast */
+    color: #333;
     padding: 0.3em 0.6em;
     cursor: pointer;
     font-size: 1.2rem;
@@ -48,23 +47,21 @@
   }
   
   .dropdownButton:hover {
-    background-color: #f6a5b8;   /* slightly deeper pastel pink on hover */
+    background-color: #f6a5b8;
   }
   
-  /* Dropdown menu with a light pastel background and a soft border */
   .dropdownMenu {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: #fdeef3;   /* very light pink background */
-    border: 1px solid #f8c8dc;   /* pastel pink border */
+    background-color: #fdeef3;
+    border: 1px solid #f8c8dc;
     border-radius: 8px;
     padding: 0.5em 0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     z-index: 10;
   }
   
-  /* Individual dropdown items */
   .dropdownItem {
     display: block;
     width: 100%;
@@ -76,11 +73,11 @@
     transition: background 0.3s;
     font-family: 'Lato', sans-serif;
     font-size: 1rem;
-    color: #333; /* ensure visible text */
+    color: #333;
   }
   
   .dropdownItem:hover {
-    background-color: #f8c8dc; /* highlight on hover */
+    background-color: #f8c8dc;
   }
   
   /* Profile Image Wrapper */
@@ -102,10 +99,12 @@
     object-fit: cover;
   }
   
-  /* Profile Header */
+  /* Profile Header: Only center header content */
   .profileHeader {
-    margin-top: 70px;
-    margin-bottom: 2em;
+    position: relative;
+    margin-top: 20px;
+    padding: 1em 0;
+    text-align: center;
   }
   
   .profileHeader h2 {
@@ -113,6 +112,14 @@
     margin: 0.5em 0;
     color: #333;
     font-family: 'Playfair Display', serif;
+  }
+  
+  /* Absolutely position the report button within the profile header */
+  .profileReport {
+    position: absolute;
+    top: 50%;
+    right: 20px; /* Adjust as needed */
+    transform: translateY(-50%);
   }
   
   /* ==========================================================================
@@ -277,7 +284,7 @@
     padding: 1.5em;
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    border: 1px solid #f8c8dc; /* Soft pastel border for sections */
+    border: 1px solid #f8c8dc;
   }
   
   .postsSection {
@@ -375,7 +382,7 @@
      =============================== */
   .servicesModule {
     background-color: rgba(255, 245, 247, 0.85);
-    border: 2px dashed #f8c8dc; /* Cute pastel dashed border */
+    border: 2px dashed #f8c8dc;
     border-radius: 15px;
     padding: 20px;
     margin-top: 20px;
@@ -395,5 +402,20 @@
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+  
+  /* Profile Header: Center the profile name and keep the Report button on the right */
+  .profileHeader {
+    position: relative;
+    margin-top: 20px;
+    padding: 1em 0;
+    text-align: center;
+  }
+  
+  .profileReport {
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
   }
   

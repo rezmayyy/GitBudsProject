@@ -14,7 +14,7 @@ function HealerSearch({ setSearchTerm }) {
     };
 
     return (
-        <div className="search-container">
+        <div className="healer-search-container mb-5 mt-5">
             <input
                 type="text"
                 placeholder="Search healers by name..."
@@ -22,7 +22,7 @@ function HealerSearch({ setSearchTerm }) {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyPress} // Handle Enter key press
             />
-            <button onClick={handleSearch}>Search</button>
+            <button className="auth-button" onClick={handleSearch}>Search</button>
         </div>
     );
 }

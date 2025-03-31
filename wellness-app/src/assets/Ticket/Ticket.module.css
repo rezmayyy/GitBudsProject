@@ -1,0 +1,38 @@
+/* Ticket.module.css */
+.ticketContainer {
+    padding: 1rem;
+    max-width: 1000px;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.ticketList {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.createTicket {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+/* Optional animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

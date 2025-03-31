@@ -1,5 +1,4 @@
-import '../../styles//Subscriptions.css';
-
+import '../../styles/Subscriptions.css';
 import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../Firebase';
 import { collection, doc, deleteDoc, onSnapshot, getDoc } from 'firebase/firestore';
@@ -40,7 +39,7 @@ function Subscriptions() {
           setSubscriptions(subsData);
         }
       );
-      return () => unsubscribe(); 
+      return () => unsubscribe();
     }
   }, [user]);
 
@@ -54,13 +53,13 @@ function Subscriptions() {
   };
 
   return (
-    <div className="subscriptions-container">
-      <h4>Your Subscriptions</h4>
+    <div>
+      <h4>Following</h4>
       <ul className="subscriptions-list">
         {subscriptions.map((sub) => (
           <li key={sub.id} className="subscription-item">
-            <div 
-              className="sub-info-wrapper" 
+            <div
+              className="sub-info-wrapper"
               onClick={() => navigate(`/profile/${sub.id}`)}
               style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
             >
@@ -78,7 +77,7 @@ function Subscriptions() {
               />
               <span className="sub-info">{sub.displayName}</span>
             </div>
-            <button 
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 removeSubscription(sub.id);

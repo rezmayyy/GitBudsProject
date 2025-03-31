@@ -1,5 +1,6 @@
+// ManageHealerApplications.jsx
 import React, { useEffect, useState } from 'react';
-import { db } from '../Firebase'; 
+import { db } from '../Firebase';
 import { collection, query, where, getDocs, updateDoc, deleteDoc, doc, setDoc, getDoc, Timestamp } from 'firebase/firestore';
 
 const ManageHealerApplications = () => {
@@ -10,13 +11,11 @@ const ManageHealerApplications = () => {
             try {
                 const q = query(collection(db, 'healerApplications'), where('status', '==', 'pending'));
                 const querySnapshot = await getDocs(q);
-                const applicationsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setApplications(applicationsData);
+                setApplications(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
             } catch (error) {
                 console.error('Error fetching applications:', error);
             }
         };
-
         fetchApplications();
     }, []);
 
@@ -26,10 +25,8 @@ const ManageHealerApplications = () => {
             const healerRef = doc(db, 'healers', app.userId);
 
             if (status === 'approved') {
-                // ✅ Check if user is already in the healers collection
                 const healerSnapshot = await getDoc(healerRef);
                 if (!healerSnapshot.exists()) {
-                    // ✅ Add approved healer to the healers collection with profilePicUrl and timestamp
                     await setDoc(healerRef, {
                         userId: app.userId,
                         firstName: app.firstName,
@@ -37,26 +34,16 @@ const ManageHealerApplications = () => {
                         title: app.title,
                         location: app.location,
                         healingTags: app.healingTags,
-                        displayName: app.displayName,
-                        displayNameLowercase: app.displayName.toLowerCase(),
-                        profilePicUrl: app.profilePicUrl,  // ✅ Store the profile picture URL
-                        approvedAt: Timestamp.now(), // ✅ Store approval timestamp
+                        approvedAt: Timestamp.now(),
                     });
-
-                    // ✅ Remove application after approval
+                    // Only update role field on users collection
+                    await updateDoc(doc(db, 'users', app.userId), { role: 'healer' });
                     await deleteDoc(appRef);
-                } else {
-                    console.log('User is already a healer.');
                 }
             } else {
-                // ❌ Update status to 'rejected' (keeping record)
-                await updateDoc(appRef, { 
-                    status: 'rejected',
-                    rejectedAt: Timestamp.now() // Store rejection timestamp
-                });
+                await updateDoc(appRef, { status: 'rejected', rejectedAt: Timestamp.now() });
             }
 
-            // Refresh applications list
             setApplications(prev => prev.filter(a => a.id !== app.id));
         } catch (error) {
             console.error(`Error ${status} application:`, error);
