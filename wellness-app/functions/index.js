@@ -4,6 +4,7 @@ const contentFunctions = require("./contentFunctions");
 const userAccountFunctions = require("./userAccountFunctions");
 const miscFunctions = require("./miscFunctions");
 const emailChangeFunctions = require("./emailChangeFunctions");
+const stripeFunctions = require("./stripeFunctions");
 
 module.exports = {
     ...adminModeration,
@@ -11,4 +12,5 @@ module.exports = {
     ...userAccountFunctions,
     ...miscFunctions,
     ...emailChangeFunctions,
+    ...stripeFunctions,
 };
