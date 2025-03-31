@@ -11,12 +11,17 @@ import { ref } from 'firebase/storage';
 import styles from '../../styles/profile.module.css';
 import dummyPic from "../dummyPic.jpeg";
 import ProfilePosts from './ProfilePosts';
-import HealerServices from './healerServices';
+import HealerServices from './healerServices'; // New module for healers
+import Donate from '../Stripe/Donate';
+import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import StripeSignup from '../Stripe/StripeSignup';
+import StripeAccount from '../Stripe/StripeAccount';
 import ReportButton from '../ReportButton/Report';
 import { uploadFileToStorage, validateFile } from '../../Utils/fileUtils';
 
 
 const Profile = () => {
+ 
   const { user } = useContext(UserContext);
   const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
@@ -339,9 +344,30 @@ const Profile = () => {
         )}
       </div>
 
-      {/* About & Contact Sections */}
+      {/* About, Contact Sections and Donate section */}
       <div className={styles.aboutContactContainer}>
-        {/* About Section */}
+       
+         {/* Only show Donate if not viewing own profile */}
+        {/*only render if user has associated Stripe id in firestore (todo)*/}
+      
+        {/* Only show Donate if not viewing own profile */}
+        {/*only render if user has associated Stripe id in firestore (todo)*/}
+        {user && (!isCurrentUser ? (
+  <div className={styles.donateContainer}>
+    <h3>Donate</h3>
+    <Donate recipientId={viewedUserId} />
+  </div>
+) : (
+  <div className={styles.donateContainer}>
+    <h3>Stripe Integration</h3>
+    {user.stripeOnboarded ? (
+      <StripeAccount/>
+    ) : (
+      <StripeSignup />
+    )}
+  </div>
+))}
+         {/* About Section */}
         <div className={styles.aboutSection}>
           <h3>About</h3>
           {isCurrentUser && editingAbout ? (

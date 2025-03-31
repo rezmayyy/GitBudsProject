@@ -32,6 +32,9 @@ import Payment from './assets/Payment';
 import BlogsPage from './assets/Blogs/BlogsPage';
 import Resources from './assets/Resources';
 import ConfirmEmailChange from './assets/ConfirmEmailChange';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import StripeSuccess from './assets/Stripe/StripeSuccess';
 import VerifyReroute from './assets/Verify/VerifyReroute';
 import Verify from './assets/Verify/Verify';
 import TicketPage from "./assets/Ticket/TicketPage";
@@ -40,14 +43,16 @@ import Membership from './assets/Membership/Membership';
 function App() {
   // Manages posts and replies
   const [posts, setPosts] = useState([]);
+  const stripePromise = loadStripe('pk_test_51Qw8WDPFPGEe3qFb0nIcqEuo07sDWc9IVmiFmDtwRxgrn8XsrYbBzhPf3v9mr6RuYZun7WgsjayULZncj0UMVBKX001bvHReAR');
 
   return (
     <div className="App">
       <UserProvider>
-        <Router>
-          <Header />
-          <Routes>
-            {/* Auth routes */}
+      <Router>
+        <Header />
+        <Elements stripe={stripePromise}>
+        <Routes>
+          {/* Auth routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/recover" element={<ForgotPassword />} />
@@ -81,9 +86,12 @@ function App() {
             <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
             <Route path="/verify" element={<Verify />} />
             <Route path="/membership" element={<Membership />} />
-          </Routes>
-          <Footer />
-        </Router>
+            <Route path="/confirm-email-change" element={<ConfirmEmailChange />} />
+            <Route path="/stripe-success" element={<StripeSuccess />} />
+        </Routes>
+        </Elements>
+        <Footer />
+      </Router>
       </UserProvider>
     </div>
   );
