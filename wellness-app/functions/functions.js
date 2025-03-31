@@ -8,8 +8,9 @@ const Stripe = require("stripe");
 const stripe = new Stripe("sk_test_51Qw8WDPFPGEe3qFbUdy2AiJAHKSaatTIMjXbHcm9EafELfrx2cyyuSjc9oZW7xRVpkHy38xMeymsKp7Tfikrsnmj00v0xI9X7z");
 require("dotenv").config();
 
-const serviceAccount = require(process.env.TRIBEWELL_KEY);
-admin.initializeApp({credential: admin.credential.cert(serviceAccount)});
+//const serviceAccount = require(process.env.TRIBEWELL_KEY)
+//admin.initializeApp({credential: admin.credential.cert(serviceAccount)});
+admin.initializeApp();
 const db = admin.firestore();
 const {Timestamp, FieldValue} = require("firebase-admin/firestore");
 

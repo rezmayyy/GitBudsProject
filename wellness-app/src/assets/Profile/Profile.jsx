@@ -16,6 +16,7 @@ import HealerServices from './healerServices'; // New module for healers
 import Donate from '../Stripe/Donate';
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 import StripeSignup from '../Stripe/StripeSignup';
+import StripeAccount from '../Stripe/StripeAccount';
 
 const Profile = () => {
  
@@ -336,7 +337,7 @@ const Profile = () => {
   <div className={styles.donateContainer}>
     <h3>Stripe Integration</h3>
     {user.stripeOnboarded ? (
-      <p>Your Stripe account is set up! Ready to receive donations.</p>
+      <StripeAccount/>
     ) : (
       <StripeSignup />
     )}

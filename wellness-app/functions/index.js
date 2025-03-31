@@ -21,7 +21,7 @@ module.exports = functionsModule;
 const functions = require("firebase-functions");
 const express = require("express");
 const stripe = require("stripe")("sk_test_51Qw8WDPFPGEe3qFbUdy2AiJAHKSaatTIMjXbHcm9EafELfrx2cyyuSjc9oZW7xRVpkHy38xMeymsKp7Tfikrsnmj00v0xI9X7z");
-
+const admin = require('firebase-admin');
 const app = express();
 
 // Set up your POST API route
