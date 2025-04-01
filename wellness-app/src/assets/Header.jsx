@@ -5,8 +5,6 @@ import styles from "../styles/HamburgerMenu.module.css"; // Hamburger Menu style
 import logo from "./TribeWellLogo.png";
 import UserContext from "./UserContext";
 import Signout from "./Auth/Signout";
-import { db } from "./Firebase";
-import { doc, setDoc } from "firebase/firestore";
 import dummyPic from "./dummyPic.jpeg";
 
 function Header() {
@@ -74,31 +72,6 @@ function Header() {
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
       navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
-    }
-  };
-
-  const handleUserDocument = async () => {
-    if (user) {
-      const userRef = doc(db, "users", user.uid);
-      const userData = { email: user.email, displayName: user.displayName };
-      try {
-        await setDoc(userRef, userData, { merge: true });
-        closeMenu();
-      } catch (error) {
-        console.error("Error creating/updating user document:", error);
-      }
-    }
-  };
-
-  const setUserRole = async (role) => {
-    if (user) {
-      try {
-        const userRef = doc(db, "users", user.uid);
-        await setDoc(userRef, { role }, { merge: true });
-        closeMenu();
-      } catch (error) {
-        console.error("Error updating user role:", error);
-      }
     }
   };
 
@@ -268,17 +241,6 @@ function Header() {
             <>
               <Signout className={styles.menuLink} closeMenu={closeMenu} />
               <Link to="/account" className={styles.menuLink} onClick={closeMenu}>Account Settings</Link>
-
-
-              <button className={styles.menuLink} onClick={() => { handleUserDocument(); closeMenu(); }}>
-                Update User Document
-              </button>
-              <button className={styles.menuLink} onClick={() => { setUserRole("admin"); closeMenu(); }}>
-                Set as Admin
-              </button>
-              <button className={styles.menuLink} onClick={() => { setUserRole("normal"); closeMenu(); }}>
-                Set as Normal
-              </button>
               {(user?.role === "admin" || user?.role === "moderator") && (
                 <Link to="/modview" className={styles.menuLink} onClick={closeMenu}>
                   ModView Dashboard
