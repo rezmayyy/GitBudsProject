@@ -30,12 +30,12 @@
 @media (min-width: 992px) {
   .hero-left {
     text-align: left;
-    padding-right: 40px;
+    padding-right: 80px;
   }
 }
 
 .hero-left h1 {
-  font-size: 2.5rem;
+  font-size: 3.0rem;
   line-height: 1.2;
   font-weight: bold;
   margin-bottom: 20px;
@@ -52,10 +52,10 @@
 }
 
 .hero-left p {
-  color: #555;
-  font-size: 1.1rem;
+  color: #878787;
+  font-size: 1.3rem;
   margin-bottom: 30px;
-  font-family:Lora;
+  font-family: Lora;
 }
 
 .hero-buttons {

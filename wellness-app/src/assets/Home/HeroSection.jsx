@@ -14,14 +14,14 @@ const HeroSection = () => {
             <h1>
               Find Holistic Healers <br />
               <span className="highlight">who understand</span>{' '}
-              <span className="highlight">you</span>
-              <span className="bold">, truly.</span>
+              <span className="highlight">you,</span>
+              <span className="bold"> truly.</span>
             </h1>
             <p>
               Reconnect with your roots and discover culturally aligned healing that resonates with your heart and spirit, fostering deeper, meaningful healing relationships.
             </p>
             <div className="hero-buttons">
-              <a href="/login" className="btn btn-primary me-2">Find a Healer</a>
+              <a href="/directory" className="btn btn-primary me-2">Find a Healer</a>
               <a href="/signup" className="btn btn-outline-primary">Join as a Healer</a>
             </div>
           </div>
