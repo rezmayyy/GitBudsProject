@@ -21,7 +21,7 @@ import { uploadFileToStorage, validateFile } from '../../Utils/fileUtils';
 
 
 const Profile = () => {
- 
+
   const { user } = useContext(UserContext);
   const { username } = useParams(); // Visited user's displayName
   const navigate = useNavigate();
@@ -203,11 +203,11 @@ const Profile = () => {
       } else {
         // Subscribe
         await setDoc(doc(db, `users/${user.uid}/subscriptions`, viewedUserId), {
-          userID: user.uid,
+          userId: user.uid,
           timestamp: Timestamp.now(),
         });
         await setDoc(doc(db, `users/${viewedUserId}/subscribers`, user.uid), {
-          userID: user.uid,
+          userId: user.uid,
           timestamp: Timestamp.now(),
         });
         setIsSubscribed(true);
@@ -346,28 +346,28 @@ const Profile = () => {
 
       {/* About, Contact Sections and Donate section */}
       <div className={styles.aboutContactContainer}>
-       
-         {/* Only show Donate if not viewing own profile */}
+
+        {/* Only show Donate if not viewing own profile */}
         {/*only render if user has associated Stripe id in firestore (todo)*/}
-      
+
         {/* Only show Donate if not viewing own profile */}
         {/*only render if user has associated Stripe id in firestore (todo)*/}
         {user && (!isCurrentUser ? (
-  <div className={styles.donateContainer}>
-    <h3>Donate</h3>
-    <Donate recipientId={viewedUserId} />
-  </div>
-) : (
-  <div className={styles.donateContainer}>
-    <h3>Stripe Integration</h3>
-    {user.stripeOnboarded ? (
-      <StripeAccount/>
-    ) : (
-      <StripeSignup />
-    )}
-  </div>
-))}
-         {/* About Section */}
+          <div className={styles.donateContainer}>
+            <h3>Donate</h3>
+            <Donate recipientId={viewedUserId} />
+          </div>
+        ) : (
+          <div className={styles.donateContainer}>
+            <h3>Stripe Integration</h3>
+            {user.stripeOnboarded ? (
+              <StripeAccount />
+            ) : (
+              <StripeSignup />
+            )}
+          </div>
+        ))}
+        {/* About Section */}
         <div className={styles.aboutSection}>
           <h3>About</h3>
           {isCurrentUser && editingAbout ? (
