@@ -25,7 +25,7 @@ function SearchResults() {
   const { user } = useContext(UserContext);
   const [sortMethod, setSortMethod] = useState('date'); // Default sorting method
 
-  const {tags} = useTags();
+  const { tags } = useTags();
   const [selectedTag, setSelectedTag] = useState("");
 
 
@@ -40,17 +40,17 @@ function SearchResults() {
       setLoading(true);
       try {
         let results = await searchPostsByKeywords(urlQuery, sortMethod, selectedTag);
-  
+
         //category
         if (selectedCategory) {
           results = results.filter(post => post.type === selectedCategory);
         }
-  
+
         //tags/topics
         if (selectedTag) {
           results = results.filter(post => post.tags?.includes(selectedTag));
         }
-  
+
         setPosts(results);
 
       } catch (error) {
@@ -59,8 +59,8 @@ function SearchResults() {
       setLoading(false);
     }
     fetchPosts();
-  }, [urlQuery, selectedCategory, selectedTag, sortMethod]); 
-  
+  }, [urlQuery, selectedCategory, selectedTag, sortMethod]);
+
 
   return (
     <div className={styles.pageContainer}>
@@ -189,13 +189,13 @@ function SearchResults() {
                     {post.tags?.length > 0 && (
                       <div className="tags">
                         {post.tags?.map((tagId, index) => (
-                      <span key={index} className="badge" style={{backgroundColor: '#e0e0e0', color: '#333', marginRight: '8px'}}>
-                        {tags.find(tag => tag.value === tagId)?.label || "Unknown Tag" }
-                      </span>
-                    ))}
+                          <span key={index} className="badge" style={{ backgroundColor: '#e0e0e0', color: '#333', marginRight: '8px' }}>
+                            {tags.find(tag => tag.value === tagId)?.label || "Unknown Tag"}
+                          </span>
+                        ))}
                       </div>
                     )}
-                    
+
                     {typeof post.views === 'number' && <span>Views: {post.views}</span>}
                     {Array.isArray(post.likes) && <span>Likes: {post.likes.length}</span>}
                     {Array.isArray(post.dislikes) && <span>Dislikes: {post.dislikes.length}</span>}

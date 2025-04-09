@@ -7,8 +7,10 @@ import styles from "../../styles/Membership.module.css"; // CSS module
 function Membership() {
     const { user } = useContext(UserContext);
     const [selectedPlan, setSelectedPlan] = useState("");
+    const [freeTrialUsed, setFreeTrialUsed] = useState(false);
+    const [message, setMessage] = useState("");
 
-    // Fetch the user's current membership plan on mount
+    // Fetch the user's current membership plan and freeTrialUsed flag on mount
     useEffect(() => {
         const fetchPlan = async () => {
             if (!user) return;
@@ -19,10 +21,20 @@ function Membership() {
                 if (data.membershipPlan) {
                     setSelectedPlan(data.membershipPlan);
                 }
+                if (data.freeTrialUsed) {
+                    setFreeTrialUsed(true);
+                }
             }
         };
         fetchPlan();
     }, [user]);
+
+    // Ensure that if free trial was used but no plan is recorded, default to Basic
+    useEffect(() => {
+        if (user && freeTrialUsed && !selectedPlan) {
+            setSelectedPlan("Basic");
+        }
+    }, [user, freeTrialUsed, selectedPlan]);
 
     // Handler to set or switch the membership plan
     const handleSelectPlan = async (plan) => {
@@ -36,14 +48,18 @@ function Membership() {
             const confirmSwitch = window.confirm(
                 `You already have the "${selectedPlan}" plan. Do you want to switch to "${plan}"?`
             );
-            if (!confirmSwitch) {
-                return;
-            }
+            if (!confirmSwitch) return;
         }
 
         try {
             const userRef = doc(db, "users", user.uid);
-            await setDoc(userRef, { membershipPlan: plan }, { merge: true });
+            // For Basic plan, if free trial hasn't been used, mark it as used.
+            if (plan === "Basic" && !freeTrialUsed) {
+                await setDoc(userRef, { membershipPlan: plan, freeTrialUsed: true }, { merge: true });
+                setFreeTrialUsed(true);
+            } else {
+                await setDoc(userRef, { membershipPlan: plan }, { merge: true });
+            }
             setSelectedPlan(plan);
             alert(`Congrats! Now you are a "${plan}" member with us.`);
         } catch (error) {
@@ -52,19 +68,22 @@ function Membership() {
         }
     };
 
-    // Handler to cancel membership (set it to null)
+    // Handler to cancel membership: reset plan to Basic (Standard)
     const handleCancelMembership = async () => {
         if (!user) {
             alert("You must be logged in to cancel membership.");
             return;
         }
-        const confirmCancel = window.confirm("Are you sure you want to cancel your membership?");
+        const confirmCancel = window.confirm(
+            "Are you sure you want to cancel your membership? This will reset your plan to Basic (Standard)."
+        );
         if (!confirmCancel) return;
         try {
             const userRef = doc(db, "users", user.uid);
-            await setDoc(userRef, { membershipPlan: null }, { merge: true });
-            setSelectedPlan("");
-            alert("Your membership has been canceled.");
+            // Reset membership plan to Basic (Standard)
+            await setDoc(userRef, { membershipPlan: "Basic" }, { merge: true });
+            setSelectedPlan("Basic");
+            alert("Your membership has been canceled. Your plan has been reset to Basic (Standard).");
         } catch (error) {
             console.error("Error canceling membership:", error);
             alert("Failed to cancel membership. Please try again later.");
@@ -73,23 +92,41 @@ function Membership() {
 
     return (
         <div className={styles.membershipContainer}>
-            {/* Title and Buttons */}
+            {/* Title Section */}
             <div className={styles.titleSection}>
                 <h1>
                     Start Healing for Free. <br />
-                    <span className={styles.orangeBougie}>Upgrade</span> for Even More <span className={styles.orangeBougie}>Benefits</span>
+                    <span className={styles.orangeBougie}>Upgrade</span> for Even More{" "}
+                    <span className={styles.orangeBougie}>Benefits</span>
                 </h1>
-                <p>Choose a plan that aligns with your goals, whether you’re seeking healing or offering your services.</p>
+                <p>
+                    Choose a plan that aligns with your goals, whether you’re seeking healing or offering your services.
+                </p>
                 <div className={styles.topButtons}>
-                    {/* Start Free Trial sets the Basic membership */}
-                    <button onClick={() => handleSelectPlan("Basic")}>Start Free Trial</button>
-                    <button onClick={() => alert("Join as a Healer clicked!")}>Join as a Healer</button>
+                    {user ? (
+                        !selectedPlan ? (
+                            !freeTrialUsed ? (
+                                <button onClick={() => handleSelectPlan("Basic")}>
+                                    Start Free Trial
+                                </button>
+                            ) : null
+                        ) : (
+                            <span>
+                                Your current plan: {selectedPlan}
+                                {selectedPlan === "Basic" ? " (Standard)" : ""}
+                            </span>
+                        )
+                    ) : (
+                        <button onClick={() => alert("Join as a Healer clicked!")}>
+                            Join as a Healer
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Membership Tier Cards */}
             <div className={styles.cardsContainer}>
-                {/* Basic Plan */}
+                {/* Basic Plan Card */}
                 <div
                     className={`${styles.card} ${selectedPlan === "Basic" ? styles.selected : ""}`}
                     onClick={() => handleSelectPlan("Basic")}
@@ -104,25 +141,23 @@ function Membership() {
                         <li>Wellness Tracking Tools</li>
                         <li>Email Support</li>
                     </ul>
-                    <button
-                        className={styles.basicButton}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectPlan("Basic");
-                        }}
-                    >
-                        Select Basic
-                    </button>
+                    {user && selectedPlan === "Basic" && (
+                        <span className={styles.planLabel}>
+                            You are on the Basic plan (Standard)
+                        </span>
+                    )}
                 </div>
 
-                {/* Premium Plan */}
+                {/* Premium Plan Card */}
                 <div
                     className={`${styles.card} ${styles.recommended} ${selectedPlan === "Premium" ? styles.selected : ""}`}
                     onClick={() => handleSelectPlan("Premium")}
                 >
                     <span className={styles.recommendedTag}>Recommended</span>
                     <h2>Premium</h2>
-                    <p className={styles.price}>$33.33 <span>/ month</span></p>
+                    <p className={styles.price}>
+                        $33.33 <span>/ month</span>
+                    </p>
                     <ul className={styles.featuresList}>
                         <li>Everything in Basic</li>
                         <li>Guided Programs</li>
@@ -132,24 +167,32 @@ function Membership() {
                         <li>Direct Messaging with Coaches</li>
                         <li>10% off all advertised services</li>
                     </ul>
-                    <button
-                        className={styles.premiumButton}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectPlan("Premium");
-                        }}
-                    >
-                        Get Premium
-                    </button>
+                    {user ? (
+                        selectedPlan === "Premium" ? (
+                            <span className={styles.planLabel}>You are a Premium member</span>
+                        ) : (
+                            <button
+                                className={styles.premiumButton}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectPlan("Premium");
+                                }}
+                            >
+                                Get Premium
+                            </button>
+                        )
+                    ) : null}
                 </div>
 
-                {/* VIP Plan */}
+                {/* VIP Plan Card */}
                 <div
                     className={`${styles.vipCard} ${selectedPlan === "VIP" ? styles.selected : ""}`}
                     onClick={() => handleSelectPlan("VIP")}
                 >
                     <h2>VIP</h2>
-                    <p className={styles.price}>$99.99 <span>/ month</span></p>
+                    <p className={styles.price}>
+                        $99.99 <span>/ month</span>
+                    </p>
                     <ul className={styles.featuresList}>
                         <li>All Premium Benefits</li>
                         <li>1:1 Coaching Sessions</li>
@@ -159,20 +202,26 @@ function Membership() {
                         <li>Enhanced Tracking & Reports</li>
                         <li>Concierge Support</li>
                     </ul>
-                    <button
-                        className={styles.vipButton}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handleSelectPlan("VIP");
-                        }}
-                    >
-                        Get VIP
-                    </button>
+                    {user ? (
+                        selectedPlan === "VIP" ? (
+                            <span className={styles.planLabel}>You are a VIP member</span>
+                        ) : (
+                            <button
+                                className={styles.vipButton}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectPlan("VIP");
+                                }}
+                            >
+                                Get VIP
+                            </button>
+                        )
+                    ) : null}
                 </div>
             </div>
 
-            {/* Cancellation Section */}
-            {selectedPlan && (
+            {/* Cancellation Section - only show if current plan is Premium or VIP */}
+            {user && selectedPlan && selectedPlan !== "Basic" && (
                 <div className={styles.cancelSection}>
                     <button className={styles.cancelButton} onClick={handleCancelMembership}>
                         Cancel Membership
@@ -183,7 +232,10 @@ function Membership() {
             {/* Plan Comparison Section */}
             <div className={styles.comparePlans}>
                 <h2>Compare Plans</h2>
-                <p>Find the Perfect Fit for Your Healing Journey. Compare features and benefits to choose the plan that suits you best.</p>
+                <p>
+                    Find the Perfect Fit for Your Healing Journey. Compare features and
+                    benefits to choose the plan that suits you best.
+                </p>
                 <table className={styles.compareTable}>
                     <thead>
                         <tr>
