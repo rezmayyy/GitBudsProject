@@ -3,12 +3,14 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../Firebase"; // adjust import path as needed
 import UserContext from "../UserContext"; // your user context
 import styles from "../../styles/Membership.module.css"; // CSS module
+import { useNavigate } from "react-router-dom";
 
 function Membership() {
     const { user } = useContext(UserContext);
     const [selectedPlan, setSelectedPlan] = useState("");
     const [freeTrialUsed, setFreeTrialUsed] = useState(false);
     const [message, setMessage] = useState("");
+    const navigate = useNavigate();
 
     // Fetch the user's current membership plan and freeTrialUsed flag on mount
     useEffect(() => {
@@ -117,7 +119,7 @@ function Membership() {
                             </span>
                         )
                     ) : (
-                        <button onClick={() => alert("Join as a Healer clicked!")}>
+                        <button onClick={() => navigate("/login")}>
                             Join as a Healer
                         </button>
                     )}
