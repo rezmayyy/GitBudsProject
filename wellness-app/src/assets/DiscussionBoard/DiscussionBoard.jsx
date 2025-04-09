@@ -64,7 +64,7 @@ const DiscussionBoard = ({ preview }) => {
   return (
     <div className="discussion-board" style={{ maxWidth: '900px', margin: '0 auto' }}>
       <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
-        {preview ? 'Latest Discussions' : 'Discussion Board'}
+        {preview ? '' : 'Discussion Board'}
       </h2>
 
       {user && !preview && !selectedPost && (

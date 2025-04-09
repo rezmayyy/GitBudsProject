@@ -35,7 +35,6 @@ function GigiVideos() {
 
     return (
         <div className="gigiVideos">
-            <h2>Videos from our CEO</h2>
             <div className="video-list">
                 {GigiVideos.length > 0 ? (
                     GigiVideos.map(video => (

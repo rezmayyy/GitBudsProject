@@ -61,7 +61,6 @@ const RecentVideos = () => {
 
   return (
     <div className="video-container">
-      <h2 className="section-title">Recent Videos</h2>
       <div className="video-grid">
         {videos.length > 0 ? (
           videos.slice(0, visibleVideos).map(video => (

@@ -1,0 +1,113 @@
+/* Home.css */
+
+/* Overall Page Container */
+.home-page {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px;
+    background-color: #f7f7f7;
+    min-height: calc(100vh - 60px);
+}
+
+/* -------------------
+     Hero Section
+  ------------------- */
+.hero {
+    background: linear-gradient(135deg, #ff6f61, #a0c1b8);
+    color: #fff;
+    text-align: center;
+    padding: 80px 20px;
+    border-radius: 12px;
+    margin: 0 20px;
+}
+
+.hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero h1 {
+    font-size: 3em;
+    margin-bottom: 20px;
+}
+
+.hero p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+}
+
+.hero-btn {
+    background-color: #ffffff;
+    color: #ff6f61;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.hero-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+/* -----------------------------
+     Section Containers
+  ----------------------------- */
+
+/* Videos & Discussion Sections share similar styling */
+.videos-section,
+.discussion-section {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 0 20px;
+}
+
+.videos-section h2,
+.discussion-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+/* Video Grid Layout (used inside RecentVideos & CEO Videos) */
+.video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* -----------------------------
+     Responsive Adjustments
+  ----------------------------- */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: 2.5em;
+    }
+
+    .hero p {
+        font-size: 1em;
+    }
+
+    .videos-section,
+    .discussion-section {
+        padding: 20px;
+        margin: 0 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 60px 10px;
+    }
+
+    .videos-section,
+    .discussion-section {
+        padding: 20px;
+        margin: 0 10px;
+    }
+}
