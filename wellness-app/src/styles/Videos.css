@@ -1,7 +1,8 @@
 .video-container {
     width: 100%;
     padding: 20px;
-    background-color: #f8f9fa; /* Light gray background */
+    background-color: #f8f9fa;
+    /* Light gray background */
     border-radius: 10px;
 }
 
@@ -15,12 +16,15 @@
     flex-wrap: wrap;
     gap: 15px;
     justify-content: center;
-    overflow-y: auto; /* Enables scroll if necessary */
-    max-height: 500px; /* Adjust as needed */
+    overflow-y: auto;
+    /* Enables scroll if necessary */
+    max-height: 500px;
+    /* Adjust as needed */
 }
 
 .video-card {
-    width: 250px; /* Adjust card width */
+    width: 250px;
+    /* Adjust card width */
     padding: 10px;
     background-color: white;
     border: 1px solid #ddd;
@@ -68,6 +72,71 @@
     margin-top: 5px;
     color: #333;
 }
+
 .video-author {
     margin-top: 8px;
-  }
+}
+
+/* The wrapper around the video and overlay */
+.video-wrapper {
+    position: relative;
+    max-width: 800px;
+    /* Increase or decrease as you like */
+    width: 100%;
+    margin: 0 auto;
+    /* Centers the .video-wrapper horizontally */
+}
+
+/* Ensures the video expands to the wrapper's width and keeps aspect ratio */
+.video-wrapper video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* The overlay image (thumbnail) is absolutely positioned on top of the video */
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease-in-out;
+    z-index: 1;
+    pointer-events: none;
+    /* Allows clicks to go through to the video */
+}
+
+/* Fade out the overlay when the video starts playing */
+.video-overlay.hide-overlay {
+    opacity: 0;
+}
+
+/* Centers the entire component content */
+.gigiVideos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Optional: center the headline */
+.gigiVideos h1 {
+    text-align: center;
+}
+
+/* Container for the list of videos */
+.video-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* or a fixed width if you prefer */
+}
+
+/* Each video item is centered and given some spacing */
+.video-item {
+    margin: 20px 0;
+    text-align: center;
+}

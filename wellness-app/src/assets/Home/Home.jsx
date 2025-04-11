@@ -29,7 +29,6 @@ function Home({ posts, setPosts }) {
 
       {/* CEO Spotlight Section */}
       <section className="videos-section ceo-videos">
-        <h2>CEO Spotlight</h2>
         <GigiVideos />
       </section>
 

@@ -4,7 +4,7 @@ import UserContext from '../UserContext';
 import styles from '../Create/create-post.module.css';
 import { httpsCallable } from "firebase/functions";
 import { functions, db } from "../Firebase";
-import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, setDoc } from "firebase/firestore";
 
 function ManageCEOVideo() {
     const { user } = useContext(UserContext);
@@ -67,7 +67,7 @@ function ManageCEOVideo() {
 
     const setActiveVideo = async (videoId) => {
         const ref = doc(db, "adminSettings", "fileUploads");
-        await updateDoc(ref, { activeVideo: videoId });
+        await setDoc(ref, { activeVideo: videoId }, { merge: true });
         setActiveVideoId(videoId);
     };
 
