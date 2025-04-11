@@ -6,7 +6,7 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'; // Import getFunctionss
-
+import { isSupported } from "firebase/analytics"
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -14,29 +14,36 @@ import { getFunctions, connectFunctionsEmulator } from 'firebase/functions'; // 
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
 
-    apiKey: "AIzaSyCldsk9RttWXIFqsZs22_H2Z2Q3MTp4kbI",
-  
-    authDomain: "tribewell-d4492.firebaseapp.com",
-  
-    projectId: "tribewell-d4492",
-  
-    storageBucket: "tribewell-d4492.appspot.com",
-  
-    messagingSenderId: "151259052481",
-  
-    appId: "1:151259052481:web:69b05a7c36937ac0759740",
-  
-    measurementId: "G-ZJNNSH2L66"
-  
-  };
-  
+  apiKey: "AIzaSyCldsk9RttWXIFqsZs22_H2Z2Q3MTp4kbI",
+
+  authDomain: "tribewell-d4492.firebaseapp.com",
+
+  projectId: "tribewell-d4492",
+
+  storageBucket: "tribewell-d4492.appspot.com",
+
+  messagingSenderId: "151259052481",
+
+  appId: "1:151259052481:web:69b05a7c36937ac0759740",
+
+  measurementId: "G-ZJNNSH2L66"
+
+};
+
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+
+// ✅ Prevent IndexedDB error in unsupported environments (like JSDOM)
+isSupported().then((supported) => {
+  if (supported) {
+    getAnalytics(app);
+  }
+});
+
 
 export const auth = getAuth(app)
-export const db = getFirestore(app); 
+export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
 if (process.env.REACT_APP_USE_EMULATOR === "true") {
