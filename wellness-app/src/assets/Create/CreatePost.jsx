@@ -24,6 +24,8 @@ function CreatePost() {
     const [showNotification, setShowNotification] = useState(false);
     const tags = useTags();
     const [selectedTags, setSelectedTags] = useState([]);
+    const moveArticleImage = httpsCallable(functions, "moveArticleImage");
+
 
     const MAX_FILE_SIZES = {
         video: 300 * 1024 * 1024, // 300 MB
@@ -197,24 +199,41 @@ function CreatePost() {
         input.onchange = async () => {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
+
+                // Validate file clientside (using your helper)
                 const isValid = await validateFile(file, "image");
                 if (!isValid) return;
-                const url = await uploadFileToStorage(file, `article-images/${user.uid}`);
-                if (!url) {
+
+                // Upload to the temporary folder: temp/{userId}
+                const tempFolder = `temp/${user.uid}`;
+                const tempFilePath = await uploadFileToStorage(file, tempFolder);
+                if (!tempFilePath) {
                     alert("Image upload failed.");
                     return;
                 }
-                // Append the uploaded image to the appropriate field
-                if (activeTab === 'article') {
-                    setPostData(prev => ({
-                        ...prev,
-                        body: prev.body + `<img src="${url}" alt="Uploaded Image"/>`
-                    }));
-                } else {
-                    setPostData(prev => ({
-                        ...prev,
-                        description: prev.description + `<img src="${url}" alt="Uploaded Image"/>`
-                    }));
+
+                try {
+                    // Call the new Firebase function to validate and move the file
+                    const result = await moveArticleImage({ filePath: tempFilePath });
+                    // Expect the function to return an object like { imageUrl: "full_public_url" }
+                    const finalUrl = result.data.imageUrl;
+                    if (!finalUrl) throw new Error("No final URL returned");
+
+                    // Append the image into the Quill content depending on the post type.
+                    if (activeTab === 'article') {
+                        setPostData((prev) => ({
+                            ...prev,
+                            body: prev.body + `<img src="${finalUrl}" alt="Uploaded Image"/>`
+                        }));
+                    } else {
+                        setPostData((prev) => ({
+                            ...prev,
+                            description: prev.description + `<img src="${finalUrl}" alt="Uploaded Image"/>`
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Failed to move image on server:", error);
+                    alert("Server-side image processing failed.");
                 }
             }
         };

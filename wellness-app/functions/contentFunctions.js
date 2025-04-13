@@ -44,6 +44,49 @@ exports.moveCeoVideo = functions.https.onCall(async (data, context) => {
     }
 });
 
+exports.moveArticleImage = functions.https.onCall(async (data, context) => {
+    // 1. Check that the user is authenticated.
+    const authInfo = context.auth;
+    if (!authInfo) {
+        throw new functions.https.HttpsError("unauthenticated", "Login required");
+    }
+    const userId = authInfo.uid;
+
+    // 2. Get the temporary file path
+    const { filePath } = data;
+    if (!filePath || typeof filePath !== "string" || !filePath.startsWith(`temp/${userId}/`)) {
+        throw new functions.https.HttpsError("invalid-argument", "Invalid file path.");
+    }
+
+    const bucket = admin.storage().bucket();
+    const tempFile = bucket.file(filePath);
+
+    try {
+        // 3. Validate the uploaded file (adjust the size limit as needed)
+        await validateUploadedFile(filePath, "image", 10 * 1024 * 1024);
+
+        // 4. Construct the final destination path
+        const timestamp = Date.now();
+        const fileName = filePath.split("/").pop();
+        const finalPath = `article-images/${userId}/${timestamp}_${fileName}`;
+
+        // 5. Move the file from the temporary folder to the permanent location
+        await tempFile.move(finalPath);
+
+        // 6. Make the file public so that it can be embedded in blogs
+        await bucket.file(finalPath).makePublic();
+
+        // 7. Build the public URL (using encoded path)
+        const encodedPath = encodeURIComponent(finalPath);
+        const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodedPath}?alt=media`;
+
+        return { imageUrl };
+    } catch (error) {
+        console.error("Error processing article image:", error);
+        throw new functions.https.HttpsError("internal", "Failed to process image");
+    }
+});
+
 // Auto-cleanup for TempVideos
 exports.cleanupTempVideos = functions.pubsub.schedule("every 24 hours").onRun(async () => {
     const bucket = admin.storage().bucket();
