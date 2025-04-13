@@ -4,12 +4,19 @@ import DiscussionBoard from '../DiscussionBoard/DiscussionBoard';
 import RecentVideos from './RecentVideos';
 import GigiVideos from './GigiVideos';
 import './Home.css';
+import CTA from './CTA';
 
 function Home({ posts, setPosts }) {
   const navigate = useNavigate();
 
   return (
     <div className="home-page">
+
+      {/* CTA Section */}
+      <section className="custom-cta-wrapper">
+        <CTA />
+      </section>
+
       {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
