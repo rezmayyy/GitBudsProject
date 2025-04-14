@@ -34,6 +34,7 @@ const BlogsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [lastVisible, setLastVisible] = useState(null);
     const [firstVisible, setFirstVisible] = useState(null);
+    const [pageCursors, setPageCursors] = useState([]);
 
     //tag name instead of tag id
     const tagNames = tags.reduce((acc, tag) => {
@@ -63,23 +64,24 @@ const BlogsPage = () => {
                     q = query(
                         q,
                         where('type', '==', 'article'),
-                        limit(postsPerPage)
+                        
                     );
                 } else if (activeCategoryTab === "Videos") {
                     q = query(
                         q,
                         where('type', '==', 'video'),
-                        limit(postsPerPage)
+                        
                     );
                 }
 
 
                 //pagination
-                if (currentPage > 1 && lastVisible) {
-                    q = query(q, startAfter(lastVisible)); //start from where last page ended
-                } else if (currentPage < 1 && firstVisible) {
-                    q = query(q, startAt(firstVisible));
+                const cursor = pageCursors[currentPage - 1];
+                if(cursor){
+                    q = query(q, startAfter(cursor)); //start from where last page ended
                 }
+
+                q = query(q, limit(postsPerPage));
 
                 const querySnapshot = await getDocs(q);
                 const fetchedPosts = querySnapshot.docs.map(doc => {
@@ -97,9 +99,18 @@ const BlogsPage = () => {
                     }
                 });
 
+                if (querySnapshot.docs.length > 0) {
+                    const newCursor = querySnapshot.docs[querySnapshot.docs.length - 1];
+        
+                    setPageCursors(prev => {
+                        const updated = [...prev];
+                        updated[currentPage] = newCursor;
+                        return updated;
+                    });
+                }
+
                 setContentPosts(fetchedPosts);
-                setLastVisible(querySnapshot.docs[querySnapshot.docs.length - 1]);
-                setFirstVisible(querySnapshot.docs[0]);
+
             } catch (error) {
                 console.error("Error fetching articles:", error)
             }
@@ -111,7 +122,8 @@ const BlogsPage = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [activeCategoryTab])
+        setPageCursors([]);
+    }, [activeCategoryTab, activeTab])
 
     const nextPage = () => {
         if (contentPosts.length === postsPerPage) {
@@ -210,6 +222,7 @@ const BlogsPage = () => {
                             {topics.map((topic) => (
                                 <Nav.Item key={topic} className="me-4" style={{ position: "relative" }}>
                                     <span
+                                        data-testid="topic-tab"
                                         className="text-dark d-inline-block pb-2"
                                         onClick={() => setActiveTab(topic)}
                                         style={{ cursor: "pointer", position: "relative" }}>
@@ -232,79 +245,81 @@ const BlogsPage = () => {
 
                     <Row className="mt-4">
 
-                        {contentPosts.slice(0, visibleContentPosts).map(post => (
-                            <Col md={12} key={post.id}>
-                                <Card className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
-                                    <Row className="g-0">
-                                        <Col md={4}>
-                                            <Card.Img src={post.thumbnail} alt={post.title}
-                                                className="img-fluid rounded-start"
-                                                style={{ width: "100%", height: "200px", objectFit: "cover" }} />
-                                        </Col>
-                                        <Col md={8}>
-                                            <Card.Body>
-                                                <Card.Title className="fw-bold">{post.title}</Card.Title>
-                                                <Card.Text className="text-muted small">{post.postDate}</Card.Text>
+                        {contentPosts
+                            //.filter(post => post.tags && post.tags.length > 0 && ['article', 'video'].includes(post.type))
+                            .slice(0, visibleContentPosts)
+                            .map(post => (
+                                <Col md={12} key={post.id}>
+                                    <Card data-testid="blog-card" className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
+                                        <Row className="g-0">
+                                            <Col md={4}>
+                                                <Card.Img src={post.thumbnail} alt={post.title}
+                                                    className="img-fluid rounded-start"
+                                                    style={{ width: "100%", height: "200px", objectFit: "cover" }} />
+                                            </Col>
+                                            <Col md={8}>
+                                                <Card.Body>
+                                                    <Card.Title className="fw-bold">{post.title}</Card.Title>
+                                                    <Card.Text data-testid="blog-date" className="text-muted small">{post.postDate}</Card.Text>
 
-                                                {/* ✅ Move tags outside of Card.Text */}
-                                                <div className="tags mb-2">
-                                                    {post.tags.map((tagId, index) => (
-                                                        <span
-                                                            key={index}
-                                                            className="badge me-2"
-                                                            style={{
-                                                                backgroundColor: "#f6a5b8",
-                                                                color: "white",
-                                                                borderRadius: "50px"
-                                                            }}
-                                                        >
-                                                            {tagNames[tagId] || "Unknown Tag"}
-                                                        </span>
-                                                    ))}
-                                                </div>
-
-                                                <Card.Text>
-                                                    {/* display text depending on post type */}
-                                                    {post.type === "article" ? (
-                                                        <Link
-                                                            to={`/content/${post.id}`}
-                                                            className="stretched-link"
-                                                            style={{ textDecoration: "none", color: "black" }}
-                                                        >
-                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
-                                                        </Link>
-                                                    ) : post.type === "video" ? (
-                                                        <Link
-                                                            to={`/content/${post.id}`}
-                                                            className="stretched-link"
-                                                            style={{ textDecoration: "none" }}
-                                                        >
-                                                            <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
-                                                        </Link>
-                                                    ) : null}
-
-                                                    {isAdminOrModerator && !isCurrentUser && (
-                                                        <button onClick={handleFlag} className={styles.banButton}>
-                                                            Flag Post
-                                                        </button>
+                                                    {post.tags.length > 0 ? (
+                                                        <div data-testid="blog-tags" className="tags mb-2">
+                                                            {post.tags.map((tagId, index) => (
+                                                                <span
+                                                                    key={index}
+                                                                    className="badge me-2"
+                                                                    style={{
+                                                                        backgroundColor: "#f6a5b8",
+                                                                        color: "white",
+                                                                        borderRadius: "50px"
+                                                                    }}
+                                                                >
+                                                                    {tagNames[tagId] || "Unknown Tag"}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div data-testid="blog-tags" className="tags mb-2">No tags available</div>
                                                     )}
-                                                </Card.Text>
-                                            </Card.Body>
-                                        </Col>
-                                    </Row>
-                                </Card>
-                                <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
-                            </Col>
 
-                        ))}
+                                                    <Card.Text>
+                                                        {/* display text depending on post type */}
+                                                        {post.type === "article" ? (
+                                                            <Link
+                                                                to={`/content/${post.id}`}
+                                                                className="stretched-link"
+                                                                style={{ textDecoration: "none", color: "black" }}
+                                                            >
+                                                                <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
+                                                            </Link>
+                                                        ) : post.type === "video" ? (
+                                                            <Link
+                                                                to={`/content/${post.id}`}
+                                                                className="stretched-link"
+                                                                style={{ textDecoration: "none" }}
+                                                            >
+                                                                <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
+                                                            </Link>
+                                                        ) : null}
+
+                                                        
+                                                    </Card.Text>
+                                                </Card.Body>
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                    <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
+                                </Col>
+
+                            ))}
                     </Row>
 
                     <div className="d-flex justify-content-between mt-4">
-                        <Button onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
+                        <Button data-testid="prev-button" onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
                             Prev
                         </Button>
                         <span data-testid="page">Page {currentPage}</span>
-                        <Button onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
+                        <Button data-testid="next-button" onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
                             Next
                         </Button>
 
