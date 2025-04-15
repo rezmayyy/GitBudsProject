@@ -38,7 +38,7 @@ function ViewTicket({ ticketId, onBack }) {
     };
 
     useEffect(() => {
-        fetchTicketData(); // Fetch ticket and replies when the component mounts
+        fetchTicketData().catch(console.error);
     }, [ticketId]);
 
     const handleReplySubmit = async (e) => {
