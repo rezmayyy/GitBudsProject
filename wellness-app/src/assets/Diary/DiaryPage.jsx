@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { getFirestore, collection, getDocs, query, where, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-
+import DOMPurify from 'dompurify';
 import { Modal, Button, Collapse } from "react-bootstrap";
 import ReactQuill from "react-quill";
-//import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from "react-router-dom";
 
 const DiaryPage = () => {
@@ -37,8 +37,8 @@ const DiaryPage = () => {
 
                     //Sort entries by time created
                     const sortedEntries = querySnapshot.docs
-                        .map(doc => ({id: doc.id, ...doc.data() }))
-                        .sort((a,b) => b.createdAt.seconds - a.createdAt.seconds);
+                        .map(doc => ({ id: doc.id, ...doc.data() }))
+                        .sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
 
                     setEntries(sortedEntries);
                 } catch (error) {
@@ -67,11 +67,13 @@ const DiaryPage = () => {
         setShowModal(true);
     };
 
+
     //close modal
     const closeModal = () => { //reset
         setShowModal(false);
         setSelectedEntry(null);
     };
+
 
     const toggleExpand = (id) => { //expand/collapse toggle for entries
         setExpandedId((prevId) => (prevId === id ? null : id));
@@ -99,17 +101,17 @@ const DiaryPage = () => {
     //delete entry
     const handleDelete = async (entry) => {
         try {
-            
-                const entryRef = doc(db, "diary_entries", entry.id);
-                await deleteDoc(entryRef);
-                setEntries((prevEntries) => prevEntries.filter((e) => e.id !== entry.id));
-                //closeModal();
 
-            
-        }catch(error){
+            const entryRef = doc(db, "diary_entries", entry.id);
+            await deleteDoc(entryRef);
+            setEntries((prevEntries) => prevEntries.filter((e) => e.id !== entry.id));
+            closeModal();
+
+
+        } catch (error) {
             console.log("Could not delete entry: ", error);
         }
-        
+
     };
 
 
@@ -132,44 +134,50 @@ const DiaryPage = () => {
                 </div>
             ) : (
 
-            <ul className="list-group">
-                {entries.map(entry => (
-                    <li key={entry.id} className="d-flex justify-content-center mb-4">
-                        <div className="card shadow" style={{ maxWidth: "600px", width: "100%" }}>
-                            <div className="card-body text-center">
-                                <div>
-                                    <h5>{entry.title}</h5>
-                                    <small>{new Date(entry.createdAt?.seconds * 1000).toLocaleString()}</small>
+                <ul className="list-group">
+                    {entries.map(entry => (
+                        <li key={entry.id} className="d-flex justify-content-center mb-4">
+                            <div data-testid="entry-card" className="card shadow" style={{ maxWidth: "600px", width: "100%" }}>
+                                <div className="card-body text-center">
+                                    <div>
+                                        <h5>{entry.title}</h5>
+                                        <small>{new Date(entry.createdAt?.seconds * 1000).toLocaleString()}</small>
+                                    </div>
+                                    <Button variant="link" onClick={() => toggleExpand(entry.id)}>
+                                        {expandedId === entry.id ? "Collapse" : "Expand"}
+                                    </Button>
                                 </div>
-                                <Button variant="link" onClick={() => toggleExpand(entry.id)}>
-                                    {expandedId === entry.id ? "Collapse" : "Expand"}
-                                </Button>
+
+                                <Collapse in={expandedId === entry.id}>
+                                    <div className="p-3">
+                                        <div
+                                            data-testid={`entry-content-${entry.id}`} 
+                                            className={`p-3 ${expandedId === entry.id ? "expanded" : "collapsed"}`}
+                                            style={{ display: expandedId === entry.id ? "block" : "none" }}
+                                        >
+                                            <div data-testid="entry-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }} />
+                                        </div>
+                                        <Button variant="primary" onClick={() => openModal(entry)} className="me-2">
+                                            Edit
+                                        </Button>
+                                        <Button variant="danger" onClick={() => handleDelete(entry)}>
+                                            Delete
+                                        </Button>
+
+                                    </div>
+                                </Collapse>
                             </div>
 
-                            <Collapse in={expandedId === entry.id}>
-                                <div className="p-3">
-                                    <div dangerouslySetInnerHTML={{ __html: entry.content }} />
-                                    <Button variant="primary" onClick={() => openModal(entry)} className="me-2">
-                                        Edit
-                                    </Button>
-                                    <Button variant="danger" onClick={() => handleDelete(entry)}>
-                                        Delete
-                                    </Button>
 
-                                </div>
-                            </Collapse>
-                        </div>
+                        </li>
 
-
-                    </li>
-
-                ))}
-            </ul>
+                    ))}
+                </ul>
             )}
 
             {/* modal */}
 
-            <Modal show={showModal} onHide={closeModal}>
+            <Modal show={showModal} onHide={closeModal} data-testid="diary-modal" animation={false} style={{ zIndex: 1050 }}>
                 <Modal.Header closeButton>
                     <Modal.Title>{selectedEntry ? `Edit Entry: ${selectedEntry.title}` : "Entry"}</Modal.Title>
                 </Modal.Header>
@@ -187,24 +195,14 @@ const DiaryPage = () => {
                                     onChange={(e) => setNewTitle(e.target.value)}
                                 />
                             </div>
-
-                            {/* content */}
-                            <div className="mb-3">
-                                <label htmlFor="entryContent" className="form-label">Content</label>
-                                <ReactQuill
-                                    value={newContent}
-                                    onChange={setNewContent}
-                                    theme="snow"
-                                />
-                            </div>
                             <Modal.Footer>
-                                <Button variant="secondary" onClick={closeModal}>
+                                <Button variant="secondary" onClick={closeModal} data-testid="close-button">
                                     Close
                                 </Button>
                                 <Button variant="primary" onClick={handleEdit}>
                                     Save Changes
                                 </Button>
-                                <Button variant="danger" onClick={handleDelete}>
+                                <Button variant="danger" onClick={() => handleDelete(selectedEntry)}>
                                     Delete Entry
                                 </Button>
                             </Modal.Footer>

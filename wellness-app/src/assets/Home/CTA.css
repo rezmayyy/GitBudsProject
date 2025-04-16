@@ -1,0 +1,146 @@
+.cta-section {
+    width: 100%;
+    background-color: #fff;
+    padding: 100px 20px 60px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-section__content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media (min-width: 992px) {
+    .cta-section__content {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+.cta-section__left {
+    flex: 1;
+    text-align: center;
+}
+
+@media (min-width: 992px) {
+    .cta-section__left {
+        text-align: left;
+        padding-right: 80px;
+    }
+}
+
+.cta-section__left h1 {
+    font-size: 3.2rem;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
+    color: #1a1a1a;
+}
+
+.highlight {
+    color: #fbb040;
+}
+
+.bold {
+    color: #000;
+    font-weight: bold;
+}
+
+.cta-section__left p {
+    color: #4a4a4a;
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.cta-section__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (min-width: 500px) {
+    .cta-section__buttons {
+        flex-direction: row;
+    }
+}
+
+.cta-section__btn {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: none;
+    cursor: pointer;
+}
+
+.cta-section__btn--primary {
+    background-color: #5954A6;
+    color: white;
+}
+
+.cta-section__btn--primary:hover {
+    background-color: #4a4390;
+}
+
+.cta-section__btn--outline {
+    color: #5954A6;
+    border: 2px solid #5954A6;
+    background-color: transparent;
+}
+
+.cta-section__btn--outline:hover {
+    background-color: #f4f4f4;
+}
+
+.cta-section__right {
+    flex: 1;
+    margin-top: 40px;
+    position: relative;
+}
+
+@media (min-width: 992px) {
+    .cta-section__right {
+        margin-top: 0;
+    }
+}
+
+.cta-section__image {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.cta-section__customers {
+    width: 100%;
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    padding: 60px 16px;
+    box-sizing: border-box;
+}
+
+.cta-section__customers-img {
+    width: 100%;
+    max-width: 1034px;
+    height: auto;
+    object-fit: cover;
+}
+
+@media (min-width: 768px) {
+    .cta-section__customers {
+        padding: 80px 40px;
+    }
+}

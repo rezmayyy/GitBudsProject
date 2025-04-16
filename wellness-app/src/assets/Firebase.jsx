@@ -21,7 +21,7 @@ const analytics = getAnalytics(app);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-setLogLevel("error"); // ✅ Add this
+setLogLevel("error");
 
 export const storage = getStorage(app);
 export const functions = getFunctions(app);
