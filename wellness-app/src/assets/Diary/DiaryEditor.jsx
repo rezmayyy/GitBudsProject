@@ -72,7 +72,15 @@ const DiaryEditor = (({ entry, onSave }) => {
         ],
     }
 
-    const isSaveDisabled = !title.trim() || !content.trim();
+    const stripHtml = (html) => {
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        return div.textContent || div.innerText || "";
+    };
+    
+    const isContentEmpty = stripHtml(content).trim() === "";
+    const isTitleEmpty = title.trim() == "";
+    const isSaveDisabled = isTitleEmpty || isContentEmpty;
 
     return (
         <div className="container my-5">
@@ -86,7 +94,7 @@ const DiaryEditor = (({ entry, onSave }) => {
 
                     {/* title */}
                     <div className="mb-3">
-                        <label htmlfor="entryTitle" className="form-label"> Title </label>
+                        <label htmlFor="entryTitle" className="form-label"> Title </label>
                         <input
                             type="text"
                             value={title}
@@ -98,9 +106,10 @@ const DiaryEditor = (({ entry, onSave }) => {
 
                     {/* content */}
                     <div className="mb-3">
-                        <label htmlfor="entryConent" className="form-label"> Content </label>
+                        <label htmlFor="entryConent" className="form-label"> Content </label>
 
                         <ReactQuill
+                            data-testid="react-quill"
                             value={content}
                             onChange={setContent} //update content
                             modules={modules}
