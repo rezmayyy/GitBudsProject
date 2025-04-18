@@ -158,8 +158,6 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       const docRef = doc(db, 'users', user.uid);
-      // First, merge any other profile changes
-      await setDoc(docRef, profileData, { merge: true });
 
       if (profilePictureFile) {
         const isValid = await validateFile(profilePictureFile, "image");

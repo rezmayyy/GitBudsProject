@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { db } from '../Firebase';
 import UserContext from '../UserContext';
-import { collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, query, where } from 'firebase/firestore';
 import styles from './TicketList.module.css';
 import TicketFilters from './TicketFilters';
 import TicketItem from './TicketItem';
@@ -23,7 +23,15 @@ function TicketList({ onCreateTicket }) {
 
     const fetchTickets = async () => {
         try {
-            const snapshot = await getDocs(collection(db, 'tickets'));
+            let q;
+            // For admin or moderators, fetch all tickets.
+            if (user.role === 'admin' || user.role === 'moderator') {
+                q = collection(db, 'tickets');
+            } else {
+                // For normal users, only fetch tickets that they own.
+                q = query(collection(db, 'tickets'), where('userId', '==', user.uid));
+            }
+            const snapshot = await getDocs(q);
             const ticketData = snapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
