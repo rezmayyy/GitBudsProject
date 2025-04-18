@@ -1,15 +1,14 @@
 import React, { useContext, useState, useEffect } from "react";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "../Firebase"; // adjust import path as needed
-import UserContext from "../UserContext"; // your user context
-import styles from "../../styles/Membership.module.css"; // CSS module
+import { db } from "../Firebase";
+import UserContext from "../UserContext";
+import styles from "../../styles/Membership.module.css";
 import { useNavigate } from "react-router-dom";
 
 function Membership() {
     const { user } = useContext(UserContext);
     const [selectedPlan, setSelectedPlan] = useState("");
     const [freeTrialUsed, setFreeTrialUsed] = useState(false);
-    const [message, setMessage] = useState("");
     const navigate = useNavigate();
 
     // Fetch the user's current membership plan and freeTrialUsed flag on mount
@@ -38,7 +37,7 @@ function Membership() {
         }
     }, [user, freeTrialUsed, selectedPlan]);
 
-    // Handler to set or switch the membership plan
+    // Handler to set or switch the membership plan (only works when user is logged in)
     const handleSelectPlan = async (plan) => {
         if (!user) {
             alert("You must be logged in to select a plan!");
@@ -106,6 +105,7 @@ function Membership() {
                 </p>
                 <div className={styles.topButtons}>
                     {user ? (
+                        // If user is logged in:
                         !selectedPlan ? (
                             !freeTrialUsed ? (
                                 <button onClick={() => handleSelectPlan("Basic")}>
@@ -119,6 +119,7 @@ function Membership() {
                             </span>
                         )
                     ) : (
+                        // If user is NOT logged in, show "Join as a Healer" that navigates to login
                         <button onClick={() => navigate("/login")}>
                             Join as a Healer
                         </button>
@@ -131,7 +132,11 @@ function Membership() {
                 {/* Basic Plan Card */}
                 <div
                     className={`${styles.card} ${selectedPlan === "Basic" ? styles.selected : ""}`}
-                    onClick={() => handleSelectPlan("Basic")}
+                    onClick={() => {
+                        if (user) {
+                            handleSelectPlan("Basic");
+                        }
+                    }}
                 >
                     <h2>Basic</h2>
                     <p className={styles.price}>Start for Free</p>
@@ -143,6 +148,7 @@ function Membership() {
                         <li>Wellness Tracking Tools</li>
                         <li>Email Support</li>
                     </ul>
+
                     {user && selectedPlan === "Basic" && (
                         <span className={styles.planLabel}>
                             You are on the Basic plan (Standard)
@@ -153,7 +159,11 @@ function Membership() {
                 {/* Premium Plan Card */}
                 <div
                     className={`${styles.card} ${styles.recommended} ${selectedPlan === "Premium" ? styles.selected : ""}`}
-                    onClick={() => handleSelectPlan("Premium")}
+                    onClick={() => {
+                        if (user) {
+                            handleSelectPlan("Premium");
+                        }
+                    }}
                 >
                     <span className={styles.recommendedTag}>Recommended</span>
                     <h2>Premium</h2>
@@ -189,7 +199,11 @@ function Membership() {
                 {/* VIP Plan Card */}
                 <div
                     className={`${styles.vipCard} ${selectedPlan === "VIP" ? styles.selected : ""}`}
-                    onClick={() => handleSelectPlan("VIP")}
+                    onClick={() => {
+                        if (user) {
+                            handleSelectPlan("VIP");
+                        }
+                    }}
                 >
                     <h2>VIP</h2>
                     <p className={styles.price}>
@@ -222,7 +236,7 @@ function Membership() {
                 </div>
             </div>
 
-            {/* Cancellation Section - only show if current plan is Premium or VIP */}
+            {/* Cancellation Section - only show if user is logged in AND current plan is Premium or VIP */}
             {user && selectedPlan && selectedPlan !== "Basic" && (
                 <div className={styles.cancelSection}>
                     <button className={styles.cancelButton} onClick={handleCancelMembership}>

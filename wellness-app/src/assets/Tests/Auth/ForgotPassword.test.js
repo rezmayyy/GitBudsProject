@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import ForgotPassword from "../Auth/ForgotPassword";
-import { auth } from "../Firebase"; //updated file location after moving to tests folder
+import ForgotPassword from "../../Auth/ForgotPassword";
+import { auth } from "../../Firebase"; //updated file location after moving to tests folder
 jest.mock("firebase/auth", () => ({
   getAuth: jest.fn(() => ({
     signInWithEmailAndPassword: jest.fn(),
