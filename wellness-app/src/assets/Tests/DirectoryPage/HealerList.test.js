@@ -50,7 +50,7 @@ jest.mock('firebase/functions', () => ({
     })),
 }));
 
-jest.mock('../../Utils/firebaseUtils', () => ({
+jest.mock('../../../Utils/firebaseUtils', () => ({
     getUserById: jest.fn(id =>
         Promise.resolve({
             displayName: `MockUser ${id}`,
@@ -60,12 +60,12 @@ jest.mock('../../Utils/firebaseUtils', () => ({
 }));
 
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import HealerList from '../Directory/HealerList';
+import HealerList from '../../Directory/HealerList';
 import { getDocs, setLogLevel } from "firebase/firestore"; // Import setLogLevel
 import { getAuth } from 'firebase/auth';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from "@testing-library/user-event";
-import HealerSearch from "../Directory/HealerSearch";
+import HealerSearch from "../../Directory/HealerSearch";
 
 // Tests for Firebase Auth
 describe('Firebase Auth', () => {

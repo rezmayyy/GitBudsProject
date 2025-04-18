@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../Firebase";
 import { formatToLocalTime } from "./EventsPage";
@@ -203,10 +203,18 @@ function EventDetailsPage() {
             <div className="event-creator">
                 <strong>Created by:</strong>
                 {user ? (
-                    <a href={`/profile/${event.createdBy}`} className="creator-link">
+                    <Link
+                        to={`/profile/${event.createdBy}`}
+                        className="creator-link"
+                        aria-label={`Visit ${creatorName}'s profile`}
+                    >
                         {creatorName}
-                        <img src={creatorPic || dummyPic} alt={`${creatorName}'s profile`} className="creator-image" />
-                    </a>
+                        <img
+                            src={creatorPic || dummyPic}
+                            alt={`${creatorName}'s profile`}
+                            className="creator-image"
+                        />
+                    </Link>
                 ) : (
                     <span className="creator-placeholder">
                         Log in to see the creator

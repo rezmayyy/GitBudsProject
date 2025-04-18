@@ -9,7 +9,7 @@ const ManageHealerApplications = () => {
     useEffect(() => {
         const fetchApplications = async () => {
             try {
-                const q = query(collection(db, 'healerApplications'), where('status', '==', 'pending'));
+                const q = query(collection(db, 'healerApplications'), where('firstName', '==', 'Austin'));
                 const querySnapshot = await getDocs(q);
                 setApplications(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
             } catch (error) {
@@ -35,6 +35,8 @@ const ManageHealerApplications = () => {
                         location: app.location,
                         healingTags: app.healingTags,
                         approvedAt: Timestamp.now(),
+                        status: 'approved',
+                        displayName: app.displayName
                     });
                     // Only update role field on users collection
                     await updateDoc(doc(db, 'users', app.userId), { role: 'healer' });

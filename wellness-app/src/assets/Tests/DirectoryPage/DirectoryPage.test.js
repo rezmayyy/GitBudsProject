@@ -1,11 +1,11 @@
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import { BrowserRouter, Link } from 'react-router-dom';
-import DirectoryPage from '../Directory/DirectoryPage';
-import HealerList from '../Directory/HealerList';
-import ProfileCard from '../Directory/HealerList';
+import DirectoryPage from '../../Directory/DirectoryPage';
+import HealerList from '../../Directory/HealerList';
+import ProfileCard from '../../Directory/HealerList';
 import { getAuth } from 'firebase/auth';
-import Firebase from '../Firebase';
+import Firebase from '../../Firebase';
 
 // Render the Directory Page for Join as healer link test
 test('renders the "Join as a healer for free" link', () => {

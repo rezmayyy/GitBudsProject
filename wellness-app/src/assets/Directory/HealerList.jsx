@@ -44,8 +44,8 @@ function HealerList() {
         if (term) {
             q = query(
                 q,
-                where("displayNameLowercase", ">=", term),
-                where("displayNameLowercase", "<=", term + "\uf8ff"),
+                where("displayName", ">=", term),
+                where("displayName", "<=", term + "\uf8ff"),
                 limit(8)
             );
         } else {
