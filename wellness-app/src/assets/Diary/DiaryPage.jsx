@@ -121,7 +121,8 @@ const DiaryPage = () => {
         <div className="container my-5">
 
             <div className="text-center mb-4">
-                <Button variant="success" size="lg" className="w-100" onClick={() => navigate("/profile/diary/editor")}
+                <Button size="lg" className="w-100" onClick={() => navigate("/profile/diary/editor")}
+                style={{backgroundColor: "#5B56A4"}}
                 >
                     + Create New Entry </Button>
             </div>
@@ -143,7 +144,7 @@ const DiaryPage = () => {
                                         <h5>{entry.title}</h5>
                                         <small>{new Date(entry.createdAt?.seconds * 1000).toLocaleString()}</small>
                                     </div>
-                                    <Button variant="link" onClick={() => toggleExpand(entry.id)}>
+                                    <Button variant="link" onClick={() => toggleExpand(entry.id)} style={{color: "#E9A632"}}>
                                         {expandedId === entry.id ? "Collapse" : "Expand"}
                                     </Button>
                                 </div>
@@ -157,10 +158,10 @@ const DiaryPage = () => {
                                         >
                                             <div data-testid="entry-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }} />
                                         </div>
-                                        <Button variant="primary" onClick={() => openModal(entry)} className="me-2">
+                                        <Button onClick={() => openModal(entry)} className="me-2" style={{backgroundColor: "#E7C2EC", border: "#E7C2EC"}}>
                                             Edit
                                         </Button>
-                                        <Button variant="danger" onClick={() => handleDelete(entry)}>
+                                        <Button onClick={() => handleDelete(entry)} style={{backgroundColor: "#E9A632", border: "#E9A632"}}>
                                             Delete
                                         </Button>
 
@@ -199,10 +200,10 @@ const DiaryPage = () => {
                                 <Button variant="secondary" onClick={closeModal} data-testid="close-button">
                                     Close
                                 </Button>
-                                <Button variant="primary" onClick={handleEdit}>
+                                <Button onClick={handleEdit} style={{backgroundColor: "#E7C2EC", border: "#E7C2EC"}}>
                                     Save Changes
                                 </Button>
-                                <Button variant="danger" onClick={() => handleDelete(selectedEntry)}>
+                                <Button onClick={() => handleDelete(selectedEntry)} style={{backgroundColor: "#E9A632", border: "#E9A632"}}>
                                     Delete Entry
                                 </Button>
                             </Modal.Footer>

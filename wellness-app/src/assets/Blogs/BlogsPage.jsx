@@ -64,20 +64,20 @@ const BlogsPage = () => {
                     q = query(
                         q,
                         where('type', '==', 'article'),
-                        
+
                     );
                 } else if (activeCategoryTab === "Videos") {
                     q = query(
                         q,
                         where('type', '==', 'video'),
-                        
+
                     );
                 }
 
 
                 //pagination
                 const cursor = pageCursors[currentPage - 1];
-                if(cursor){
+                if (cursor) {
                     q = query(q, startAfter(cursor)); //start from where last page ended
                 }
 
@@ -101,7 +101,7 @@ const BlogsPage = () => {
 
                 if (querySnapshot.docs.length > 0) {
                     const newCursor = querySnapshot.docs[querySnapshot.docs.length - 1];
-        
+
                     setPageCursors(prev => {
                         const updated = [...prev];
                         updated[currentPage] = newCursor;
@@ -150,186 +150,189 @@ const BlogsPage = () => {
     // });
 
     return (
-        <Container className="my-5">
-            {/* separate on left and right for categories and topics */}
-            <Card className="bg-light text-dark" style={{
+        <>
+            <div style={{
                 width: "100%",
-                backgroundImage: 'url("../assets/blogs-header-img.jpg")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed',
+                height: "400px",
+                backgroundImage: 'url("../assets/blogs-header.png")',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right',
                 overflow: 'hidden',
-                borderRadius: "50px"
+                backgroundColor: "#F0F0F0"
             }}>
                 <Row className="g-0 h-100">
                     <Col md={6} className="d-flex flex-column justify-content-center p-4">
-                        <Card.Body>
+                    <Card.Body className="ms-5 me-5 my-auto" style={{ flex: "unset" }}>
                             <Card.Title className="display-4">Learn, Grow, Heal</Card.Title>
-                            <Card.Title className="display-4">-<span style={{ color: "#f6a5b8" }}>for Free.</span></Card.Title>
-                            <Card.Text className="lead">Explore free topics that inspire, educate, and empower your journey.</Card.Text>
+                            <Card.Title className="display-4">— <span style={{ color: "#E9A632", fontStyle: "italic" }}>for Free.</span></Card.Title>
+                            <Card.Text className="lead">
+                                Explore free topics that inspire, educate, and empower your journey.
+                            </Card.Text>
                             <div className="d-flex">
                                 <Button as={Link} to="/directory" variant="primary" className="me-3"
                                     style={{ backgroundColor: "#5B56A4", borderColor: "#5B56A4", borderRadius: "50px" }}>
                                     Find a Healer
                                 </Button>
-                                {/*<Button variant="primary">Download our free healing guides</Button>*/}
                             </div>
                         </Card.Body>
                     </Col>
                 </Row>
+            </div>
+            <Container className="my-5">
+                {/* separate on left and right for categories and topics */}
 
-            </Card>
 
-            {/* categories nav */}
-            <Row>
-                <Col md={3} className="border-0 pe-4">
-                    <Nav className="flex-column" style={{ marginTop: "70px" }}>
-                        {categories.map((tab) => (
-                            <Nav.Item key={tab} className="mb-3" style={{ position: "relative" }}>
-                                <span
-                                    className="text-dark"
-                                    onClick={() => setActiveCategoryTab(tab)}
-                                    style={{
-                                        cursor: "pointer",
-                                        paddingBottom: "8px",
-                                        display: "inline-block",
-                                        position: "relative"
-                                    }}>
-                                    {tab}
-                                </span>
-                                {activeCategoryTab === tab && (
-                                    <div style={{
-                                        position: "absolute",
-                                        bottom: "0",
-                                        left: "0",
-                                        width: "50%",
-                                        height: "2px",
-                                        backgroundColor: "black",
-                                        transition: "width 0.3s ease-in-out"
-                                    }}>
-
-                                    </div>
-                                )}
-                            </Nav.Item>
-                        ))}
-                    </Nav>
-                </Col>
-
-                {/* topics nav */}
-                <Col md={9}>
-                    <div className="mt-4 position-relative border-bottom">
-                        <Nav className="d-flex">
-                            {topics.map((topic) => (
-                                <Nav.Item key={topic} className="me-4" style={{ position: "relative" }}>
+                {/* categories nav */}
+                <Row>
+                    <Col md={3} className="border-0 pe-4">
+                        <Nav className="flex-column" style={{ marginTop: "70px" }}>
+                            {categories.map((tab) => (
+                                <Nav.Item key={tab} className="mb-3" style={{ position: "relative" }}>
                                     <span
-                                        data-testid="topic-tab"
-                                        className="text-dark d-inline-block pb-2"
-                                        onClick={() => setActiveTab(topic)}
-                                        style={{ cursor: "pointer", position: "relative" }}>
-
-                                        {topic}
+                                        className="text-dark"
+                                        onClick={() => setActiveCategoryTab(tab)}
+                                        style={{
+                                            cursor: "pointer",
+                                            paddingBottom: "8px",
+                                            display: "inline-block",
+                                            position: "relative"
+                                        }}>
+                                        {tab}
                                     </span>
-                                    {activeTab === topic && (
-                                        <div className="position-absolute bottom-0 start-50 translate-middle-x"
-                                            style={{
-                                                width: "100%", height: "2px", backgroundColor: "black"
-                                            }}></div>
-                                    )}
+                                    {activeCategoryTab === tab && (
+                                        <div style={{
+                                            position: "absolute",
+                                            bottom: "0",
+                                            left: "0",
+                                            width: "50%",
+                                            height: "2px",
+                                            backgroundColor: "black",
+                                            transition: "width 0.3s ease-in-out"
+                                        }}>
 
+                                        </div>
+                                    )}
                                 </Nav.Item>
                             ))}
                         </Nav>
-                    </div>
+                    </Col>
 
-                    {/* content */}
+                    {/* topics nav */}
+                    <Col md={9}>
+                        <div className="mt-4 position-relative border-bottom">
+                            <Nav className="d-flex">
+                                {topics.map((topic) => (
+                                    <Nav.Item key={topic} className="me-4" style={{ position: "relative" }}>
+                                        <span
+                                            data-testid="topic-tab"
+                                            className="text-dark d-inline-block pb-2"
+                                            onClick={() => setActiveTab(topic)}
+                                            style={{ cursor: "pointer", position: "relative" }}>
 
-                    <Row className="mt-4">
+                                            {topic}
+                                        </span>
+                                        {activeTab === topic && (
+                                            <div className="position-absolute bottom-0 start-50 translate-middle-x"
+                                                style={{
+                                                    width: "100%", height: "2px", backgroundColor: "black"
+                                                }}></div>
+                                        )}
 
-                        {contentPosts
-                            //.filter(post => post.tags && post.tags.length > 0 && ['article', 'video'].includes(post.type))
-                            .slice(0, visibleContentPosts)
-                            .map(post => (
-                                <Col md={12} key={post.id}>
-                                    <Card data-testid="blog-card" className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
-                                        <Row className="g-0">
-                                            <Col md={4}>
-                                                <Card.Img src={post.thumbnail} alt={post.title}
-                                                    className="img-fluid rounded-start"
-                                                    style={{ width: "100%", height: "200px", objectFit: "cover" }} />
-                                            </Col>
-                                            <Col md={8}>
-                                                <Card.Body>
-                                                    <Card.Title className="fw-bold">{post.title}</Card.Title>
-                                                    <Card.Text data-testid="blog-date" className="text-muted small">{post.postDate}</Card.Text>
+                                    </Nav.Item>
+                                ))}
+                            </Nav>
+                        </div>
 
-                                                    {post.tags.length > 0 ? (
-                                                        <div data-testid="blog-tags" className="tags mb-2">
-                                                            {post.tags.map((tagId, index) => (
-                                                                <span
-                                                                    key={index}
-                                                                    className="badge me-2"
-                                                                    style={{
-                                                                        backgroundColor: "#f6a5b8",
-                                                                        color: "white",
-                                                                        borderRadius: "50px"
-                                                                    }}
+                        {/* content */}
+
+                        <Row className="mt-4">
+
+                            {contentPosts
+                                //.filter(post => post.tags && post.tags.length > 0 && ['article', 'video'].includes(post.type))
+                                .slice(0, visibleContentPosts)
+                                .map(post => (
+                                    <Col md={12} key={post.id}>
+                                        <Card data-testid="blog-card" className="mb-4 border-0" style={{ borderRadius: "15px", transition: "transform 0.3s ease" }}>
+                                            <Row className="g-0">
+                                                <Col md={4}>
+                                                    <Card.Img src={post.thumbnail} alt={post.title}
+                                                        className="img-fluid rounded-start"
+                                                        style={{ width: "100%", height: "200px", objectFit: "cover" }} />
+                                                </Col>
+                                                <Col md={8}>
+                                                    <Card.Body>
+                                                        <Card.Title className="fw-bold">{post.title}</Card.Title>
+                                                        <Card.Text data-testid="blog-date" className="text-muted small">{post.postDate}</Card.Text>
+
+                                                        {post.tags.length > 0 ? (
+                                                            <div data-testid="blog-tags" className="tags mb-2">
+                                                                {post.tags.map((tagId, index) => (
+                                                                    <span
+                                                                        key={index}
+                                                                        className="badge me-2"
+                                                                        style={{
+                                                                            backgroundColor: "#f6a5b8",
+                                                                            color: "white",
+                                                                            borderRadius: "50px"
+                                                                        }}
+                                                                    >
+                                                                        {tagNames[tagId] || "Unknown Tag"}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        ) : (
+                                                            <div data-testid="blog-tags" className="tags mb-2">No tags available</div>
+                                                        )}
+
+                                                        <Card.Text>
+                                                            {/* display text depending on post type */}
+                                                            {post.type === "article" ? (
+                                                                <Link
+                                                                    to={`/content/${post.id}`}
+                                                                    className="stretched-link"
+                                                                    style={{ textDecoration: "none", color: "black" }}
                                                                 >
-                                                                    {tagNames[tagId] || "Unknown Tag"}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <div data-testid="blog-tags" className="tags mb-2">No tags available</div>
-                                                    )}
-
-                                                    <Card.Text>
-                                                        {/* display text depending on post type */}
-                                                        {post.type === "article" ? (
-                                                            <Link
-                                                                to={`/content/${post.id}`}
-                                                                className="stretched-link"
-                                                                style={{ textDecoration: "none", color: "black" }}
-                                                            >
-                                                                <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
-                                                            </Link>
-                                                        ) : post.type === "video" ? (
-                                                            <Link
-                                                                to={`/content/${post.id}`}
-                                                                className="stretched-link"
-                                                                style={{ textDecoration: "none" }}
-                                                            >
-                                                                <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
-                                                            </Link>
-                                                        ) : null}
-
-                                                        
-                                                    </Card.Text>
-                                                </Card.Body>
-                                            </Col>
-                                        </Row>
-                                    </Card>
-                                    <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
-                                </Col>
-
-                            ))}
-                    </Row>
-
-                    <div className="d-flex justify-content-between mt-4">
-                        <Button data-testid="prev-button" onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
-                            Prev
-                        </Button>
-                        <span data-testid="page">Page {currentPage}</span>
-                        <Button data-testid="next-button" onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
-                            Next
-                        </Button>
-
-                    </div>
-
-                </Col>
-            </Row>
-        </Container >
+                                                                    <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>Read article</span>
+                                                                </Link>
+                                                            ) : post.type === "video" ? (
+                                                                <Link
+                                                                    to={`/content/${post.id}`}
+                                                                    className="stretched-link"
+                                                                    style={{ textDecoration: "none" }}
+                                                                >
+                                                                    <span style={{ color: "#5c6bc0", fontWeight: "bold" }}>View video</span>
+                                                                </Link>
+                                                            ) : null}
 
 
+                                                        </Card.Text>
+                                                    </Card.Body>
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                        <hr style={{ borderStyle: "dashed", color: "#5c6bc0" }} />
+                                    </Col>
+
+                                ))}
+                        </Row>
+
+                        <div className="d-flex justify-content-between mt-4">
+                            <Button data-testid="prev-button" onClick={prevPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={currentPage === 1}>
+                                Prev
+                            </Button>
+                            <span data-testid="page">Page {currentPage}</span>
+                            <Button data-testid="next-button" onClick={nextPage} style={{ backgroundColor: "#5c6bc0", borderColor: "#5c6bc0", borderRadius: "50px" }} disabled={contentPosts.length < postsPerPage}>
+                                Next
+                            </Button>
+
+                        </div>
+
+                    </Col>
+                </Row>
+            </Container >
+
+        </>
     );
 
 };

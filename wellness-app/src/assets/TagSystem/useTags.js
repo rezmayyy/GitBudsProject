@@ -1,17 +1,40 @@
 import { useState, useEffect } from "react";
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot, writeBatch } from "firebase/firestore";
 import { db } from "../Firebase";
 
 
 /* fetch tags */
-
+const DEFAULT_TAGS = [
+    { name: "Business Advice" },
+    { name: "Healer Q&A" },
+    { name: "Insights" },
+    { name: "Marketing Tips" },
+    { name: "New Features" },
+    { name: "Personal Growth" },
+];
 
 export const useTags = () => {
     const [tags, setTags] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const checkAndSeedTags = async () => {
+        const tagsSnap = await getDocs(collection(db, "tags"));
+        if (tagsSnap.empty) {
+            console.log("Default tags initialized");
+            const batch = writeBatch(db); 
+            DEFAULT_TAGS.forEach(tag => {
+                const ref = doc(collection(db, "tags")); 
+                batch.set(ref, tag);
+            });
+            await batch.commit();
+        }
+    };
+
 
     useEffect(() => {
+
+        checkAndSeedTags();
+
         const listener = onSnapshot(collection(db, "tags"), (snapshot) => {
             const tagList = snapshot.docs.map(doc => ({
                 value: doc.id,
@@ -36,12 +59,12 @@ export const useTags = () => {
 
 
     const addTag = async (tagName) => {
-        if(!tagName.trim())
+        if (!tagName.trim())
             return;
 
 
         try {
-            await addDoc(collection(db, "tags"), {name: tagName.trim()})
+            await addDoc(collection(db, "tags"), { name: tagName.trim() })
         } catch (error) {
             console.error("Error adding a tag: ", error);
         }
@@ -49,14 +72,14 @@ export const useTags = () => {
 
 
     const editTag = async (tagId, newTagName) => {
-        if(!newTagName.trim())
+        if (!newTagName.trim())
             return;
 
 
         try {
             const tagDoc = doc(db, "tags", tagId);
             await updateDoc(tagDoc, { name: newTagName.trim() });
-            
+
             setTags(prevTags =>
                 prevTags.map(tag =>
                     tag.value === tagId ? { ...tag, label: newTagName.trim() } : tag
