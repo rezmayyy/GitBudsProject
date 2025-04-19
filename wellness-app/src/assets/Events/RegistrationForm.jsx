@@ -11,41 +11,41 @@ function RegistrationForm({ eventId, onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-      
+
         // Validation
         if (!firstName || !lastName) {
             setError("Both fields are required.");
             return;
         }
-      
+
         const user = auth.currentUser;
         if (!user) {
             setError("You must be logged in to register.");
             return;
         }
-      
+
         try {
             const eventRef = doc(db, "events", eventId);
             const eventDoc = await getDoc(eventRef);
-      
+
             if (eventDoc.exists()) {
                 const eventData = eventDoc.data();
                 const attendees = eventData.attendees || [];
                 const maxParticipants = eventData.maxParticipants;
-      
+
                 // Check if user is already registered
                 const alreadyRegistered = attendees.some((attendee) => attendee.uid === user.uid);
                 if (alreadyRegistered) {
                     setError("You are already registered for this event.");
                     return;
                 }
-      
+
                 // Check if registration limit has been reached
                 if (maxParticipants !== -1 && attendees.length >= maxParticipants) {
                     setError("Event has reached its participant limit.");
                     return;
                 }
-      
+
                 // Only update the 'attendees' array
                 await updateDoc(eventRef, {
                     attendees: arrayUnion({
@@ -55,7 +55,7 @@ function RegistrationForm({ eventId, onClose }) {
                         lastName,
                     }),
                 });
-      
+
                 // Set registered state to true
                 setIsRegistered(true); // Show confirmation message
             }
@@ -64,7 +64,7 @@ function RegistrationForm({ eventId, onClose }) {
             console.error("Registration error:", error);
         }
     };
-    
+
     const handleConfirmationClose = () => {
         onClose(); // Close modal
         window.location.reload(); // Refresh the page
@@ -82,17 +82,20 @@ function RegistrationForm({ eventId, onClose }) {
                 ) : (
                     <form onSubmit={handleSubmit}>
                         <div>
-                            <label>First Name</label>
+                            <label htmlFor="firstName">First Name</label>
                             <input
+                                id="firstName"
                                 type="text"
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 maxLength={20}
                             />
+
                         </div>
                         <div>
-                            <label>Last Name</label>
+                            <label htmlFor="lastName">Last Name</label>
                             <input
+                                id="lastName"
                                 type="text"
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}

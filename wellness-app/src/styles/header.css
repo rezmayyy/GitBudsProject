@@ -17,7 +17,7 @@
 Header {
     background: linear-gradient(90deg, #FFFFFF 0%, #FFECFF 5%, #FFECFF 20%, #FFFFFF 100%);
     color: white;
-    padding: 0.75rem 5rem;
+    padding: 0.75rem 1rem;
     width: 100%;
     box-sizing: border-box;
     position: fixed;
@@ -40,6 +40,7 @@ Header {
 }
 
 .center-section {
+    max-width: 500px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -115,7 +116,7 @@ a.brand-title:focus {
 }
 
 .nav-links li {
-    margin: 0 0.75rem;
+    margin: 0 0.5rem;
     position: relative;
 }
 

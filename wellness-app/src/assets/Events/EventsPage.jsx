@@ -219,7 +219,7 @@ function EventsPage() {
                 ) : (
                     <ul className="events-list">
                         {displayedEvents.map(event => (
-                            <li key={event.id} className="event-card mt-3">
+                            <li key={event.id} className="event-card mx-3">
                                 <img
                                     className="event-thumbnail"
                                     src={event.thumbnail}
@@ -233,7 +233,8 @@ function EventsPage() {
                                         <p className="event-date">{event.date instanceof Date ? event.date.toLocaleDateString() : "Invalid Date"} ~ {event.localTime} {event.endTime ? ` to ${event.endTimeFormatted}` : ""}</p>
                                         <p className="event-description">{/*{truncateText(*/}{event.description}{/*}, 100)}*/}</p>
                                         <p className="event-location"><strong>Location:</strong> {event.location}</p>
-                                        <button className="event-details-button" onClick={() => navigate(`/events/${event.id}`)}>
+                                        <button className="event-details-button" onClick={() => navigate(`/events/${event.id}`)}
+                                            style={{ marginBottom: '40px' }}>
                                             Register Now
                                         </button>
                                     </div>
