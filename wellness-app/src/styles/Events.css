@@ -352,7 +352,8 @@ button:hover {
     list-style: none;
     padding: 0;
     width: 1040px;
-    height: 1600px;
+    max-height: 1600px;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 40px;
@@ -373,6 +374,7 @@ button:hover {
     background-color: #ffffff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     padding: 16px;
+    overflow: visible;
 }
 
 .event-item:hover {

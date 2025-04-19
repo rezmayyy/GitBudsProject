@@ -44,6 +44,7 @@ function HealerApplicationForm() {
         setSubmitting(true);
 
         try {
+            // Step 1: Check if the user is already an approved healer
             const healersRef = collection(db, 'healers');
             const healerQuery = query(healersRef, where('userId', '==', user.uid));
             const healerSnapshot = await getDocs(healerQuery);
@@ -54,24 +55,36 @@ function HealerApplicationForm() {
                 return;
             }
 
+            // Step 2: Check for existing applications that are NOT rejected
             const applicationsRef = collection(db, 'healerApplications');
-            const applicationQuery = query(applicationsRef, where('userId', '==', user.uid));
+            const applicationQuery = query(
+                applicationsRef,
+                where('userId', '==', user.uid)
+            );
             const applicationSnapshot = await getDocs(applicationQuery);
 
+            // Check the application status
             if (!applicationSnapshot.empty) {
-                alert('You have already submitted an application. Please wait for approval.');
-                setSubmitting(false);
-                return;
+                const applicationData = applicationSnapshot.docs[0].data(); // Assuming one application per user
+                if (applicationData.status !== "rejected") {
+                    alert('You have already submitted an application. Please wait for approval.');
+                    setSubmitting(false);
+                    return;
+                }
             }
 
+            // Step 3: Create a new application with status "pending"
             const healerApplication = {
                 ...formData,
                 userId: user.uid,
-                createdAt: Timestamp.now()
+                createdAt: Timestamp.now(),
+                status: "pending", // Application starts as pending
+                displayName: user.displayName
             };
 
             await addDoc(collection(db, 'healerApplications'), healerApplication);
 
+            // Reset form and notify user
             setFormData({ firstName: '', lastName: '', title: '', location: '', healingTags: [] });
             alert('Application submitted successfully!');
         } catch (error) {

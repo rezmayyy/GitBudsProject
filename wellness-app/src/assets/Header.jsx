@@ -143,7 +143,7 @@ function Header() {
                   to="/discussion"
                   className={({ isActive }) => (isActive ? 'active-tab' : '')}
                 >
-                  Discussion Board
+                  Discussion
                 </NavLink>
               </li>
               <li>

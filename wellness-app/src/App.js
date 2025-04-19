@@ -40,6 +40,7 @@ import Verify from './assets/Verify/Verify';
 import TicketPage from "./assets/Ticket/TicketPage";
 import Membership from './assets/Membership/Membership';
 import Following from './assets/Home/Following';
+import ScrollToTop from './Utils/ScrollToTop';
 
 function App() {
   // Manages posts and replies
@@ -50,6 +51,7 @@ function App() {
     <div className="App">
       <UserProvider>
         <Router>
+          <ScrollToTop />
           <Header />
           <Elements stripe={stripePromise}>
             <Routes>
