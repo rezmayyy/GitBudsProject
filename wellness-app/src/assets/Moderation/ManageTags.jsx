@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, query, where } from 'firebase/firestore';
-import { db } from '../Firebase';
+import { auth, db } from '../Firebase';
+import { getFunctions, httpsCallable } from "firebase/functions";
 import styles from '../../styles/ModDashboard.module.css';
 import { useTags } from "../TagSystem/useTags";
+import { onAuthStateChanged } from "firebase/auth";
 
 
 const ManageTags = () => {
@@ -13,20 +15,29 @@ const ManageTags = () => {
     const [editValue, setEditValue] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [initialTags, setInitialTags] = useState(initialNumTags);
-    const [displayedTags, setDisplayedTags] = useState("");
-    
+    //const [displayedTags, setDisplayedTags] = useState("");
+
 
 
     const filteredTags = tags.filter(tag => tag.label.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    useEffect(() => {
-        setDisplayedTags(filteredTags.slice(0, initialTags));
-    }, [filteredTags, initialTags]);
+    const displayedTags = filteredTags.slice(0, initialTags);
 
     const handleAddTag = () => {
         if (newTag.trim() !== "") {
             addTag(newTag.trim());
             setNewTag("");
+        }
+    };
+
+    const handleSeedTags = async () => {
+        try {
+            const functions = getFunctions();
+            const seedTags = httpsCallable(functions, "seedDefaultTags");
+            const result = await seedTags();
+            console.log("Seeding result:", result.data.status);
+        } catch (error) {
+            console.error("Error seeding tags:", error);
         }
     };
 
@@ -40,6 +51,12 @@ const ManageTags = () => {
         <div className={styles.manageModuleContainer}>
             <h2>Manage Tags</h2>
 
+            <div className="topRightContainer">
+                <button onClick={handleSeedTags}>
+                    Seed Default Tags
+                </button>
+            </div>
+
             <input
                 type="text"
                 value={newTag}
@@ -48,8 +65,8 @@ const ManageTags = () => {
                 className={styles.searchInput}
             />
             <button className={styles.button} onClick={handleAddTag}>Add Tag</button>
-            
-            
+
+
 
             <input
                 type="text"
@@ -72,7 +89,7 @@ const ManageTags = () => {
                                             type="text"
                                             value={editValue}
                                             onChange={(e) => setEditValue(e.target.value)}
-                                            
+
                                         />
                                         <button className={styles.button} onClick={() => { editTag(tag.value, editValue); setEditMode(null); }} >Save</button>
                                         <button className={styles.button} onClick={() => setEditMode(null)}>Cancel</button>
@@ -97,7 +114,10 @@ const ManageTags = () => {
                     Load More
                 </button>
             )}
+
             
+
+
         </div>
     );
 

@@ -1,6 +1,7 @@
 // miscFunctions.js
 const { functions, admin, db, Timestamp } = require("./common");
 
+
 // Apply for Healer
 exports.applyForHealer = functions.https.onCall(async (data, context) => {
     const authInfo = context.auth || data.auth;
@@ -17,6 +18,7 @@ exports.applyForHealer = functions.https.onCall(async (data, context) => {
     });
     return { id: ref.id };
 });
+
 
 // Report User
 exports.reportUser = functions.https.onCall(async (data, context) => {
@@ -35,4 +37,51 @@ exports.reportUser = functions.https.onCall(async (data, context) => {
     };
     const ref = await db.collection("tickets").add(ticket);
     return { ticketId: ref.id };
+});
+
+
+// Seed Default Tags
+exports.seedDefaultTags = functions.https.onCall(async (data, context) => {
+    const authInfo = context.auth || data.auth;
+    if (!authInfo)
+        throw new functions.https.HttpsError("unauthenticated", "Login required");
+
+
+    //admin check
+    const user = await admin.auth().getUser(authInfo.uid);
+    const displayName = user.displayName;
+
+    // Pull from Firestore
+    const userDoc = await db.collection("usernames").doc(displayName).get();
+
+    if (!userDoc.exists || userDoc.data().role !== "admin") {
+        throw new functions.https.HttpsError("permission-denied", "Admin privileges required.");
+    }
+
+    const DEFAULT_TAGS = [
+        { name: "Business Advice" },
+        { name: "Healer Q&A" },
+        { name: "Insights" },
+        { name: "Marketing Tips" },
+        { name: "New Features" },
+        { name: "Personal Growth" },
+    ];
+
+
+    const tagsRef = db.collection("tags"); //COLLECTION
+    const existing = await tagsRef.limit(1).get();
+    if (!existing.empty) {
+        return { status: "tags_exist" };
+    }
+
+
+    const batch = db.batch();
+    DEFAULT_TAGS.forEach(tag => {
+        const docRef = tagsRef.doc();
+        batch.set(docRef, tag);
+    });
+
+
+    await batch.commit();
+    return { status: "default_tags_seeded" };
 });
