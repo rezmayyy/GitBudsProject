@@ -154,41 +154,76 @@ const Profile = () => {
     }
   };
 
-  // Updated handleSave that uses the /temp/{userId} pattern and calls changeProfilePic function
   const handleSave = async () => {
     try {
-      const docRef = doc(db, 'users', user.uid);
+      console.log("=== Starting handleSave function ===");
+      console.log("User ID:", user.uid);
+
+      // Skip updating the profile data for now and focus only on the profile picture
+      // The Firestore permissions error is happening at this step:
+      // const docRef = doc(db, 'users', user.uid);
+      // await setDoc(docRef, profileData, { merge: true });
 
       if (profilePictureFile) {
-        const isValid = await validateFile(profilePictureFile, "image");
+        setMessage('Uploading profile picture...');
+        console.log("Starting profile picture upload process");
+        console.log("Profile picture file:", profilePictureFile.name, profilePictureFile.type);
+
+        // Make sure the filename is clean (no spaces or special characters)
+        const safeFileName = profilePictureFile.name.replace(/[^a-zA-Z0-9.]/g, '_');
+        console.log("Safe file name:", safeFileName);
+
+        // Create new file with clean name if needed
+        let fileToUpload = profilePictureFile;
+        if (safeFileName !== profilePictureFile.name) {
+          console.log("Creating new file with safe name");
+          fileToUpload = new File([profilePictureFile], safeFileName, { type: profilePictureFile.type });
+        }
+
+        // Validate file
+        console.log("Validating file...");
+        const isValid = await validateFile(fileToUpload, "image");
         if (!isValid) {
-          alert("Invalid profile picture file.");
+          setMessage("Invalid profile picture file.");
           return;
         }
-        // Upload the new file to the temporary folder.
+
+        // Upload to Firebase Storage
         const tempFolder = `temp/${user.uid}`;
-        // Note: uploadFileToStorage from your client utils returns the download URL,
-        // but here we need the storage path. Since you know the file name, we can build it.
-        await uploadFileToStorage(profilePictureFile, tempFolder);
-        const tempFilePath = `${tempFolder}/${profilePictureFile.name}`;
+        console.log(`Uploading to temp folder: ${tempFolder}`);
 
-        // Call the Cloud Function to change the profile picture.
-        const changeProfilePic = httpsCallable(functions, 'changeProfilePic');
-        const result = await changeProfilePic({ filePath: tempFilePath });
-        const profilePicUrl = result.data.profilePicUrl;
+        try {
+          const storagePath = await uploadFileToStorage(fileToUpload, tempFolder);
+          console.log("File uploaded to storage path:", storagePath);
 
-        // Update the user's document with the new profilePicUrl.
-        await setDoc(docRef, { profilePicUrl }, { merge: true });
-        setProfileData(prev => ({ ...prev, profilePicUrl }));
+          // Call the Cloud Function
+          console.log("Calling changeProfilePic cloud function with path:", storagePath);
+          const changeProfilePic = httpsCallable(functions, 'changeProfilePic');
+          const result = await changeProfilePic({ filePath: storagePath });
+          console.log("Cloud function result:", result.data);
+
+          // Update state with the new URL
+          const profilePicUrl = result.data.profilePicUrl;
+          console.log("New profile pic URL:", profilePicUrl);
+
+          setProfileData(prev => ({ ...prev, profilePicUrl }));
+          setProfilePicturePreview(profilePicUrl);
+          setProfilePictureFile(null);
+          setMessage('Profile picture updated successfully!');
+        } catch (error) {
+          console.error("Error in profile picture upload or processing:", error);
+          setMessage(`Profile picture error: ${error.message || error.toString()}`);
+        }
+      } else {
+        setMessage('No profile picture selected to update.');
       }
-
-      setMessage('Profile updated successfully!');
-      setTimeout(() => window.location.reload(), 500);
     } catch (error) {
-      console.error('Error updating profile:', error);
-      setMessage('Failed to update profile. Try again later.');
+      console.error('Error in handleSave:', error);
+      setMessage(`Error: ${error.message || error.toString()}`);
     }
   };
+
+
 
   // 7. Subscription Handling
   const handleSubscribe = async () => {
