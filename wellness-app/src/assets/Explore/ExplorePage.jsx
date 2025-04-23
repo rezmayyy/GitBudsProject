@@ -67,7 +67,7 @@ function ScrollNavigation({ toggleCalendar }) {
             <li><a href="#audios" onClick={(e) => handleScroll(e, 'audios')}>Audios</a></li>
             <li><a href="#texts" onClick={(e) => handleScroll(e, 'texts')}>Articles</a></li>
            {/* <li><button onClick={toggleCalendar}>Calendar</button></li> */}  {/*Ill comment out my hardwork on the calendar for now */}
-            <li><Link to="/events"><button>Events</button></Link></li>
+            <li><Link to="/events">Events</Link></li>
         </ul>
     );
 }
