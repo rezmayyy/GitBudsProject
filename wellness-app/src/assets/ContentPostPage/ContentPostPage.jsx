@@ -1,131 +1,149 @@
-import { useParams, Link } from 'react-router-dom';
-import { doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, increment, setDoc, deleteDoc } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
+// ContentPostPage.jsx
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    serverTimestamp,
+    collection,
+    getDocs,
+    increment,
+    setDoc,
+    deleteDoc
+} from 'firebase/firestore';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from '../Firebase';
-import { format } from "date-fns";
-import { useTags } from "../TagSystem/useTags";
+import { format } from 'date-fns';
+import DOMPurify from 'dompurify';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import 'react-quill/dist/quill.snow.css';
-import DOMPurify from 'dompurify';
+
 import CommentsSection from './CommentsSection';
 import ReportButton from '../ReportButton/Report';
-import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
-import ReactQuill from 'react-quill';
 import TagSelector from '../TagSystem/TagSelector';
-import styles from './ContentPostPage.module.css';
+import { validateFile, uploadFileToStorage } from '../../Utils/fileUtils';
+import { getUserById } from '../../Utils/firebaseUtils';
 import ContentDisplayView from './ContentDisplayView';
 import ContentEditForm from './ContentEditForm';
+import styles from './ContentPostPage.module.css';
 
 const ContentPostPage = () => {
     const { postId } = useParams();
     const auth = getAuth();
-    const currentUser = auth.currentUser;
 
+    // — wait for auth to initialize —
+    const [authChecked, setAuthChecked] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+            setCurrentUser(user);
+            setAuthChecked(true);
+        });
+        return unsubscribe;
+    }, [auth]);
+
+    // — page state —
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [authorName, setAuthorName] = useState('[Deleted]');
-    const [interactionCount, setInteractionCount] = useState(0);
+    const [error, setError] = useState(null);
+    const [isAuthorized, setIsAuthorized] = useState(false);
 
-    // Editing state (for title, description, body)
+    // editing
     const [isEditing, setIsEditing] = useState('');
     const [editedTitle, setEditedTitle] = useState('');
     const [editedDescription, setEditedDescription] = useState('');
     const [editedBody, setEditedBody] = useState('');
 
-    // Tag-related state
+    // tags
     const [tags, setTags] = useState([]);
     const [tagNames, setTagNames] = useState({});
 
-    // Interaction state for views
+    // interactions / counters
     const [views, setViews] = useState(0);
+    const [interactionCount, setInteractionCount] = useState(0);
 
-    // For showing messages and errors
-    const [showMessage, setShowMessage] = useState(false);
+    // messages
     const [message, setMessage] = useState('');
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [error, setError] = useState(null);
+    const [showMessage, setShowMessage] = useState(false);
 
-    // Helper function to format timestamps safely.
+    // format timestamp helper
     const formatTimestamp = (ts, fmt = 'PP p') => {
         if (!ts) return 'Unknown Date';
-        let dateObj;
-        if (typeof ts.toDate === 'function') {
-            dateObj = ts.toDate();
-        } else {
-            dateObj = new Date(ts);
-        }
+        const dateObj = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
         return isNaN(dateObj) ? 'Invalid Date' : format(dateObj, fmt);
     };
 
-    const fetchAuthorName = async (userId) => {
-        const userSnap = await getDoc(doc(db, 'users', userId));
-        return userSnap.exists() ? userSnap.data().displayName : '[Deleted]';
+    // fetch displayName for a userId
+    const fetchAuthorName = async uid => {
+        const snap = await getDoc(doc(db, 'users', uid));
+        return snap.exists() ? snap.data().displayName : '[Deleted]';
     };
 
+    // — MAIN DATA FETCH: only after authChecked —
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
+        if (!authChecked) return;
+        setLoading(true);
+
+        (async () => {
             try {
-                // Fetch tags from 'tags' collection and build a mapping (id -> name)
-                const tagsCollection = await getDocs(collection(db, 'tags'));
-                const tagsMap = {};
-                tagsCollection.forEach(tagDoc => {
-                    const tagData = tagDoc.data();
-                    tagsMap[tagDoc.id] = tagData.name;
-                });
-                setTagNames(tagsMap);
+                // load all tags
+                const tagSnap = await getDocs(collection(db, 'tags'));
+                const names = {};
+                tagSnap.forEach(d => (names[d.id] = d.data().name));
+                setTagNames(names);
 
-                // Fetch the post document
+                // load post document
                 const postRef = doc(db, 'content-posts', postId);
-                const postSnapshot = await getDoc(postRef);
+                const postSnap = await getDoc(postRef);
+                if (!postSnap.exists()) {
+                    setError('Post not found.');
+                    setLoading(false);
+                    return;
+                }
+                const data = { id: postId, ...postSnap.data() };
 
-                if (postSnapshot.exists()) {
-                    const postData = { id: postId, ...postSnapshot.data() };
+                // resolve authorName
+                let authorName = '[Deleted]';
+                if (data.userId) {
+                    authorName = await fetchAuthorName(data.userId);
+                } else if (data.author) {
+                    authorName = data.author;
+                }
 
-                    // Determine author name from users collection
-                    let fetchedAuthorName;
-                    if (postData.userId) {
-                        fetchedAuthorName = await fetchAuthorName(postData.userId);
-                    } else if (postData.author) {
-                        fetchedAuthorName = postData.author;
-                    } else {
-                        fetchedAuthorName = '[Deleted]';
-                    }
+                setPost({ ...data, authorName });
+                setEditedTitle(data.title || '');
+                setEditedDescription(data.description || '');
+                setEditedBody(data.body || '');
+                setViews(data.views || 0);
 
-                    setPost({ ...postData, authorName: fetchedAuthorName });
-                    setEditedTitle(postData.title || "");
-                    setEditedDescription(postData.description || "");
-                    setEditedBody(postData.body || "");
-                    setViews(postData.views || 0);
+                // prep tags for selector
+                const initialTags = (data.tags || []).map(id => ({
+                    value: id,
+                    label: names[id] || id
+                }));
+                setTags(initialTags);
 
-                    // Process tags for the post: convert tag IDs to { value, label }
-                    const postTags = postData.tags || [];
-                    const tagObjects = postTags.map((tagId) => ({
-                        value: tagId,
-                        label: tagsMap[tagId] || tagId
-                    }));
-                    setTags(tagObjects);
+                // check authorization
+                const isAdminOrMod = async () => {
+                    if (!currentUser) return false;
+                    const uSnap = await getDoc(doc(db, 'users', currentUser.uid));
+                    const role = uSnap.exists() ? uSnap.data().role : '';
+                    return role === 'admin' || role === 'moderator';
+                };
 
-                    // Check authorization: if post status is approved or user is admin/moderator or author.
-                    if (postData.status === 'approved') {
-                        setIsAuthorized(true);
-                    } else if (currentUser) {
-                        const userRef = doc(db, 'users', currentUser.uid);
-                        const userSnap = await getDoc(userRef);
-                        if (userSnap.exists()) {
-                            const role = userSnap.data().role;
-                            const adminOrMod = role === 'admin' || role === 'moderator';
-                            if (postData.status === 'approved' || adminOrMod || currentUser.uid === postData.userId) {
-                                setIsAuthorized(true);
-                            } else {
-                                setError('You do not have permission to view this post.');
-                            }
-                        }
-                    }
+                if (data.status === 'approved') {
+                    setIsAuthorized(true);
+                } else if (
+                    currentUser &&
+                    (await isAdminOrMod()) ||
+                    currentUser?.uid === data.userId
+                ) {
+                    setIsAuthorized(true);
                 } else {
-                    setError('Post does not exist.');
+                    setError('You do not have permission to view this post.');
                 }
 
                 setLoading(false);
@@ -134,113 +152,47 @@ const ContentPostPage = () => {
                 setError('Failed to fetch data.');
                 setLoading(false);
             }
-        };
+        })();
 
-        fetchData();
-
-        // Check if the post has already been viewed in this session to update view count.
+        // bump view count once per session
         const viewedKey = `viewed_${postId}`;
         if (!sessionStorage.getItem(viewedKey)) {
             handleInteraction('view');
         }
-    }, [postId, currentUser]);
+    }, [authChecked, postId, currentUser]);
 
+    // — tag save handler —
     const handleSaveTags = async () => {
         if (!post) return;
-        const postRef = doc(db, "content-posts", post.id);
-        const tagIds = tags.map(tag => tag.value);
-
+        const postRef = doc(db, 'content-posts', post.id);
+        const tagIds = tags.map(t => t.value);
         await updateDoc(postRef, { tags: tagIds, lastUpdated: serverTimestamp() });
-        setPost((prev) => ({
-            ...prev,
-            tags: tagIds
-        }));
+        setPost(prev => ({ ...prev, tags: tagIds }));
         setIsEditing('');
     };
 
-    const handleEditTags = () => {
-        if (isEditing !== "tags") {
-            setIsEditing("tags");
-        }
-    };
-
-    const selectedTagNames = tags.map(tag => tag.label);
-
-    // Updated interaction handler using subcollections for likes/dislikes.
-    const handleInteraction = async (type) => {
-        if (type === 'view') {
-            const viewedKey = `viewed_${postId}`;
-            const lastViewedTime = localStorage.getItem(viewedKey);
-            const now = new Date().getTime();
-            if (!lastViewedTime || (now - lastViewedTime) > 24 * 60 * 60 * 1000) {
-                localStorage.setItem(viewedKey, now);
-                const postRef = doc(db, 'content-posts', postId);
-                await updateDoc(postRef, { views: increment(1) });
-                const updatedPostSnap = await getDoc(postRef);
-                if (updatedPostSnap.exists()) {
-                    setViews(updatedPostSnap.data().views || 0);
-                }
-            }
-            return;
-        }
-        if (!currentUser) {
-            setMessage('You must be logged in.');
-            return;
-        }
-        if (type === 'like') {
-            const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
-            const likeSnap = await getDoc(likeRef);
-            if (likeSnap.exists()) {
-                await deleteDoc(likeRef);
-            } else {
-                await setDoc(likeRef, {}); // No timestamp needed.
-                const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
-                const dislikeSnap = await getDoc(dislikeRef);
-                if (dislikeSnap.exists()) {
-                    await deleteDoc(dislikeRef);
-                }
-            }
-        } else if (type === 'dislike') {
-            const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
-            const dislikeSnap = await getDoc(dislikeRef);
-            if (dislikeSnap.exists()) {
-                await deleteDoc(dislikeRef);
-            } else {
-                await setDoc(dislikeRef, {}); // No timestamp needed.
-                const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
-                const likeSnap = await getDoc(likeRef);
-                if (likeSnap.exists()) {
-                    await deleteDoc(likeRef);
-                }
-            }
-        }
-        // Increment the counter so ContentDisplayView re-fetches the counts.
-        setInteractionCount(prev => prev + 1);
-    };
-
+    // — full save handler —
     const handleSave = async () => {
         if (!post) return;
-
-        const postRef = doc(db, 'content-posts', postId);
-        const updatedData = {
+        const postRef = doc(db, 'content-posts', post.id);
+        const updated = {
             title: editedTitle,
             description: editedDescription,
             body: editedBody,
             tags: tags.map(t => t.value),
-            lastUpdated: serverTimestamp(),
+            lastUpdated: serverTimestamp()
         };
-
-        await updateDoc(postRef, updatedData);
-        setPost({ ...post, ...updatedData });
+        await updateDoc(postRef, updated);
+        setPost(prev => ({ ...prev, ...updated }));
         setIsEditing('');
     };
 
+    // — Quill image upload —
     const handleQuillImageUpload = () => {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/jpeg,image/png,image/bmp";
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/png,image/jpeg,image/bmp';
         input.click();
-
         input.onchange = async () => {
             const file = input.files[0];
             if (!(await validateFile(file, 'image'))) return;
@@ -249,6 +201,7 @@ const ContentPostPage = () => {
         };
     };
 
+    // Quill modules
     const quillModules = {
         toolbar: [
             [{ header: [3, 4, 5, 6, false] }],
@@ -256,26 +209,70 @@ const ContentPostPage = () => {
             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
             [{ color: [] }, { background: [] }, { align: [] }],
             ['link', 'image'],
-            ['clean'],
-        ],
+            ['clean']
+        ]
     };
 
-    if (loading) return <div>Loading...</div>;
+    // — interaction handler (views, like/dislike) —
+    const handleInteraction = async type => {
+        if (type === 'view') {
+            const key = `viewed_${postId}`;
+            const last = localStorage.getItem(key);
+            const now = Date.now();
+            if (!last || now - last > 24 * 60 * 60 * 1000) {
+                localStorage.setItem(key, now);
+                const ref = doc(db, 'content-posts', postId);
+                await updateDoc(ref, { views: increment(1) });
+                const snap = await getDoc(ref);
+                setViews(snap.exists() ? snap.data().views : views);
+            }
+            return;
+        }
+
+        if (!currentUser) {
+            setMessage('You must be logged in.');
+            setShowMessage(true);
+            return;
+        }
+
+        const likeRef = doc(db, 'content-posts', postId, 'likes', currentUser.uid);
+        const dislikeRef = doc(db, 'content-posts', postId, 'dislikes', currentUser.uid);
+        if (type === 'like') {
+            const likeSnap = await getDoc(likeRef);
+            if (likeSnap.exists()) {
+                await deleteDoc(likeRef);
+            } else {
+                await setDoc(likeRef, {});
+                const dSnap = await getDoc(dislikeRef);
+                if (dSnap.exists()) await deleteDoc(dislikeRef);
+            }
+        } else if (type === 'dislike') {
+            const disSnap = await getDoc(dislikeRef);
+            if (disSnap.exists()) {
+                await deleteDoc(dislikeRef);
+            } else {
+                await setDoc(dislikeRef, {});
+                const lSnap = await getDoc(likeRef);
+                if (lSnap.exists()) await deleteDoc(likeRef);
+            }
+        }
+
+        setInteractionCount(c => c + 1);
+    };
+
+    if (!authChecked || loading) return <div>Loading…</div>;
     if (error) return <div>{error}</div>;
     if (!post) return <div>Post not found</div>;
 
-    const formattedDate = post.timestamp ? formatTimestamp(post.timestamp, 'PP p') : 'Unknown Date';
-    let formattedLastUpdated = "Never updated";
-
-    if (post.lastUpdated) {
-        formattedLastUpdated = formatTimestamp(post.lastUpdated, 'PP p');
-    }
+    const formattedDate = post.timestamp
+        ? formatTimestamp(post.timestamp)
+        : 'Unknown Date';
 
     const canEdit = currentUser?.uid === post.userId;
 
     return (
         <div className={styles.pageContainer}>
-            {isEditing === "content" ? (
+            {isEditing === 'content' ? (
                 <ContentEditForm
                     type={post.type}
                     title={editedTitle}
@@ -288,18 +285,21 @@ const ContentPostPage = () => {
                     onChangeTags={setTags}
                     onSave={handleSave}
                     onCancel={() => setIsEditing('')}
+                    modules={quillModules}
+                    onImageUpload={handleQuillImageUpload}
                 />
             ) : (
                 <ContentDisplayView
                     post={post}
                     canEdit={canEdit}
-                    onEdit={() => setIsEditing("content")}
+                    onEdit={() => setIsEditing('content')}
                     handleInteraction={handleInteraction}
                     formattedDate={formattedDate}
-                    selectedTagNames={selectedTagNames}
+                    selectedTagNames={tags.map(t => t.label)}
                     interactionCount={interactionCount}
                 />
             )}
+
             <CommentsSection postId={post.id} currentUser={currentUser} />
         </div>
     );
