@@ -31,26 +31,17 @@ header {
 .header-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
-}
-
-.center-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    margin: 0 1rem;
-    justify-content: center;
 }
 
 /* Logo and Brand */
 .brand-container {
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    flex: 0 0 auto;
+    width: 220px;
     margin-right: 1rem;
     z-index: 2;
 }
@@ -88,6 +79,58 @@ a.brand-title:active,
 a.brand-title:focus {
     color: white !important;
     text-decoration: none !important;
+}
+
+/* Center Section - Contains search and navigation */
+.center-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    margin: 0 auto;
+    justify-content: center;
+}
+
+/* Search */
+.search-container {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.search-bar {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    box-shadow: 0 5px 6px rgba(0, 0, 0, 0.15);
+    background-color: rgba(255, 255, 255, 0.85);
+    color: #333;
+}
+
+.search-bar:focus {
+    outline: none;
+    border-color: #5954A6;
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.search-bar::placeholder {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+/* More rounded search bar */
+.rounded-search {
+    border-radius: 20px;
+    transition: all 0.2s ease-in-out;
+}
+
+.rounded-search:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 /* Navigation */
@@ -132,47 +175,28 @@ a.brand-title:focus {
     border-radius: 5px;
 }
 
-/* Search */
-.search-container {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: center;
-}
-
-.search-bar {
-    width: 100%;
-    padding: 0.65rem 1rem;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+/* Default tab styles */
+.nav-links li a {
     font-family: 'Poppins', sans-serif;
-    font-size: 0.9rem;
-    box-shadow: 0 5px 6px rgba(0, 0, 0, 0.15);
-    background-color: rgba(255, 255, 255, 0.85);
-    color: #333;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 100%;
+    letter-spacing: 0px;
+    text-decoration: none;
+    padding: 10px 15px;
+    display: inline-block;
 }
 
-.search-bar:focus {
-    outline: none;
-    border-color: #5954A6;
-    background-color: rgba(255, 255, 255, 1);
-}
-
-.search-bar::placeholder {
-    color: rgba(0, 0, 0, 0.6);
-}
-
-
-/* More rounded search bar */
-.rounded-search {
-    border-radius: 20px;
-    transition: all 0.2s ease-in-out;
-}
-
-.rounded-search:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+/* Active tab styles */
+.nav-links li a.active-tab {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 100%;
+    letter-spacing: 0px;
+    background-color: transparent;
+    color: white;
+    border-bottom: 2px solid #5954A6;
 }
 
 /* Auth and Profile */
@@ -182,6 +206,8 @@ a.brand-title:focus {
     justify-content: flex-end;
     position: relative;
     z-index: 102;
+    flex: 0 0 auto;
+    width: 220px;
 }
 
 .auth-buttons {
@@ -248,30 +274,6 @@ body {
     padding-top: 130px;
 }
 
-/* Default tab styles */
-.nav-links li a {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 400;
-    font-size: 14px;
-    line-height: 100%;
-    letter-spacing: 0px;
-    text-decoration: none;
-    padding: 10px 15px;
-    display: inline-block;
-}
-
-/* Active tab styles */
-.nav-links li a.active-tab {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 100%;
-    letter-spacing: 0px;
-    background-color: transparent;
-    color: white;
-    border-bottom: 2px solid #5954A6;
-}
-
 /* Responsive Styles */
 @media (max-width: 1200px) {
     header {
@@ -286,8 +288,9 @@ body {
         padding: 0.6rem 1rem;
     }
 
-    .center-section {
-        margin: 0 0.75rem;
+    .brand-container,
+    .right-section {
+        width: 200px;
     }
 }
 
@@ -305,14 +308,9 @@ body {
         padding: 8px 12px;
     }
 
-    .brand-container {
-        min-width: auto;
-        flex: 0 0 auto;
-    }
-
+    .brand-container,
     .right-section {
-        min-width: auto;
-        flex: 0 0 auto;
+        width: 180px;
     }
 
     .search-container {
@@ -355,9 +353,13 @@ body {
         max-width: none;
     }
 
+    .brand-container,
+    .right-section {
+        width: auto;
+    }
+
     .brand-container {
         margin-right: 0.5rem;
-        flex-shrink: 1;
     }
 
     body {
@@ -377,6 +379,7 @@ body {
     .brand-container {
         flex: 0 0 auto;
         min-width: 0;
+        width: auto;
     }
 
     .site-title {
@@ -396,6 +399,7 @@ body {
 
     .right-section {
         flex: 0 0 auto;
+        width: auto;
     }
 
     /* Keep both auth buttons visible */
