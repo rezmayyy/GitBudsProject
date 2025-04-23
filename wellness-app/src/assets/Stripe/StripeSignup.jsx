@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from "firebase/functions";
 import { getAuth } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
+import styles from '../../styles/profile.module.css';
 
 
 
@@ -62,7 +63,7 @@ const StripeSignup = () => {
       <button
         onClick={createStripeAccount}
         disabled={loading}
-        className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-400"
+        className={styles.editButton}
       >
         {loading ? "Redirecting..." : "Setup Stripe Account"}
       </button>
