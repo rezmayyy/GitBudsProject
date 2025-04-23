@@ -157,7 +157,6 @@ function TicketList({ onCreateTicket }) {
                         </>
                     ) : (
                         <div className={styles.category}>
-                            <h3>Your Tickets</h3>
                             {currentTickets.length === 0 ? (
                                 <p>No tickets available.</p>
                             ) : (
