@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '../Logo.png';
+import logo from '../TribeWellLogo.png';
 import { getUserIdByDisplayName } from '../../Utils/firebaseUtils';
 
 function ContentSection({ id, title, content }) {
@@ -24,15 +24,16 @@ function ContentSection({ id, title, content }) {
             <div className="content-list">
                 {content.map(item => {
                     const uid = userIds[item.author];
-                    return(
-                    <div key={item.id} className="content-item">
-                        <Link to={`/content/${item.id}`}>
-                            <img src={item.thumbnailURL || logo} alt={item.title} />
-                            <h3>{item.title}</h3>
-                            <div><Link to={`/profile/${item.author}`}>{item.author}</Link></div>
-                        </Link>
-                    </div>
-);})} 
+                    return (
+                        <div key={item.id} className="content-item">
+                            <Link to={`/content/${item.id}`}>
+                                <img src={item.thumbnailURL || logo} alt={item.title} />
+                                <h3>{item.title}</h3>
+                                <div><Link to={`/profile/${item.author}`}>{item.author}</Link></div>
+                            </Link>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

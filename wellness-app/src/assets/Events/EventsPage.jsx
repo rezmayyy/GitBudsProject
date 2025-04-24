@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { collection, query, orderBy, where, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "../Firebase";
 import { Container, Row, Col } from 'react-bootstrap';
-import logo from '../Logo.png';
+import logo from '../TribeWellLogo.png';
 import frame1 from './frame1.png';
 import frame2 from './frame2.png';
 import EventSearch from "./EventSearch";
