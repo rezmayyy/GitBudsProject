@@ -67,7 +67,7 @@ function App() {
               <Route path="/" element={<Home posts={posts} setPosts={setPosts} />} />
               <Route path="/discussion" element={<VerifyReroute component={DiscussionBoardPage} posts={posts} setPosts={setPosts} />} />
               <Route path="/create-post" element={<VerifyReroute component={CreatePost} />} />
-              <Route path="/content/:postId" element={<ContentPostPage />} />
+              <Route path="/content/:postId" element={<VerifyReroute component={ContentPostPage} />} />
               <Route path="/tos" element={<TOS />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/modview" element={<ProtectedRoute element={ModView} />} />
