@@ -84,7 +84,7 @@ const ContentPostPage = () => {
 
     // — MAIN DATA FETCH: only after authChecked —
     useEffect(() => {
-        if (!authChecked) return;
+        if (!authChecked) return;           // <— bail until auth state known
         setLoading(true);
 
         (async () => {
@@ -137,8 +137,7 @@ const ContentPostPage = () => {
                 if (data.status === 'approved') {
                     setIsAuthorized(true);
                 } else if (
-                    currentUser &&
-                    (await isAdminOrMod()) ||
+                    (currentUser && (await isAdminOrMod())) ||
                     currentUser?.uid === data.userId
                 ) {
                     setIsAuthorized(true);
