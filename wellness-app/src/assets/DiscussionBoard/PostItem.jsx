@@ -67,13 +67,20 @@ const PostItem = ({ post, onExpand = () => { }, expanded }) => {
     return unsubscribe;
   }, [post.id, user]);
 
-  // Subscribe to replies
+  // Subscribe to replies (sorted by timestamp, oldest first)
   useEffect(() => {
     const repliesRef = collection(db, 'posts', post.id, 'replies');
     const unsubscribe = onSnapshot(repliesRef, snapshot => {
-      setReplies(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+      const sortedReplies = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => {
+          const ta = a.timestamp?.toDate?.() || new Date(0);
+          const tb = b.timestamp?.toDate?.() || new Date(0);
+          return ta - tb; // use tb - ta for newest-first
+        });
+      setReplies(sortedReplies);
     });
-    return unsubscribe;
+    return () => unsubscribe();
   }, [post.id]);
 
   const goToUserProfile = () => {
