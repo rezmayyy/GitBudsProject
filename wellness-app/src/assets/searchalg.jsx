@@ -1,3 +1,4 @@
+// searchalg.jsx
 import { db } from './Firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -8,97 +9,68 @@ const stopWords = new Set([
   "not", "are", "were", "can", "will", "has", "had", "have"
 ]);
 
-/**
- * Computes a relevance score for a given post based on how many search tokens
- * exist in its "keywords" array field.
- *
- * @param {Object} post - The post object containing a "keywords" array.
- * @param {Array} tokens - An array of lowercase search tokens.
- * @returns {number} The computed score, where each matching token adds one point.
- */
 function computeKeywordScore(post, tokens) {
   let score = 0;
-  const postKeywords = (post.keywords || []).map(keyword => keyword.toLowerCase());
-
+  const postKeywords = (post.keywords || []).map(k => k.toLowerCase());
   tokens.forEach(token => {
-    if (postKeywords.includes(token)) {
-      score++;
-    }
+    if (postKeywords.includes(token)) score++;
   });
-
   return score;
 }
 
 /**
- * Searches for posts based on a search string and sorts them by relevance.
- * If multiple posts have the same score, a secondary sort is applied based on the sortType:
- * - "date"   → Sort by most recent update (timestamp)
- * - "rating" → Sort by most likes (likes.length)
- * - "views"  → Sort by most views (views)
- *
- * @param {string} searchString - The search query.
- * @param {string} sortType - The secondary sorting method ("date", "rating", "views").
- * @returns {Promise<Array>} A promise that resolves to a sorted array of post objects.
+ * Searches for approved posts based on a search string and sorts them.
+ * @param {string} searchString 
+ * @param {string} sortType  "date"|"rating"|"views"
+ * @returns {Promise<Array>}
  */
-export async function searchPostsByKeywords(searchString, sortType = "date", selectedTag = "") {
-  try {
-    if (!searchString) return [];
+export async function searchPostsByKeywords(searchString, sortType = "date") {
+  // early exit
+  if (!searchString.trim()) return [];
 
-    // Tokenize search string: lowercase, split on whitespace, remove stopwords
-    const tokens = searchString
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .filter(token => !stopWords.has(token));
+  // tokenize + remove stop words
+  const tokens = searchString
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(t => t && !stopWords.has(t));
 
-    if (tokens.length === 0) return [];
+  // build base query: only approved posts
+  const postsRef = collection(db, "content-posts");
+  const clauses = [
+    where("status", "==", "approved")
+  ];
 
-    // Reference to the "content-posts" collection
-    const postsRef = collection(db, "content-posts");
-
-    // Build the Firestore query
-    let q;
-    if (selectedTag) {
-      q = query(postsRef, where("tags", "array-contains", selectedTag));
-    } else if (tokens.length > 0) {
-      q = query(postsRef, where("keywords", "array-contains-any", tokens));
-    } else {
-      q = query(postsRef); //return all posts
-    }
-
-    const querySnapshot = await getDocs(q);
-    const posts = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    // Compute relevance score
-    const scoredPosts = posts.map(post => ({
-      ...post,
-      score: computeKeywordScore(post, tokens),
-    })).filter(post => post.score > 0);
-
-    // Sort posts by score (descending), then apply secondary sorting
-    scoredPosts.sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-
-      // Secondary sorting logic
-      switch (sortType) {
-        case "rating": // Sort by most likes (likes array length)
-          return ((b.likes?.length || 0) - (a.likes?.length || 0));
-
-        case "views": // Sort by most views
-          return ((b.views || 0) - (a.views || 0));
-
-        case "date": // Sort by most recent timestamp
-        default:
-          return ((b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0));
-      }
-    });
-
-    return scoredPosts;
-  } catch (error) {
-    console.error("Error searching posts by keywords:", error);
-    return [];
+  // if user is searching keywords, add that clause
+  if (tokens.length) {
+    clauses.push(where("keywords", "array-contains-any", tokens));
   }
+
+  const q = query(postsRef, ...clauses);
+  const snapshot = await getDocs(q);
+  let posts = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+  // score & filter by relevance only if tokens used
+  if (tokens.length) {
+    posts = posts
+      .map(p => ({ ...p, score: computeKeywordScore(p, tokens) }))
+      .filter(p => p.score > 0);
+  }
+
+  // sort by score first, then by secondary key
+  posts.sort((a, b) => {
+    const scoreDiff = (b.score || 0) - (a.score || 0);
+    if (scoreDiff) return scoreDiff;
+
+    switch (sortType) {
+      case "rating":
+        return (b.likesCount || 0) - (a.likesCount || 0);
+      case "views":
+        return (b.views || 0) - (a.views || 0);
+      case "date":
+      default:
+        return (b.timestamp?.toMillis?.() || 0) - (a.timestamp?.toMillis?.() || 0);
+    }
+  });
+
+  return posts;
 }

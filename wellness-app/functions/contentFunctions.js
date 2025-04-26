@@ -298,3 +298,27 @@ exports.deleteEvent = functions.https.onCall(async (data, context) => {
     }
 });
 
+exports.syncLikesCount = functions.pubsub
+    .schedule('every 1 hours')
+    .onRun(async (context) => {
+        const postsSnap = await db.collection('content-posts').get();
+        const batch = db.batch();
+
+        for (const postDoc of postsSnap.docs) {
+            const postId = postDoc.id;
+            const likesSnap = await db
+                .collection('content-posts')
+                .doc(postId)
+                .collection('likes')
+                .get();
+
+            const newCount = likesSnap.size;
+            const postRef = postDoc.ref;
+            batch.update(postRef, { likesCount: newCount });
+        }
+
+        // commit all updates in one go
+        await batch.commit();
+        console.log(`Synced likesCount for ${postsSnap.size} posts.`);
+        return null;
+    });

@@ -1,73 +1,62 @@
+// SearchResults.jsx
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import styles from '../styles/SearchPage.module.css';
 import UserContext from './UserContext';
-import { searchPostsByKeywords } from './searchalg'; // Named export
+import { searchPostsByKeywords } from './searchalg';
 import { useTags } from "./TagSystem/useTags";
 
 function SearchResults() {
-  // Retrieve the query parameter from the URL (e.g., ?query=dog)
   const [searchParams] = useSearchParams();
   const urlQuery = searchParams.get('query') || '';
 
-  // State to manage which dropdown is open
   const [activeDropdown, setActiveDropdown] = useState(null);
-  // State for the filter categories (video, audio, article)
   const [categories] = useState(['video', 'audio', 'article']);
-  // State for the currently selected category
-  // When empty, no category filtering is applied.
   const [selectedCategory, setSelectedCategory] = useState('');
-  // State for posts returned by the search algorithm
+  const [selectedTag, setSelectedTag] = useState('');
   const [posts, setPosts] = useState([]);
-  // State for loading status
   const [loading, setLoading] = useState(true);
+  const [sortMethod, setSortMethod] = useState('date');
 
   const { user } = useContext(UserContext);
-  const [sortMethod, setSortMethod] = useState('date'); // Default sorting method
-
   const { tags } = useTags();
-  const [selectedTag, setSelectedTag] = useState("");
 
-
-  // Toggle dropdown visibility for the category filter
-  const toggleDropdown = (dropdown) => {
+  const toggleDropdown = dropdown => {
     setActiveDropdown(activeDropdown === dropdown ? null : dropdown);
   };
 
-  // Fetch posts using the static search algorithm whenever the URL query or selectedCategory changes.
   useEffect(() => {
     async function fetchPosts() {
       setLoading(true);
       try {
-        let results = await searchPostsByKeywords(urlQuery, sortMethod, selectedTag);
+        // Only pass query + sort to searchalg
+        let results = await searchPostsByKeywords(urlQuery, sortMethod);
 
-        //category
+        // then filter by category locally
         if (selectedCategory) {
           results = results.filter(post => post.type === selectedCategory);
         }
 
-        //tags/topics
+        // then filter by topic (tag) locally
         if (selectedTag) {
           results = results.filter(post => post.tags?.includes(selectedTag));
         }
 
         setPosts(results);
-
       } catch (error) {
         console.error("Error fetching posts:", error);
       }
       setLoading(false);
     }
     fetchPosts();
-  }, [urlQuery, selectedCategory, selectedTag, sortMethod]);
-
+  }, [urlQuery, sortMethod, selectedCategory, selectedTag]);
 
   return (
     <div className={styles.pageContainer}>
-      {/* Sidebar for Filters */}
+      {/* Sidebar Filters */}
       <aside className={styles.sidebar}>
         <h3>Filter Content</h3>
-        {/* filter by category */}
+
         <div className={styles.filterSection}>
           <button
             onClick={() => toggleDropdown('category')}
@@ -77,29 +66,24 @@ function SearchResults() {
           </button>
           {activeDropdown === 'category' && (
             <ul className={styles.dropdownContent}>
-              {categories.map((category, index) => (
-                <li key={index}>
+              {categories.map((cat, i) => (
+                <li key={i}>
                   <a
                     href="#"
-                    className={selectedCategory === category ? styles.activeCategory : ''}
-                    onClick={(e) => {
+                    className={selectedCategory === cat ? styles.activeCategory : ''}
+                    onClick={e => {
                       e.preventDefault();
-                      // If clicked category is already selected, unselect it (show all posts)
-                      if (selectedCategory === category) {
-                        setSelectedCategory('');
-                      } else {
-                        setSelectedCategory(category);
-                      }
+                      setSelectedCategory(selectedCategory === cat ? '' : cat);
                     }}
                   >
-                    {category}
+                    {cat}
                   </a>
                 </li>
               ))}
             </ul>
           )}
         </div>
-        {/* filter by topic */}
+
         <div className={styles.filterSection}>
           <button
             onClick={() => toggleDropdown('topic')}
@@ -109,16 +93,14 @@ function SearchResults() {
           </button>
           {activeDropdown === 'topic' && (
             <ul className={styles.dropdownContent}>
-              {tags.map((tag) => (
+              {tags.map(tag => (
                 <li key={tag.value}>
                   <a
                     href="#"
                     className={selectedTag === tag.value ? styles.activeCategory : ''}
-                    onClick={(e) => {
+                    onClick={e => {
                       e.preventDefault();
-                      // If clicked category is already selected, unselect it (show all posts)
                       setSelectedTag(selectedTag === tag.value ? '' : tag.value);
-
                     }}
                   >
                     {tag.label}
@@ -128,40 +110,28 @@ function SearchResults() {
             </ul>
           )}
         </div>
-
-
-
-
       </aside>
 
-      {/* Main Content Area */}
+      {/* Main Content */}
       <main className={styles.mainContent}>
         <div className={styles.sortingModule}>
           <h3>Sort By:</h3>
-          <button
-            className={`${styles.sortButton} ${sortMethod === 'date' ? styles.activeSort : ''}`}
-            onClick={() => setSortMethod('date')}
-          >
-            Date
-          </button>
-          <button
-            className={`${styles.sortButton} ${sortMethod === 'rating' ? styles.activeSort : ''}`}
-            onClick={() => setSortMethod('rating')}
-          >
-            Rating
-          </button>
-          <button
-            className={`${styles.sortButton} ${sortMethod === 'views' ? styles.activeSort : ''}`}
-            onClick={() => setSortMethod('views')}
-          >
-            Views
-          </button>
+          {['date', 'rating', 'views'].map(method => (
+            <button
+              key={method}
+              className={`${styles.sortButton} ${sortMethod === method ? styles.activeSort : ''}`}
+              onClick={() => setSortMethod(method)}
+            >
+              {method.charAt(0).toUpperCase() + method.slice(1)}
+            </button>
+          ))}
         </div>
+
         <div className={styles.postsContainer}>
           {loading ? (
             <p>Loading posts...</p>
           ) : posts.length > 0 ? (
-            posts.map((post) => (
+            posts.map(post => (
               <div key={post.id} className={styles.post}>
                 {post.thumbnailURL && (
                   <div className={styles.thumbnailContainer}>
@@ -174,9 +144,7 @@ function SearchResults() {
                 )}
                 <div className={styles.postContent}>
                   <h4>
-                    <Link to={`/content/${post.id}`}>
-                      {post.title}
-                    </Link>
+                    <Link to={`/content/${post.id}`}>{post.title}</Link>
                   </h4>
                   <p>
                     <Link to={`/profile/${post.author}`} className={styles.userLink}>
@@ -185,37 +153,18 @@ function SearchResults() {
                   </p>
                   <div className={styles.postDetails}>
                     {post.type && <span>Category: {post.type}</span>}
-
                     {post.tags?.length > 0 && (
-                      <div className="tags">
-                        {post.tags?.map((tagId, index) => (
-                          <span key={index} className="badge" style={{ backgroundColor: '#e0e0e0', color: '#333', marginRight: '8px' }}>
-                            {tags.find(tag => tag.value === tagId)?.label || "Unknown Tag"}
-                          </span>
+                      <div className={styles.tagList}>
+                        {post.tags.map((t, i) => (
+                          <span key={i} className={styles.badge}>{tags.find(tag => tag.value === t)?.label || t}</span>
                         ))}
                       </div>
                     )}
-
                     {typeof post.views === 'number' && <span>Views: {post.views}</span>}
-                    {Array.isArray(post.likes) && <span>Likes: {post.likes.length}</span>}
-                    {Array.isArray(post.dislikes) && <span>Dislikes: {post.dislikes.length}</span>}
-                    {post.date?.seconds && (
+                    {typeof post.likesCount === 'number' && <span>Likes: {post.likesCount}</span>}
+                    {post.timestamp?.seconds && (
                       <span>
-                        Date: {(() => {
-                          const dateObj = new Date(post.date.seconds * 1000);
-                          const dateString = dateObj.toLocaleDateString('en-US', {
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          });
-                          const timeString = dateObj.toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: 'numeric',
-                            second: 'numeric',
-                            hour12: true
-                          });
-                          return `${dateString} at ${timeString} UTC-8`;
-                        })()}
+                        Date: {new Date(post.timestamp.seconds * 1000).toLocaleString()}
                       </span>
                     )}
                   </div>
