@@ -27,7 +27,7 @@ const DiaryEditor = (({ entry, onSave }) => {
         setIsSaving(true);
 
         //check if user is logged in. Can't save if not logged in.
-        if(!user){
+        if (!user) {
             setMessage('You must log in to save an entry')
             setIsSaving(false);
             return;
@@ -50,7 +50,7 @@ const DiaryEditor = (({ entry, onSave }) => {
                 });
 
             }
-            
+
             navigate("/profile/diary")
             console.log("Successfully saved diary entry");
         } catch (error) {
@@ -75,7 +75,7 @@ const DiaryEditor = (({ entry, onSave }) => {
         div.innerHTML = html;
         return div.textContent || div.innerText || "";
     };
-    
+
     const isContentEmpty = stripHtml(content).trim() === "";
     const isTitleEmpty = title.trim() == "";
     const isSaveDisabled = isTitleEmpty || isContentEmpty;
@@ -115,7 +115,19 @@ const DiaryEditor = (({ entry, onSave }) => {
                         />
                     </div>
 
-                    <button onClick={handleSave} disabled={isSaveDisabled}>
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaveDisabled}
+                        style={{
+                            backgroundColor: isSaveDisabled ? "#ccc" : "#E7C2EC",
+                            border: isSaveDisabled ? "#ccc" : "#E7C2EC",
+                            color: isSaveDisabled ? "#666" : "#fff",
+                            cursor: isSaveDisabled ? "not-allowed" : "pointer",
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            transition: "0.2s ease",
+                        }}
+                    >
                         {isSaving ? "Saving..." : "Save"}
                     </button>
                 </div>
