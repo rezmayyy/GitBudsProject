@@ -67,7 +67,6 @@ const DiaryEditor = (({ entry, onSave }) => {
             [{ 'size': ['small', false, 'large', 'huge'] }],
             [{ 'color': [] }, { 'background': [] }],
             [{ 'align': [] }],
-            ['link', 'image'],
             ['clean']
         ],
     }
