@@ -41,16 +41,16 @@ const ModDashboard = () => {
         >
           Manage Tickets
         </button>
-        <button
-          className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
-          onClick={() => setSelectedTab('manageTags')}
-        >
-          Manage Tags
-        </button>
 
         {/* Only show these tabs if the current user is an admin */}
         {isAdmin && (
           <div>
+            <button
+              className={`${styles.sidebarButton} ${selectedTab === 'manageTags' ? styles.active : ''}`}
+              onClick={() => setSelectedTab('manageTags')}
+            >
+              Manage Tags
+            </button>
             <button
               className={`${styles.sidebarButton} ${selectedTab === 'manageHealers' ? styles.active : ''}`}
               onClick={() => setSelectedTab('manageHealers')}
