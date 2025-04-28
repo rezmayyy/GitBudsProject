@@ -42,7 +42,7 @@ const ManageUsers = () => {
         getDocs(displayNameQuery)
       ]);
 
-      // Also filter by user ID (document ID) if it includes the query string
+      // Also filter by user ID
       const allDocsSnap = await getDocs(userRef);
       const userIdResults = allDocsSnap.docs
         .filter(docSnap => docSnap.id.includes(queryStr))
@@ -61,10 +61,13 @@ const ManageUsers = () => {
           const userDoc = await getDoc(doc(db, 'users', uid));
           const privateDoc = await getDoc(doc(db, 'users', uid, 'privateInfo', 'info'));
 
+          const publicData = userDoc.data() || {};
+          const privateData = privateDoc.exists() ? privateDoc.data() : {};
+
           return {
             id: uid,
-            ...userDoc.data(),
-            email: privateDoc.exists() ? privateDoc.data().email : 'Unavailable'
+            displayName: publicData.displayName,
+            email: privateData.email || publicData.email || 'Unavailable',
           };
         })
       );
@@ -75,15 +78,34 @@ const ManageUsers = () => {
     }
   };
 
-
-
   const handleViewUser = async (userId) => {
     try {
+      // Fetch both public and private info
       const userDocRef = doc(db, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        setSelectedUser({ ...userDocSnap.data(), id: userId });
-        // Fetch punishments for the user
+      const [userSnap, privateSnap] = await Promise.all([
+        getDoc(userDocRef),
+        getDoc(doc(db, 'users', userId, 'privateInfo', 'info'))
+      ]);
+
+      if (userSnap.exists()) {
+        const publicData = userSnap.data();
+        const privateData = privateSnap.exists() ? privateSnap.data() : {};
+
+        // Combine fields
+        const email = privateData.email || publicData.email || 'Unavailable';
+        const interests = privateData.interests || publicData.interests || 'N/A';
+        const contacts = privateData.contacts || publicData.contacts || [];
+
+        setSelectedUser({
+          id: userId,
+          displayName: publicData.displayName,
+          bio: publicData.bio,
+          email,
+          interests,
+          contacts,
+        });
+
+        // Fetch punishments
         const punishmentsRef = collection(db, 'users', userId, 'punishments');
         const punishmentsSnap = await getDocs(punishmentsRef);
         const punishmentsList = punishmentsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id }));
@@ -95,7 +117,6 @@ const ManageUsers = () => {
   };
 
   const handleBanUser = async (userId) => {
-
     const duration = prompt('Enter ban duration in days:');
     if (!duration) return;
     const reason = prompt('Enter a reason for the ban:');
@@ -108,7 +129,6 @@ const ManageUsers = () => {
       console.error('Error banning user:', error);
       alert('Failed to ban the user.');
     }
-
   };
 
   const handleUnbanUser = async (userId) => {
@@ -132,13 +152,17 @@ const ManageUsers = () => {
         onChange={(e) => setSearchQuery(e.target.value)}
         className={styles.searchInput}
       />
+
       <div className={styles.userList}>
         {users.length > 0 && (
           <ul>
             {users.map((user) => (
               <li key={user.id} className={styles.userItem}>
                 <span>{user.email}</span>
-                <button onClick={() => handleViewUser(user.id)} className={styles.viewButton}>
+                <button
+                  onClick={() => handleViewUser(user.id)}
+                  className={styles.viewButton}
+                >
                   View User
                 </button>
               </li>
@@ -152,6 +176,9 @@ const ManageUsers = () => {
           <h3>{selectedUser.displayName}'s Profile</h3>
           <p>Email: {selectedUser.email}</p>
           <p>Bio: {selectedUser.bio}</p>
+          <p>Interests: {selectedUser.interests}</p>
+          <p>Contacts: {Array.isArray(selectedUser.contacts) ? selectedUser.contacts.join(', ') : selectedUser.contacts}</p>
+
           <div className={styles.punishments}>
             <h4>Punishments:</h4>
             {userPunishments.length > 0 ? (
@@ -171,15 +198,23 @@ const ManageUsers = () => {
             ) : (
               <p>No punishments found.</p>
             )}
+
+            <div>
+              <button
+                onClick={() => handleBanUser(selectedUser.id)}
+                className={styles.banButton}
+              >
+                Ban User
+              </button>
+              <button
+                onClick={() => handleUnbanUser(selectedUser.id)}
+                className={styles.unbanButton}
+              >
+                Unban User
+              </button>
+            </div>
           </div>
-          <div>
-            <button onClick={() => handleBanUser(selectedUser.id)} className={styles.banButton}>
-              Ban User
-            </button>
-            <button onClick={() => handleUnbanUser(selectedUser.id)} className={styles.unbanButton}>
-              Unban User
-            </button>
-          </div>
+
         </div>
       )}
 
