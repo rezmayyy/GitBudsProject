@@ -6,7 +6,7 @@ import styles from './TicketList.module.css';
 import TicketFilters from './TicketFilters';
 import TicketItem from './TicketItem';
 import ViewTicket from './ViewTicket';
-import { useNavigate } from "react-router-dom";  // Import navigation
+import { useNavigate } from 'react-router-dom';
 
 function TicketList({ onCreateTicket }) {
     const [tickets, setTickets] = useState([]);
@@ -15,7 +15,7 @@ function TicketList({ onCreateTicket }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [ticketsPerPage] = useState(5);
     const [viewedTicketId, setViewedTicketId] = useState(null);
-    const navigate = useNavigate();  // Initialize navigation
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchTickets();
@@ -24,11 +24,9 @@ function TicketList({ onCreateTicket }) {
     const fetchTickets = async () => {
         try {
             let q;
-            // For admin or moderators, fetch all tickets.
             if (user.role === 'admin' || user.role === 'moderator') {
                 q = collection(db, 'tickets');
             } else {
-                // For normal users, only fetch tickets that they own.
                 q = query(collection(db, 'tickets'), where('userId', '==', user.uid));
             }
             const snapshot = await getDocs(q);
@@ -36,86 +34,71 @@ function TicketList({ onCreateTicket }) {
                 id: doc.id,
                 ...doc.data(),
                 createdAt: doc.data().createdAt.toDate(),
-                staffName: doc.data().staffName,
-                displayName: doc.data().displayName,
             }));
             setTickets(ticketData);
+            setCurrentPage(1);
         } catch (error) {
-            console.error("Error fetching tickets:", error);
+            console.error('Error fetching tickets:', error);
         }
     };
 
-    const onView = (ticketId) => {
-        setViewedTicketId(ticketId);
-    };
+    const onView = ticketId => setViewedTicketId(ticketId);
 
-    const handleClose = async (ticketId) => {
+    const handleClose = async ticketId => {
         try {
             const ticketRef = doc(db, 'tickets', ticketId);
             await updateDoc(ticketRef, { status: 'closed' });
             fetchTickets();
         } catch (error) {
-            console.error("Error closing ticket:", error);
+            console.error('Error closing ticket:', error);
         }
     };
 
-    const handleClaim = async (ticketId) => {
+    const handleClaim = async ticketId => {
         try {
             const ticketRef = doc(db, 'tickets', ticketId);
             await updateDoc(ticketRef, { staffId: user.uid, status: 'assigned' });
             fetchTickets();
         } catch (error) {
-            console.error("Error claiming ticket:", error);
+            console.error('Error claiming ticket:', error);
         }
     };
 
-    const changeView = (newView) => {
+    const changeView = newView => {
         setView(newView);
-        setCurrentPage(1); // Reset to the first page when changing view
+        setCurrentPage(1);
     };
 
+    // Filter and sort tickets
     const filteredTickets = tickets
         .filter(ticket => {
             if (user.role === 'admin' || user.role === 'moderator') {
-                if (view === 'assigned') {
-                    return ticket.staffId === user.uid && ticket.status !== 'closed';
-                }
-                if (view === 'unassigned') {
-                    return !ticket.staffId && ticket.status === 'pending' && ticket.category !== 'report';
-                }
-                if (view === 'reports') {
-                    return ticket.category === 'report';
-                }
+                if (view === 'assigned') return ticket.staffId === user.uid && ticket.status !== 'closed';
+                if (view === 'unassigned') return !ticket.staffId && ticket.status === 'pending' && ticket.category !== 'report';
+                if (view === 'reports') return ticket.category === 'report';
                 return ticket.status === 'closed';
             }
             return ticket.userId === user.uid;
         })
         .sort((a, b) => {
-            // Prioritize report tickets at the top of assigned
             if (view === 'assigned') {
                 if (a.category === 'report' && b.category !== 'report') return -1;
                 if (a.category !== 'report' && b.category === 'report') return 1;
             }
-
-            const categoryPriority = { 'report': 0, 'Premium': 1, 'VIP': 2, 'normal': 3 };
-            const categoryOrder = categoryPriority[a.category || 'normal'] - categoryPriority[b.category || 'normal'];
-
-            if (categoryOrder === 0) {
-                const statusPriority = { 'assigned': 1, 'pending': 2, 'closed': 3 };
-                const statusOrder = statusPriority[a.status] - statusPriority[b.status];
-                if (statusOrder === 0) {
-                    return b.createdAt - a.createdAt;
-                }
-                return statusOrder;
+            const categoryPriority = { report: 0, Premium: 1, VIP: 2, normal: 3 };
+            const catOrder = categoryPriority[a.category || 'normal'] - categoryPriority[b.category || 'normal'];
+            if (catOrder === 0) {
+                const statusPriority = { assigned: 1, pending: 2, closed: 3 };
+                const statOrder = statusPriority[a.status] - statusPriority[b.status];
+                return statOrder === 0 ? b.createdAt - a.createdAt : statOrder;
             }
-
-            return categoryOrder;
+            return catOrder;
         });
 
-    // Calculate the tickets to display based on pagination
-    const indexOfLastTicket = currentPage * ticketsPerPage;
-    const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
-    const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket);
+    const totalPages = Math.max(1, Math.ceil(filteredTickets.length / ticketsPerPage));
+    const indexOfLast = currentPage * ticketsPerPage;
+    const indexOfFirst = indexOfLast - ticketsPerPage;
+    const currentTickets = filteredTickets.slice(indexOfFirst, indexOfLast);
 
     return (
         <div className={styles.ticketListContainer}>
@@ -123,16 +106,10 @@ function TicketList({ onCreateTicket }) {
                 <ViewTicket ticketId={viewedTicketId} onBack={() => setViewedTicketId(null)} />
             ) : (
                 <>
-                    <h2>{user.role === 'admin' || user.role === 'moderator' ? "All Tickets" : "Your Tickets"}</h2>
-
-                    {/* Add "New Ticket" Button */}
-                    <button
-                        className={styles.newTicketButton}
-                        onClick={onCreateTicket}
-                    >
+                    <h2>{user.role === 'admin' || user.role === 'moderator' ? 'All Tickets' : 'Your Tickets'}</h2>
+                    <button className={styles.newTicketButton} onClick={onCreateTicket}>
                         + New Ticket
                     </button>
-
                     {user.role === 'admin' || user.role === 'moderator' ? (
                         <>
                             <TicketFilters currentView={view} setView={changeView} />
@@ -165,8 +142,8 @@ function TicketList({ onCreateTicket }) {
                                         key={ticket.id}
                                         ticket={ticket}
                                         onClose={handleClose}
-                                        view="assigned"
                                         onView={onView}
+                                        view="assigned"
                                         status={ticket.status}
                                     />
                                 ))
@@ -175,15 +152,24 @@ function TicketList({ onCreateTicket }) {
                     )}
                 </>
             )}
-            <div className={styles.pagination}>
-                <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
-                    Previous
-                </button>
-                <span>Page {currentPage} of {Math.ceil(filteredTickets.length / ticketsPerPage)}</span>
-                <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(filteredTickets.length / ticketsPerPage)))} disabled={currentPage === Math.ceil(filteredTickets.length / ticketsPerPage)}>
-                    Next
-                </button>
-            </div>
+
+            {!viewedTicketId && (
+                <div className={styles.pagination}>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    <span>Page {currentPage} of {totalPages}</span>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
