@@ -68,19 +68,37 @@ exports.unbanUsers = functions.pubsub.schedule("every 24 hours").onRun(async () 
     );
 });
 
+
 exports.setAdmin = functions.https.onCall(async (data, context) => {
-    // Only allow other admins to assign admin status
-    const requester = await admin.auth().getUser(context.auth.uid);
-    if (!requester.customClaims?.admin) {
-        throw new functions.https.HttpsError('permission-denied', 'Only admins can set admin claims');
+    // Must be authenticated
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'You must be signed in');
+    }
+
+    // Look up the requester's role in Firestore, not in customClaims
+    const requesterSnap = await admin.firestore()
+        .doc(`users/${context.auth.uid}`)
+        .get();
+    const requesterData = requesterSnap.data() || {};
+
+    if (requesterData.role !== 'admin') {
+        throw new functions.https.HttpsError(
+            'permission-denied',
+            'Only admins can set admin claims'
+        );
     }
 
     const { uid } = data;
     if (!uid) {
-        throw new functions.https.HttpsError('invalid-argument', 'No UID provided');
+        throw new functions.https.HttpsError(
+            'invalid-argument',
+            'No UID provided'
+        );
     }
 
+    // Now it's safe to set the custom claim on your target user
     await admin.auth().setCustomUserClaims(uid, { admin: true });
+
     return { message: `User ${uid} is now an admin.` };
 });
 
