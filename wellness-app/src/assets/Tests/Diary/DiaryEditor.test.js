@@ -55,7 +55,7 @@ describe('DiaryEditor', () => {
     });
 
 
-    test('the diary editor page contains a form with fields: title and content', () => {
+    test('save button works correctly', () => {
         render (
             <MemoryRouter>
                 <DiaryEditor />
