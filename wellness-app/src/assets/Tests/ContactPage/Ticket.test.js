@@ -4,7 +4,7 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
-import { auth, db } from '../Firebase';
+import { auth, db } from '../../Firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import {
     collection,
@@ -17,9 +17,9 @@ import {
     serverTimestamp
 } from 'firebase/firestore';
 
-import Ticket from '../Ticket/Ticket';
-import TicketList from '../Ticket/TicketList';
-import UserContext from '../UserContext';
+import Ticket from '../../Ticket/Ticket';
+import TicketList from '../../Ticket/TicketList';
+import UserContext from '../../UserContext';
 
 // Extend timeout for integration tests
 jest.setTimeout(60000);
