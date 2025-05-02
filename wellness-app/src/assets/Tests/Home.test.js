@@ -1,105 +1,96 @@
 // Home.test.js
-
 import React from 'react';
-import { render, fireEvent, waitFor, screen } from '@testing-library/react';
-// Import jest-dom for extended matchers (no /extend-expect required)
+import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Home from '../Home/Home'; // adjust the path as needed
+import Home from '../Home/Home';              // ← adjust path if needed
 import { BrowserRouter as Router } from 'react-router-dom';
 
-// ----- MOCK CHILD COMPONENTS -----
-// We are replacing the actual child components with simple mocks that render a data-testid.
-// This ensures our Home tests focus on the Home component itself.
-jest.mock('../Home/CTA', () => {
-    return function MockCTA() {
-        return <div data-testid="cta">CTA Component</div>;
-    };
-});
+// ─── MOCK CSS (if your setup needs it) ───────────────────────────────────
+// Jest + CRA usually handles CSS imports, but if yours doesn’t, uncomment:
+// jest.mock('../Home/Home.css', () => ({}));
 
-jest.mock('../Home/RecentVideos', () => {
-    return function MockRecentVideos() {
-        return <div data-testid="recent-videos">Recent Videos Component</div>;
-    };
-});
-
-jest.mock('../Home/GigiVideos', () => {
-    return function MockGigiVideos() {
-        return <div data-testid="gigi-videos">GigiVideos Component</div>;
-    };
-});
-
-jest.mock('../DiscussionBoard/DiscussionBoard', () => {
-    return function MockDiscussionBoard({ preview }) {
-        return <div data-testid="discussion-board">DiscussionBoard {preview ? "Preview" : "Full"}</div>;
-    };
-});
-
-// ----- MOCK useNavigate from react-router-dom -----
-// This will allow us to test that navigation is triggered as expected.
+// ─── MOCK useNavigate ────────────────────────────────────────────────────
 const mockedNavigate = jest.fn();
 jest.mock('react-router-dom', () => {
-    const originalModule = jest.requireActual('react-router-dom');
+    const orig = jest.requireActual('react-router-dom');
     return {
-        ...originalModule,
+        ...orig,
         useNavigate: () => mockedNavigate,
     };
 });
 
-// ----- Helper to Render Home with Router Context -----
-const renderHomePage = (props = {}) => {
-    return render(
-        <Router>
-            <Home {...props} />
-        </Router>
-    );
-};
+// ─── MOCK CHILDREN ────────────────────────────────────────────────────────
+jest.mock('../Home/CTA', () => () => <div data-testid="cta" />);
+jest.mock('../Home/RecentVideos', () => () => <div data-testid="recent-videos" />);
+jest.mock('../Home/GigiVideos', () => () => <div data-testid="gigi-videos" />);
+jest.mock(
+    '../DiscussionBoard/DiscussionBoard',
+    () => ({ preview }) => (
+        <div data-testid="discussion-board" data-preview={preview ? 'true' : 'false'} />
+    )
+);
 
+// ─── TEST SUITE ───────────────────────────────────────────────────────────
 describe('Home Component', () => {
-    // Test 1: It should render the CTA component.
+    beforeEach(() => {
+        mockedNavigate.mockReset();
+    });
+
+    const renderHome = () =>
+        render(
+            <Router>
+                <Home posts={[]} setPosts={jest.fn()} />
+            </Router>
+        );
+
     test('renders the CTA section', () => {
-        renderHomePage();
+        renderHome();
         expect(screen.getByTestId('cta')).toBeInTheDocument();
     });
 
-    // Test 2: It should render the Hero section with welcome text and a button.
-    test('renders hero section with welcome text and a button', () => {
-        renderHomePage();
-        // Verify that the heading and description text are rendered.
-        expect(screen.getByText(/Welcome to TribeWell/i)).toBeInTheDocument();
-        expect(screen.getByText(/Explore ancient wisdom for modern wellness/i)).toBeInTheDocument();
-        // Verify that the hero button is rendered.
-        const heroButton = screen.getByRole('button', { name: /See Who You're Following/i });
-        expect(heroButton).toBeInTheDocument();
+    test('renders hero section with heading, subtext, and button', () => {
+        renderHome();
+        expect(
+            screen.getByRole('heading', { level: 1, name: /welcome to tribewell/i })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/explore ancient wisdom for modern wellness/i)
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /see who you're following/i })
+        ).toBeInTheDocument();
     });
 
-    // Test 3: Clicking the hero button navigates to /following.
-    test('navigates to /following when hero button is clicked', () => {
-        renderHomePage();
-        const heroButton =
-            screen.getByRole('button', { name: /See Who You're Following/i });
-        fireEvent.click(heroButton);
+    test("navigates to /following when hero button is clicked", () => {
+        renderHome();
+        fireEvent.click(
+            screen.getByRole('button', { name: /see who you're following/i })
+        );
         expect(mockedNavigate).toHaveBeenCalledWith('/following');
     });
 
-    // Test 4: It should render the Recent Videos section.
     test('renders Recent Videos section', () => {
-        renderHomePage();
-        // Check for the section heading.
-        expect(screen.getByText(/Recent Videos/i)).toBeInTheDocument();
-        // Check that the mocked RecentVideos component is rendered.
+        renderHome();
+        // only matches the <h2>, not the mock’s inner text
+        expect(
+            screen.getByRole('heading', { level: 2, name: /recent videos/i })
+        ).toBeInTheDocument();
         expect(screen.getByTestId('recent-videos')).toBeInTheDocument();
     });
 
-    // Test 5: It should render the CEO Spotlight section (GigiVideos).
     test('renders CEO Spotlight section', () => {
-        renderHomePage();
+        renderHome();
         expect(screen.getByTestId('gigi-videos')).toBeInTheDocument();
     });
 
-    // Test 6: It should render the Community Discussions section with preview.
-    test('renders Community Discussions section', () => {
-        renderHomePage();
-        expect(screen.getByText(/Community Discussions/i)).toBeInTheDocument();
-        expect(screen.getByTestId('discussion-board').textContent).toMatch(/Preview/i);
+    test('renders Community Discussions section with preview prop', () => {
+        renderHome();
+        expect(
+            screen.getByRole('heading', { level: 2, name: /community discussions/i })
+        ).toBeInTheDocument();
+        expect(screen.getByTestId('discussion-board')).toHaveAttribute(
+            'data-preview',
+            'true'
+        );
     });
 });
