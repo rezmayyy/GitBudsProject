@@ -2,12 +2,9 @@
 import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import Home from '../Home/Home';              // ← adjust path if needed
+import Home from '../Home/Home';
 import { BrowserRouter as Router } from 'react-router-dom';
 
-// ─── MOCK CSS (if your setup needs it) ───────────────────────────────────
-// Jest + CRA usually handles CSS imports, but if yours doesn’t, uncomment:
-// jest.mock('../Home/Home.css', () => ({}));
 
 // ─── MOCK useNavigate ────────────────────────────────────────────────────
 const mockedNavigate = jest.fn();
@@ -71,7 +68,6 @@ describe('Home Component', () => {
 
     test('renders Recent Videos section', () => {
         renderHome();
-        // only matches the <h2>, not the mock’s inner text
         expect(
             screen.getByRole('heading', { level: 2, name: /recent videos/i })
         ).toBeInTheDocument();
