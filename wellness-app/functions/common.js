@@ -4,7 +4,11 @@ const admin = require("firebase-admin");
 require("dotenv").config();
 
 // For deploying – initialize the Firebase Admin SDK.
+// Comment this section for emulated testing
 admin.initializeApp({ storageBucket: "tribewell-d4492.appspot.com" });
+
+//uncomment this section for emulated testing
+// vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 // const serviceAccountPath = process.env.TRIBEWELL_KEY;
 
 // if (!serviceAccountPath) {
@@ -14,6 +18,7 @@ admin.initializeApp({ storageBucket: "tribewell-d4492.appspot.com" });
 //     credential: admin.credential.cert(require(serviceAccountPath)),
 //     storageBucket: "tribewell-d4492.appspot.com",
 // });
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 const db = admin.firestore();
 const { Timestamp, FieldValue } = require("firebase-admin/firestore");
 
