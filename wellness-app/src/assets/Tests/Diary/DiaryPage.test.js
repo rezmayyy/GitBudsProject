@@ -103,7 +103,7 @@ describe('DiaryPage', () => {
         });
     });
 
-    it('displays diary entries in a collapsed state initially', async () => {
+    it('displays entry with title, date, expand button in collapsed state', async () => {
 
         render(
             <MemoryRouter>
