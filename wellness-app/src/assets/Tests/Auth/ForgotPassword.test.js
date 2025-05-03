@@ -1,17 +1,9 @@
-import { render, screen } from "@testing-library/react";
-import ForgotPassword from "../../Auth/ForgotPassword";
-import { auth } from "../../Firebase"; //updated file location after moving to tests folder
-jest.mock("firebase/auth", () => ({
-  getAuth: jest.fn(() => ({
-    signInWithEmailAndPassword: jest.fn(),
-    createUserWithEmailAndPassword: jest.fn(),
-    sendPasswordResetEmail: jest.fn(),
-    signOut: jest.fn(),
-  })),
-}));
+import { render, screen } from '@testing-library/react';
+import ForgotPassword from '../../Auth/ForgotPassword';
 
-test("renders ForgotPassword component", () => {
-  render(<ForgotPassword />);
-  const linkElement = screen.getByText(/Reset Password/i);
-  expect(linkElement).toBeInTheDocument();
+describe('ForgotPassword', () => {
+	test('page renders successfully', async () => {
+		render(<ForgotPassword />);
+		expect(await screen.findByText(/Forgot Password/i)).toBeInTheDocument();
+	})
 });
