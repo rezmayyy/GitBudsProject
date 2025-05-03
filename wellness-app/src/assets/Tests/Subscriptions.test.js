@@ -1,5 +1,3 @@
-// src/assets/Tests/Subscriptions.test.js
-
 import React from 'react';
 import {
     render,
@@ -146,7 +144,7 @@ describe('<Subscriptions />', () => {
 
         await waitFor(() => {
             expect(doc).toHaveBeenCalledWith(
-                {},                                      // stubbed db
+                {},
                 `users/${fakeUser.uid}/subscriptions`,
                 'user1'
             );
