@@ -17,7 +17,7 @@ function Subscriptions() {
         collection(db, `users/${user.uid}/subscriptions`),
         async (snapshot) => {
           const subsPromises = snapshot.docs.map(async (subDoc) => {
-            const subId = subDoc.id; // The subscribed user's ID
+            const subId = subDoc.id;
             const userRef = doc(db, 'users', subId);
             const userSnap = await getDoc(userRef);
             if (userSnap.exists()) {
