@@ -29,7 +29,6 @@ describe('ModDashboard Component', () => {
         expect(screen.getByRole('button', { name: /manage users/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /manage posts/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /manage tickets/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /manage tags/i })).toBeInTheDocument();
     });
 
     test('can switch between different tabs', () => {
@@ -47,8 +46,6 @@ describe('ModDashboard Component', () => {
         // Click on Manage Tickets tab
         fireEvent.click(screen.getByRole('button', { name: /manage tickets/i }));
 
-        // Click on Manage Tags tab
-        fireEvent.click(screen.getByRole('button', { name: /manage tags/i }));
     });
 
     test('renders additional admin-only tabs for admin users', () => {
@@ -61,6 +58,7 @@ describe('ModDashboard Component', () => {
         renderWithUserContext(adminUser);
 
         // Check if admin-only sidebar buttons are rendered
+        expect(screen.getByRole('button', { name: /manage tags/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /manage healer applications/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /edit faq/i })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /edit resources faq/i })).toBeInTheDocument();
@@ -79,6 +77,7 @@ describe('ModDashboard Component', () => {
         renderWithUserContext(moderatorUser);
 
         // Check that admin-only buttons are not rendered
+        expect(screen.queryByRole('button', { name: /manage tags/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /manage healer applications/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /edit faq/i })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /edit resources faq/i })).not.toBeInTheDocument();
