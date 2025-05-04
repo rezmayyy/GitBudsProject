@@ -1,168 +1,226 @@
-
 # TribeWell 🌿
-#### Your Community for Holistic Wellness and Ancient Healing Practices
+
+## A Platform for Holistic Healing and Cultural Wellness
+
+ ![TribeWellLogo](https://github.com/user-attachments/assets/40e56e17-4b17-43cf-b775-c9ab9f761b63)
+ 
+*Figure 1. TribeWell brand logo* 
+
+![Node.js](https://img.shields.io/badge/Node.js-v16%2B-brightgreen)  
+![React](https://img.shields.io/badge/React-18-blue)  
+![Firebase](https://img.shields.io/badge/Hosted%20on-Firebase-orange)  
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)  
+
+----------
+
+## Project Overview
+
+**TribeWell** is a comprehensive digital platform designed to promote culturally embedded wellness through the revitalization of ancestral and indigenous healing practices. It offers users structured access to holistic practitioners, educational resources, and participatory community spaces that integrate traditional wisdom with modern wellness paradigms.
+
+----------
+
+## Key Features
+
+-   **Practitioner Directory** – Discover and connect with culturally aligned holistic healers.
+    
+-   **Educational Content** – Access a curated library of blogs, videos, and reference materials.
+    
+-   **Personal Wellness Plans** – Design customized healing journeys with progress tracking.
+    
+-   **Event Management** – Create, host, and participate in workshops and community events.
+    
+-   **Community Hub** – Engage in discourse, support networks, and live Q&A forums.
+    
+-   **Responsive Design** – Optimized usability for mobile, tablet, and desktop platforms.
+    
+
+----------
+
+## Mission
+
+TribeWell offers a critical alternative to commercialized wellness by foregrounding heritage, community, and cultural continuity. Through its inclusive digital framework, the platform empowers individuals to engage with authentic healing systems that resonate with identity, belonging, and historical context.
+
+----------
+
+## Visual Previews
+
+### Desktop Interface
+
+ ![image](https://github.com/user-attachments/assets/f78f36e8-1ff0-41b0-8513-d57717c66fc1)
+
+![Screen Shot 2025-05-04 at 08 29 05](https://github.com/user-attachments/assets/53dd51ac-c8d4-4f2c-902f-bd61fefa40c2)
+*Figure 2a,2b Desktop view(s) of the TribeWell homepage and Blogs Page.*
+
+### Tablet Interface
+
+![Screen Shot 2025-05-04 at 08 33 04](https://github.com/user-attachments/assets/506d1684-04ad-4186-99d8-63f8b1ed8db3)
+*Figure 3. Tablet layout highlighting responsive UI elements.*
+
+### Mobile Interface
+
+![Screen Shot 2025-05-04 at 02 23 43](https://github.com/user-attachments/assets/de8c6448-c889-43ac-9f5e-ab960e40a161)
+*Figure 4. Mobile experience.*
 
 
-![TribeWell Logo](https://github.com/user-attachments/assets/e792c436-2b26-4403-b970-952224c8fbb6)
 
+![Screen Shot 2025-05-04 at 08 20 54](https://github.com/user-attachments/assets/0b558c2f-8b18-45cf-8005-842e3a30cb83)
+*Figure 5. Events and Workshops landing page showcasing upcoming retreats, webinars, and community gatherings designed to foster cultural connection.* 
 
+----------
 
----
+## Live Deployment
 
-## Synopsis
+Access the production application at: [  CLICK HERE! ~ TribeWell](https://tribewell-d4492.firebaseapp.com/)
 
-**TribeWell** is a platform designed for wellness enthusiasts to explore, learn, and connect through ancient healing wisdom. From Ayurveda to Reiki and Sound Healing, TribeWell provides educational resources, personalized wellness plans, and interactive community features, making it easy for users to enhance their wellness journey. Whether you’re a seasoned practitioner or just starting out, TribeWell brings together a wealth of knowledge and a vibrant community in one place.
+----------
 
----
-
-## Features
-
-- **Diverse Healing Modalities**: Access a library of ancient healing practices, including Ayurveda, Reiki, and Sound Healing.
-- **Educational Content**: Explore introductory courses, articles, and videos tailored for wellness education.
-- **Community Engagement**: Participate in forums, live Q&A sessions, and discussions with other wellness enthusiasts.
-- **Personalized Experience**: Tailor your healing journey with customizable plans and progress tracking.
-- **Modern Technology Integration**: Access TribeWell on a responsive website and mobile app.
-
----
-
-## Getting Started
+## Installation Guide
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16.0 or higher)
-- [Firebase CLI](https://firebase.google.com/docs/cli)
-- Basic knowledge of React, Firebase, and Firestore.
+-   Node.js (v16.0 or higher)
+    
+-   Firebase CLI
+    
+-   Working knowledge of React
+    
 
-### Installation
+### Setup Instructions
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/YourUsername/TribeWell.git
-   cd TribeWell
-   ```
+```bash
+git clone https://github.com/gitbuds/tribewell.git
+cd TribeWell
+npm install
 
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
+```
 
-3. **Set up Firebase credentials**:
-   - Add your Firebase project credentials in a `.env` file or in `firebaseConfig.js`.
+Add Firebase credentials to `.env` or `firebaseConfig.js`, then start the application:
 
-4. **Run the app locally**:
-   ```bash
-   npm start
-   ```
+```bash
+npm start
 
----
+```
 
-## Testing (Placeholder)
+----------
 
-*To be detailed in CSC 191*
+## Testing Strategy
 
-Testing strategy, including unit tests, integration tests, and end-to-end testing, will be added as development progresses.
+### Tools
 
----
+-   Jest
+    
+-   React Testing Library
+    
+-   Firebase Emulator Suite
+    
+-   Manual User Interface Testing
+    
 
-## Deployment (Placeholder)
+### Environment
 
-*To be detailed in CSC 191*
+-   Node.js: 22.14.0
+    
+-   NPM: 10.2.2
+    
+-   React: 18.3.1
+    
+-   Firebase: 9.10
+    
+-   Stripe: 10.8.0
+    
+-   VS Code: 1.99.3
+    
 
-This section will cover deployment instructions and setup for production.
+### Running Tests
 
----
+To execute the full test suite:
 
-## Developer Instructions (Placeholder)
+```bash
+npm test
 
-*To be detailed in CSC 191*
+```
 
-Detailed instructions for setting up development environments, code structure, and collaboration guidelines will be included.
+To run an individual test file:
 
----
+```bash
+cd assets/Tests
+npm test <test-file-name>
 
-## Project Timeline and Key Milestones
+```
 
-The timeline below is based on the JIRA backlog and outlines key milestones for TribeWell.
+_Example:_
 
-| Milestone                            | Expected Completion Date |
-|--------------------------------------|--------------------------|
-| Basic Setup & User Authentication    | Sprint 1                 |
-| Content Management (Text, Media)     | Sprint 2                 |
-| Video Uploads & User Association     | Sprint 3                 |
-| Community Engagement Features        | Sprint 4                 |
-| UI/UX Enhancements and Testing       | Sprint 5                 |
-| Final Deployment and Documentation   | Sprint 6                 |
-| Advanced Analytics & User Insights   | Sprint 7                 |
-| Post-Launch Optimization & Feedback  | Sprint 8                 |
+```bash
+npm test DirectoryPage.test.js
 
----
+```
 
-## Visuals
+### Test Coverage
 
-### Entity Relationship Diagram (ERD)
+Coverage includes functionality for:
 
-ERD for TribeWell, outlining the core entities and relationships:
+-   User Authentication (Signup, Login, Password Recovery)
+    
+-   Page Navigation (Home, Directory, Explore, Membership)
+    
+-   Community Tools (Moderator Dashboard, Help Center, Blogs)
+    
+-   Event Management (Creation, Filtering, Registration)
+    
+-   Content Features (Diary, Posts, User Interaction)
+    
 
-- **USER**
-  - `UID` (Primary Key): Unique identifier for each user
-  - `Displayname`: User’s display name
-  - `DisplayPicture`: User’s profile picture
-  - `Email`: User’s email address
-  - `Password`: User’s password
-  - `Date_of_Birth`: User’s date of birth
-  - `Account_Type`: Type of account (e.g., standard, admin)
+Testing verified by GitBuds Team on May 2, 2025.
 
-- **CONTENT**
-  - `Post_ID` (Primary Key): Unique identifier for each post
-  - `User_ID` (Foreign Key): Links post to its author
-  - `Thread_ID`: Unique identifier for discussion threads
-  - `Video_Audio_File`: Multimedia content associated with the post
-  - `Text`: Text content of the post
-  - `Post_Date`: Date when the post was created
+----------
 
-- **COMMENT**
-  - `Comment_ID` (Primary Key): Unique identifier for each comment
-  - `User_ID` (Foreign Key): Links comment to its author
-  - `Thread_ID` (Foreign Key): Links comment to relevant thread
-  - `Comment`: Text of the comment
-  - `Post_Date`: Date when the comment was made
+## Entity Relationship Diagram (ERD)
 
+<img width="467" alt="TribeWell_ERD" src="https://github.com/user-attachments/assets/7cc39eba-2b7f-4b16-aa37-3c1af77510b9" />
 
+*Figure 6. Entity Relationship Diagram (ERD) illustrating the data schema.*
 
-[ERD GitBuds.pdf](https://github.com/user-attachments/files/17556125/ERD.GitBuds.pdf)
+### USER Entity
 
----
+-   `UID`, `DisplayName`, `DisplayPicture`, `Email`, `DOB`, `Account_Type`
+    
+
+### CONTENT Entity
+
+-   `Post_ID`, `User_ID`, `Thread_ID`, `Text`, `Media`, `Post_Date`
+    
+
+### COMMENT Entity
+
+-   `Comment_ID`, `User_ID`, `Thread_ID`, `Comment`, `Post_Date`
+    
+
+----------
+
+## Team GitBuds
+
+-   **Arthur Erlandson** – Team Lead
+    
+-   Parsa Bayat
+    
+-   Austin Mann
+    
+-   Matthew Morello
+    
+-   Emiley Mynhier
+    
+-   Jason Neal
+    
+-   Priya Pillay
+    
+-   Kat Shpak
+    
+
+For project-related inquiries: [gitbuds@gmail.com](mailto:gitbuds@gmail.com)
+
+----------
 
 ## License
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Contact
-
-For questions or feedback, please reach out to the **TribeWell** GitBuds development team at gitbuds@gmail.com.
-
----
-
-## Team
-
-Meet the dedicated team behind **TribeWell**:
-
-- Arthur Erlandson  
-  **Team Lead**
-
-- Parsa Bayat
-
-- Austin Mann
-
-- Matthew Morello
-
-- Emiley Mynhier
-
-- Jason Neal
-
-- Priya Pillay
-
-- Kat Shpak
+This project is licensed under the MIT License © 2025 Serendipity Innovation.
 
