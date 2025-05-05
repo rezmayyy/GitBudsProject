@@ -174,29 +174,6 @@ Testing verified by GitBuds Team on May 2, 2025.
 
 ----------
 
-## Entity Relationship Diagram (ERD)
-
-<img width="467" alt="TribeWell_ERD" src="https://github.com/user-attachments/assets/7cc39eba-2b7f-4b16-aa37-3c1af77510b9" />
-
-*Figure 6. Entity Relationship Diagram (ERD) illustrating the data schema.*
-
-### USER Entity
-
--   `UID`, `DisplayName`, `DisplayPicture`, `Email`, `DOB`, `Account_Type`
-    
-
-### CONTENT Entity
-
--   `Post_ID`, `User_ID`, `Thread_ID`, `Text`, `Media`, `Post_Date`
-    
-
-### COMMENT Entity
-
--   `Comment_ID`, `User_ID`, `Thread_ID`, `Comment`, `Post_Date`
-    
-
-----------
-
 ## Team GitBuds
 
 -   **Arthur Erlandson** – Team Lead
