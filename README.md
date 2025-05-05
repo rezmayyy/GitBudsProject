@@ -25,8 +25,6 @@
     
 -   **Educational Content** – Access a curated library of blogs, videos, and reference materials.
     
--   **Personal Wellness Plans** – Design customized healing journeys with progress tracking.
-    
 -   **Event Management** – Create, host, and participate in workshops and community events.
     
 -   **Community Hub** – Engage in discourse, support networks, and live Q&A forums.
@@ -88,7 +86,7 @@ Access the production application at: [  CLICK HERE! ~ TribeWell](https://tribew
 ### Setup Instructions
 
 ```bash
-git clone https://github.com/gitbuds/tribewell.git
+git clone https://github.com/rezmayyy/GitBudsProject.git
 cd TribeWell
 npm install
 
@@ -136,7 +134,7 @@ npm start
 To execute the full test suite:
 
 ```bash
-npm test
+npm test -- --watchAll
 
 ```
 
